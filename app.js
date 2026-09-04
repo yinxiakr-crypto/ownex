@@ -28,6 +28,7 @@
     space: "",
     reviewId: "",
     stickerYear: String(Math.max(2026, new Date().getFullYear())),
+    stickerPage: 0,
   };
   const FRONT_REVIEWS = 3;
 
@@ -81,7 +82,10 @@
   });
   yearEl.addEventListener("change", () => {
     state.year = yearEl.value;
-    if (state.year && state.year !== "all") state.stickerYear = state.year;
+    if (state.year && state.year !== "all") {
+      state.stickerYear = state.year;
+      state.stickerPage = 0;
+    }
     state.month = "";
     state.selected = null;
     state.space = "";
@@ -287,12 +291,19 @@
       .map((id) => ({ id, note: notes[id], row: showById(id) }));
   }
 
-  function praiseFor(count) {
-    if (count >= 25) return { word: "대단해요", line: "올해 전시를 깊이 따라가고 있습니다." };
+  function visitsForScope(year) {
+    if (String(year) === "all") {
+      return allVisits().map((id) => ({ id, note: notes[id], row: showById(id) }));
+    }
+    return visitsForYear(year);
+  }
+
+  function praiseFor(count, allTime) {
+    if (count >= 25) return { word: "대단해요", line: allTime ? "전시를 깊이 따라가고 있습니다." : "올해 전시를 깊이 따라가고 있습니다." };
     if (count >= 20) return { word: "최고예요", line: "보는 눈이 꽤 단단해졌습니다." };
-    if (count >= 10) return { word: "우수해요", line: "열 번을 채웠습니다. 올해의 그림이 완성되었습니다." };
+    if (count >= 10) return { word: "우수해요", line: allTime ? "열 번을 채웠습니다." : "열 번을 채웠습니다. 올해의 그림이 완성되었습니다." };
     if (count >= 5) return { word: "참 잘했어요", line: "작품 앞에 머무는 시간이 늘고 있습니다." };
-    if (count >= 1) return { word: "잘했어요", line: "전시장에 발을 들인 해입니다." };
+    if (count >= 1) return { word: "잘했어요", line: allTime ? "전시장에 발을 들인 기록입니다." : "전시장에 발을 들인 해입니다." };
     return { word: "함께 보아요", line: "방문함을 누르면 칭찬 스티커가 붙습니다." };
   }
 
@@ -637,19 +648,22 @@
     );
   }
 
-  function praiseScoreText(count) {
-    if (!count) return "방문할 때마다 스티커가 붙습니다";
-    if (count < PRAISE_COUNT) return count + " / " + PRAISE_COUNT;
-    if (count === PRAISE_COUNT) return PRAISE_COUNT + " / " + PRAISE_COUNT + " · 완성";
-    return "완성 · " + count + "번 다녀왔어요";
+  function praiseScoreText(count, allTime, page, pages) {
+    if (!count) return allTime ? "전체 기간 방문이 모입니다" : "방문할 때마다 스티커가 붙습니다";
+    const scope = allTime ? " · 전체" : "";
+    if (pages > 1) return count + scope + " · " + (page + 1) + "/" + pages;
+    if (count < PRAISE_COUNT) return count + " / " + PRAISE_COUNT + scope;
+    if (count === PRAISE_COUNT) return PRAISE_COUNT + " / " + PRAISE_COUNT + scope;
+    return count + "번 다녀왔어요" + scope;
   }
 
-  function praiseSheetHtml(count, visits) {
-    const n = Math.max(0, Math.min(Number(count) || 0, PRAISE_COUNT));
+  function praiseSheetHtml(visits, page) {
     const rows = visits || [];
+    const start = Math.max(0, (Number(page) || 0) * PRAISE_COUNT);
     let tiles = "";
     for (let i = 0; i < PRAISE_COUNT; i += 1) {
-      if (i >= n) {
+      const visit = rows[start + i];
+      if (!visit) {
         tiles += '<span class="praise-sticker empty"></span>';
         continue;
       }
@@ -658,7 +672,7 @@
         '<button type="button" class="praise-sticker on" style="background:' +
         fill +
         '"' +
-        praiseMark(rows[i]) +
+        praiseMark(visit) +
         "></button>";
     }
     return '<div class="praise-sheet">' + tiles + "</div>";
@@ -666,26 +680,48 @@
 
   function praiseBoardHtml() {
     const year = state.stickerYear || String(new Date().getFullYear());
-    const visits = visitsForYear(year);
+    const allTime = year === "all";
+    const visits = visitsForScope(year);
     const count = visits.length;
-    const done = count >= PRAISE_COUNT;
-    let years = "";
+    const pages = Math.max(1, Math.ceil(count / PRAISE_COUNT) || 1);
+    if (state.stickerPage > pages - 1) state.stickerPage = pages - 1;
+    if (state.stickerPage < 0) state.stickerPage = 0;
+    const page = state.stickerPage;
+    const done = count >= PRAISE_COUNT && page === pages - 1;
+    let years = '<button type="button" class="praise-year' + (allTime ? " on" : "") + '" data-sticker-year="all">전체</button>';
     yearChoices().forEach((y) => {
       years += '<button type="button" class="praise-year' + (y === year ? " on" : "") + '" data-sticker-year="' + y + '">' + y + "</button>";
     });
+    const nav =
+      pages > 1
+        ? '<div class="praise-nav">' +
+          '<button type="button" class="praise-arrow" data-sticker-page="-1"' +
+          (page <= 0 ? " disabled" : "") +
+          ">‹</button>" +
+          '<span class="praise-page">' +
+          (page + 1) +
+          " / " +
+          pages +
+          "</span>" +
+          '<button type="button" class="praise-arrow" data-sticker-page="1"' +
+          (page >= pages - 1 ? " disabled" : "") +
+          ">›</button>" +
+          "</div>"
+        : "";
     return (
       '<div class="praise-head"><h2 class="praise-title">Achievement</h2><div class="praise-years">' +
       years +
       "</div></div>" +
       '<p class="praise-score">' +
-      praiseScoreText(count) +
+      praiseScoreText(count, allTime, page, pages) +
       "</p>" +
       '<div class="praise-art sheet' +
       (done ? " open" : "") +
       '">' +
-      praiseSheetHtml(count, visits) +
+      praiseSheetHtml(visits, page) +
       (done ? '<span class="praise-done">완성</span>' : "") +
-      "</div>"
+      "</div>" +
+      nav
     );
   }
 
@@ -695,6 +731,14 @@
     box.querySelectorAll("[data-sticker-year]").forEach((btn) => {
       btn.addEventListener("click", () => {
         state.stickerYear = btn.getAttribute("data-sticker-year");
+        state.stickerPage = 0;
+        if (state.selected) renderArtwork();
+        else renderPraise();
+      });
+    });
+    box.querySelectorAll("[data-sticker-page]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        state.stickerPage += Number(btn.getAttribute("data-sticker-page") || 0);
         if (state.selected) renderArtwork();
         else renderPraise();
       });
