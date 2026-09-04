@@ -140,10 +140,15 @@
     const seed = data.saved;
     if (!seed || typeof seed !== "object") return;
     const seedNotes = seed.notes && typeof seed.notes === "object" ? seed.notes : {};
+    const rev = String(seed.rev || "6stickers");
+    let applied = "";
+    try { applied = localStorage.getItem("ownex-seed-rev") || ""; } catch (err) {}
     Object.keys(seedNotes).forEach((key) => {
-      if (notes[key]) return;
-      notes[key] = Object.assign({}, seedNotes[key]);
+      if (!notes[key] || applied !== rev) {
+        notes[key] = Object.assign({}, notes[key] || {}, seedNotes[key]);
+      }
     });
+    try { localStorage.setItem("ownex-seed-rev", rev); } catch (err) {}
     const seen = {};
     feels.forEach((item) => {
       seen[[item.id || "", item.title || "", item.body || "", item.at || ""].join("|")] = true;
@@ -245,7 +250,7 @@
   }
 
   const PRAISE_STAMPS = ["잘했어요", "참 잘했어요", "우수해요", "멋져요", "훌륭해요", "최고예요", "잘 보았어요", "열심히 보았어요", "대단해요", "참 훌륭해요"];
-  const PRAISE_COUNT = 30;
+  const PRAISE_COUNT = 25;
   const PRAISE_FILLS = ["#f6e4dc", "#f3c4b5", "#fde8df", "#ead4c8", "#e8c8c4", "#f7ece4", "#dcc4bc", "#c9d4c0"];
 
   function yearChoices() {
@@ -283,7 +288,7 @@
   }
 
   function praiseFor(count) {
-    if (count >= 30) return { word: "대단해요", line: "올해 전시를 깊이 따라가고 있습니다." };
+    if (count >= 25) return { word: "대단해요", line: "올해 전시를 깊이 따라가고 있습니다." };
     if (count >= 20) return { word: "최고예요", line: "보는 눈이 꽤 단단해졌습니다." };
     if (count >= 10) return { word: "우수해요", line: "열 번을 채웠습니다. 올해의 그림이 완성되었습니다." };
     if (count >= 5) return { word: "참 잘했어요", line: "작품 앞에 머무는 시간이 늘고 있습니다." };

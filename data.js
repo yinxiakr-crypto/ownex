@@ -640,6 +640,7 @@ window.OWNEX = {
     "open_url": "https://calendar.google.com/calendar/u/0/r?cid=b03a3e41e51f86ec6e6534b393615d86ca8dce3bee52d3febcd4a879c58b3b13@group.calendar.google.com"
   },
   "saved": {
+    "rev": "6stickers",
     "notes": {
       "윤형근을 다시 상상하다|PKM갤러리|2026-08-26|2026-10-03": {
         "visited": false,
@@ -670,7 +671,7 @@ window.OWNEX = {
         "at": "2026-09-03"
       },
       "김희천: 두더지들|서울시립 서서울미술관|2026-08-20|2026-11-08": {
-        "visited": true,
+        "visited": false,
         "at": "2026-09-03"
       }
     },
