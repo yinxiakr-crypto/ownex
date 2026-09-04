@@ -126,7 +126,7 @@
     }
   }
 
-  const SHARE_URL = "OWNEX_SHARE_URL";
+  const SHARE_URL = "shared-state.json";
   let shareAt = "";
   let shareQuiet = false;
 
@@ -186,7 +186,7 @@
   }
 
   function pullShared() {
-    if (!SHARE_URL || SHARE_URL.indexOf("http") !== 0) return Promise.resolve(false);
+    if (!SHARE_URL) return Promise.resolve(false);
     return fetch(SHARE_URL + "?" + Date.now(), { cache: "no-store", headers: { Accept: "application/json" } })
       .then(function (res) { return res.json(); })
       .then(function (remote) {
@@ -203,7 +203,7 @@
 
   function pushShared() {
     if (shareQuiet) return Promise.resolve();
-    if (!SHARE_URL || SHARE_URL.indexOf("http") !== 0) return Promise.resolve();
+    if (!SHARE_URL) return Promise.resolve();
     const body = sharePack();
     shareAt = body.at;
     return fetch(SHARE_URL, {
