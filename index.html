@@ -8,8 +8,24 @@
   <meta name="apple-mobile-web-app-title" content="OWNEX" />
   <meta name="application-name" content="OWNEX" />
   <meta name="theme-color" content="#351e28" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <title>OWNEX</title>
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <script>
+    (function () {
+      fetch("version.json?t=" + Date.now(), { cache: "no-store" })
+        .then(function (res) { return res.json(); })
+        .then(function (info) {
+          var now = String((info && info.build) || "");
+          var seen = "";
+          try { seen = localStorage.getItem("ownex-build") || ""; } catch (err) {}
+          if (!now || now === seen) return;
+          try { localStorage.setItem("ownex-build", now); } catch (err) {}
+          location.reload();
+        })
+        .catch(function () {});
+    })();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Great+Vibes&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet" />
