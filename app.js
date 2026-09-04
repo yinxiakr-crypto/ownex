@@ -17,6 +17,7 @@
   applySeason();
   const notes = loadNotes();
   const feels = loadFeels();
+  mergeSaved();
   const state = {
     field: "exhibition",
     year: "",
@@ -112,6 +113,32 @@
     } catch (err) {
       return [];
     }
+  }
+
+  function mergeSaved() {
+    const seed = data.saved;
+    if (!seed || typeof seed !== "object") return;
+    const seedNotes = seed.notes && typeof seed.notes === "object" ? seed.notes : {};
+    Object.keys(seedNotes).forEach((key) => {
+      const a = notes[key] || {};
+      const b = seedNotes[key] || {};
+      notes[key] = Object.assign({}, b, a, { visited: Boolean(a.visited) || Boolean(b.visited) });
+    });
+    const seen = {};
+    feels.forEach((item) => {
+      seen[[item.id || "", item.title || "", item.body || "", item.at || ""].join("|")] = true;
+    });
+    (Array.isArray(seed.feels) ? seed.feels : []).forEach((item) => {
+      if (!item) return;
+      const key = [item.id || "", item.title || "", item.body || "", item.at || ""].join("|");
+      if (seen[key]) return;
+      seen[key] = true;
+      feels.push(item);
+    });
+    try {
+      localStorage.setItem(STORE, JSON.stringify(notes));
+      localStorage.setItem(FEEL_STORE, JSON.stringify(feels));
+    } catch (err) {}
   }
 
   function saveFeels() {
