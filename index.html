@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="OWNEX" />
+  <meta name="application-name" content="OWNEX" />
+  <meta name="theme-color" content="#351e28" />
+  <title>OWNEX</title>
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Great+Vibes&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=review2" />
+  <style>
+    body { margin: 0; min-height: 100vh; background: #351e28; color: #f6efe6; font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
+    #front-row:not([hidden]) {
+      display: grid !important;
+      grid-template-columns: minmax(18rem, 40rem) minmax(16rem, 1fr);
+      gap: 1.5rem 2rem;
+      align-items: start;
+    }
+    #front-row[hidden] { display: none !important; }
+    #feelings.feel { max-width: 40rem; width: 100%; }
+    #review-page.review-page { max-width: 40rem; }
+    #praise-board {
+      min-width: 14rem;
+      max-width: 18rem;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid #5a3a45;
+      border-radius: 1.1rem;
+      padding: 0.85rem 0.9rem 1rem;
+    }
+  </style>
+</head>
+<body data-season="fall">
+  <div class="page-bg" aria-hidden="true">
+    <div class="page-bg-sketch"></div>
+    <div class="page-bg-wash"></div>
+    <div class="page-bg-grain"></div>
+  </div>
+  <header class="hero">
+    <p class="eyebrow">OWNEX</p>
+    <h1>오넥스</h1>
+    <p class="lead">보고 듣고 가는 자리. 지금은 미술부터.</p>
+
+    <div class="fields" role="tablist" aria-label="분야">
+      <button type="button" class="field on" data-field="exhibition">미술</button>
+      <button type="button" class="field" data-field="music" disabled>음악</button>
+      <button type="button" class="field" data-field="stage" disabled>공연</button>
+    </div>
+
+    <div class="picks-row">
+      <label class="year-pick">
+        <span>연도</span>
+        <select id="year"></select>
+      </label>
+      <button type="button" id="year-all" class="year-all">전체</button>
+      <label class="year-pick" id="month-wrap" hidden>
+        <span>월</span>
+        <select id="month"></select>
+      </label>
+      <a id="gcal-icon" class="gcal-icon" href="https://calendar.google.com" target="_blank" rel="noopener" title="내 Ownex 구글 달력" aria-label="내 Ownex 구글 달력">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="3.5" y="5" width="17" height="15" rx="3.5"/>
+          <path d="M3.5 9.5h17M8 3.5v3M16 3.5v3"/>
+        </svg>
+      </a>
+    </div>
+  </header>
+
+  <main>
+    <div id="front-row" class="panel front-row" hidden>
+      <section id="feelings" class="feel"></section>
+      <aside id="praise-board">
+        <h2 class="praise-title">Achievement</h2>
+        <p class="praise-score">방문할 때마다 스티커가 붙습니다</p>
+        <div class="praise-art sheet"></div>
+      </aside>
+    </div>
+    <section id="review-page" class="panel review-page" hidden></section>
+    <section id="own-cal" class="panel own-cal" hidden></section>
+    <section id="month-list" class="panel" hidden></section>
+    <section id="artwork" class="panel" hidden></section>
+  </main>
+
+  <footer></footer>
+
+  <script src="data.js"></script>
+  <script src="app.js?v=sync1"></script>
+</body>
+</html>
