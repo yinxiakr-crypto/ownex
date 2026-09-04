@@ -968,7 +968,9 @@ body.reviews .hero {
 }
 
 .review-all-wrap {
-  display: none;
+  display: flex;
+  justify-content: center;
+  margin: 0.85rem 0 0.1rem;
 }
 
 body.open .review-all-btn {

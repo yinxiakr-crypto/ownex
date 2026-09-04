@@ -141,9 +141,8 @@
     if (!seed || typeof seed !== "object") return;
     const seedNotes = seed.notes && typeof seed.notes === "object" ? seed.notes : {};
     Object.keys(seedNotes).forEach((key) => {
-      const a = notes[key] || {};
-      const b = seedNotes[key] || {};
-      notes[key] = Object.assign({}, b, a, { visited: Boolean(a.visited) || Boolean(b.visited) });
+      if (notes[key]) return;
+      notes[key] = Object.assign({}, seedNotes[key]);
     });
     const seen = {};
     feels.forEach((item) => {
@@ -220,7 +219,10 @@
       Object.keys(Object.assign({}, remote.notes || {}, notes)).forEach((key) => {
         const a = notes[key] || {};
         const b = (remote.notes || {})[key] || {};
-        mergedNotes[key] = Object.assign({}, b, a, { visited: Boolean(a.visited) || Boolean(b.visited) });
+        const visited = Object.prototype.hasOwnProperty.call(a, "visited")
+          ? Boolean(a.visited)
+          : Boolean(b.visited);
+        mergedNotes[key] = Object.assign({}, b, a, { visited: visited });
       });
       const bag = [];
       const seen = {};
@@ -492,7 +494,6 @@
     const preview = mode !== "full";
     const box = root || (preview ? feelings : reviewPage);
     if (!box) return;
-    const phone = isPhoneLayout();
     const limit = preview ? frontReviewCount() : feels.length;
     const start = preview ? Math.max(0, feels.length - limit) : 0;
     const items = feels.slice(start);
@@ -502,8 +503,7 @@
       const open = state.reviewId === item.id;
       const snippet = item.body.length > 28 ? item.body.slice(0, 28) + "…" : item.body;
       const show = (data.exhibitions || []).find((row) => itemId(row) === item.showId) || matchShow(item.title);
-      const last = preview && !phone && offset === items.length - 1;
-      return `<div class="review-item ${open ? "on" : ""} ${last ? "is-last" : ""}">
+      return `<div class="review-item ${open ? "on" : ""}">
         <div class="review-last-row">
         <button type="button" class="review-line" data-id="${escapeHtml(item.id)}">
           <span class="review-no">${no}</span>
@@ -511,7 +511,6 @@
           <span class="review-name">${escapeHtml(item.title)}</span>
           <span class="review-snip">${escapeHtml(open ? "접기" : snippet)}</span>
         </button>
-        ${last ? '<button type="button" class="review-all-btn" data-reviews="all">전체 보기</button>' : ""}
         </div>
         ${
           open
@@ -530,7 +529,7 @@
         }
       </div>`;
     }).join("");
-    const moreOutside = preview && phone
+    const moreOutside = preview
       ? '<div class="review-all-wrap"><button type="button" class="review-all-btn" data-reviews="all">전체 보기</button></div>'
       : "";
     const empty = preview
@@ -937,6 +936,7 @@
         if (notes[id].visited) state.stickerYear = notes[id].at.slice(0, 4);
         saveNotes();
         renderArtwork();
+        renderPraise();
       });
     });
     artwork.querySelectorAll("[data-dir]").forEach((btn) => {
