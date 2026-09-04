@@ -31,6 +31,27 @@
   };
   const FRONT_REVIEWS = 3;
 
+  function isPhoneLayout() {
+    try {
+      return Boolean(navigator.standalone) ||
+        window.matchMedia("(display-mode: standalone)").matches ||
+        window.matchMedia("(max-width: 800px)").matches;
+    } catch (err) {
+      return false;
+    }
+  }
+
+  function frontReviewCount() {
+    return isPhoneLayout() ? 2 : FRONT_REVIEWS;
+  }
+
+  function syncPhoneClass() {
+    document.body.classList.toggle("phone", isPhoneLayout());
+  }
+
+  syncPhoneClass();
+  window.addEventListener("resize", syncPhoneClass);
+
   const yearEl = document.getElementById("year");
   const yearAll = document.getElementById("year-all");
   const monthEl = document.getElementById("month");
@@ -394,8 +415,17 @@
     const showMonth = !reviewOnly && browsing && !state.selected && state.space !== "feel";
     frontRow.hidden = !showFeel;
     if (frontRow) {
-      frontRow.style.display = showFeel ? "grid" : "none";
-      if (showFeel) {
+      if (!showFeel) {
+        frontRow.style.display = "none";
+      } else if (isPhoneLayout()) {
+        frontRow.style.display = "flex";
+        frontRow.style.flexDirection = "column";
+        frontRow.style.gridTemplateColumns = "none";
+        frontRow.style.gap = "1.1rem";
+        frontRow.style.alignItems = "stretch";
+      } else {
+        frontRow.style.display = "grid";
+        frontRow.style.flexDirection = "";
         frontRow.style.gridTemplateColumns = "minmax(18rem, 40rem) minmax(16rem, 1fr)";
         frontRow.style.gap = "1.5rem 2rem";
         frontRow.style.alignItems = "start";
@@ -462,7 +492,9 @@
     const preview = mode !== "full";
     const box = root || (preview ? feelings : reviewPage);
     if (!box) return;
-    const start = preview ? Math.max(0, feels.length - FRONT_REVIEWS) : 0;
+    const phone = isPhoneLayout();
+    const limit = preview ? frontReviewCount() : feels.length;
+    const start = preview ? Math.max(0, feels.length - limit) : 0;
     const items = feels.slice(start);
     const rows = items.map((item, offset) => {
       const index = start + offset;
@@ -470,7 +502,7 @@
       const open = state.reviewId === item.id;
       const snippet = item.body.length > 28 ? item.body.slice(0, 28) + "…" : item.body;
       const show = (data.exhibitions || []).find((row) => itemId(row) === item.showId) || matchShow(item.title);
-      const last = preview && offset === items.length - 1;
+      const last = preview && !phone && offset === items.length - 1;
       return `<div class="review-item ${open ? "on" : ""} ${last ? "is-last" : ""}">
         <div class="review-last-row">
         <button type="button" class="review-line" data-id="${escapeHtml(item.id)}">
@@ -498,8 +530,11 @@
         }
       </div>`;
     }).join("");
+    const moreOutside = preview && phone
+      ? '<div class="review-all-wrap"><button type="button" class="review-all-btn" data-reviews="all">전체 보기</button></div>'
+      : "";
     const empty = preview
-      ? `<p class="quiet">아직 남긴 감상평이 없습니다.</p><button type="button" class="review-all-btn" data-reviews="all">전체 보기</button>`
+      ? `<p class="quiet">아직 남긴 감상평이 없습니다.</p>`
       : '<p class="quiet">아직 남긴 감상평이 없습니다.</p>';
     const head = preview
       ? `<div class="feel-head"><h2>Review</h2></div>`
@@ -524,7 +559,8 @@
           <span class="review-snip">소감</span>
         </div>
         ${rows || empty}
-      </div>`;
+      </div>` +
+      moreOutside;
     const form = box.querySelector("#feel-form");
     if (form) {
       form.addEventListener("submit", (event) => {
@@ -568,8 +604,9 @@
         if (item) sendToNotes(item);
       });
     });
-    const allBtn = box.querySelector("[data-reviews='all']");
-    if (allBtn) allBtn.addEventListener("click", openReviews);
+    box.querySelectorAll("[data-reviews='all']").forEach((btn) => {
+      btn.addEventListener("click", openReviews);
+    });
     const homeBtn = box.querySelector("[data-reviews='home']");
     if (homeBtn) homeBtn.addEventListener("click", closeReviews);
   }

@@ -967,6 +967,10 @@ body.reviews .hero {
   white-space: nowrap;
 }
 
+.review-all-wrap {
+  display: none;
+}
+
 body.open .review-all-btn {
   background: var(--accent);
   color: #fff;
@@ -1155,9 +1159,29 @@ body.open .review-line:hover { color: #b85a48; }
 
   .month-head h2 { font-size: 1.6rem; }
 
-  .front-row {
-    flex-direction: column;
+  .front-row,
+  #front-row:not([hidden]) {
+    display: flex !important;
+    flex-direction: column !important;
+    grid-template-columns: none !important;
+    align-items: stretch !important;
   }
+
+  #praise-board,
+  .praise-side {
+    flex: 1 1 auto;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .review-all-wrap {
+    display: flex;
+    justify-content: center;
+    margin: 0.8rem 0 0.15rem;
+  }
+
+  .review-last-row .review-all-btn { display: none; }
 
   .praise-side {
     flex: 1 1 auto;

@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Great+Vibes&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=review2" />
+  <link rel="stylesheet" href="styles.css?v=phone2" />
   <style>
     body { margin: 0; min-height: 100vh; background: #351e28; color: #f6efe6; font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
     #front-row:not([hidden]) {
@@ -32,6 +32,21 @@
       border: 1px solid #5a3a45;
       border-radius: 1.1rem;
       padding: 0.85rem 0.9rem 1rem;
+    }
+    @media (max-width: 800px) {
+      #front-row:not([hidden]) {
+        display: flex !important;
+        flex-direction: column !important;
+        grid-template-columns: none !important;
+        gap: 1.1rem !important;
+        align-items: stretch !important;
+      }
+      #feelings.feel { max-width: 100%; }
+      #praise-board {
+        min-width: 0;
+        max-width: 100%;
+        width: 100%;
+      }
     }
   </style>
 </head>
@@ -89,6 +104,6 @@
   <footer></footer>
 
   <script src="data.js"></script>
-  <script src="app.js?v=saved1"></script>
+  <script src="app.js?v=phone2"></script>
 </body>
 </html>
