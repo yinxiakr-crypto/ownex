@@ -126,9 +126,14 @@
     }
   }
 
+  const SHARE_URL = "OWNEX_SHARE_URL";
+  let shareAt = "";
+  let shareQuiet = false;
+
   function saveNotes() {
     localStorage.setItem(STORE, JSON.stringify(notes));
     pushState();
+    pushShared();
   }
 
   function loadFeels() {
@@ -173,6 +178,39 @@
   function saveFeels() {
     localStorage.setItem(FEEL_STORE, JSON.stringify(feels));
     pushState();
+    pushShared();
+  }
+
+  function sharePack() {
+    return { notes: notes, feels: feels, at: new Date().toISOString() };
+  }
+
+  function pullShared() {
+    if (!SHARE_URL || SHARE_URL.indexOf("http") !== 0) return Promise.resolve(false);
+    return fetch(SHARE_URL + "?" + Date.now(), { cache: "no-store", headers: { Accept: "application/json" } })
+      .then(function (res) { return res.json(); })
+      .then(function (remote) {
+        if (!remote || !remote.notes) return false;
+        if (remote.at && remote.at === shareAt) return false;
+        shareAt = remote.at || "";
+        shareQuiet = true;
+        applyState(remote);
+        shareQuiet = false;
+        return true;
+      })
+      .catch(function () { return false; });
+  }
+
+  function pushShared() {
+    if (shareQuiet) return Promise.resolve();
+    if (!SHARE_URL || SHARE_URL.indexOf("http") !== 0) return Promise.resolve();
+    const body = sharePack();
+    shareAt = body.at;
+    return fetch(SHARE_URL, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify(body),
+    }).catch(function () {});
   }
 
   function familyToken() {
@@ -255,7 +293,7 @@
 
   const PRAISE_STAMPS = ["잘했어요", "참 잘했어요", "우수해요", "멋져요", "훌륭해요", "최고예요", "잘 보았어요", "열심히 보았어요", "대단해요", "참 훌륭해요"];
   const PRAISE_COUNT = 25;
-  const PRAISE_FILLS = ["#f6e4dc", "#f3c4b5", "#fde8df", "#ead4c8", "#e8c8c4", "#f7ece4", "#dcc4bc", "#c9d4c0"];
+  const PRAISE_FILLS = ["#e39a86", "#d4a05c", "#c9849a", "#6faf8e", "#d9b15a", "#c87868", "#7ea4b8", "#c4a06a"];
 
   function yearChoices() {
     const now = new Date().getFullYear();
@@ -280,7 +318,7 @@
   function allVisits() {
     const bag = notes && typeof notes === "object" && !Array.isArray(notes) ? notes : {};
     return Object.keys(bag)
-      .filter((id) => bag[id] && (bag[id].visited === true || bag[id].visited === "true"))
+      .filter((id) => id && bag[id] && (bag[id].visited === true || bag[id].visited === "true"))
       .sort((a, b) => String(bag[a].at || "").localeCompare(String(bag[b].at || "")));
   }
 
@@ -639,8 +677,11 @@
 
   function praiseMark(visit) {
     if (!visit) return "";
+    const current = state.selected && itemId(state.selected) === visit.id ? " current" : "";
     return (
-      ' data-show="' +
+      ' class="praise-sticker on' +
+      current +
+      '" data-show="' +
       escapeHtml(visit.id) +
       '" title="' +
       escapeHtml((visit.row && visit.row.title) || "방문") +
@@ -669,7 +710,7 @@
       }
       const fill = PRAISE_FILLS[i % PRAISE_FILLS.length];
       tiles +=
-        '<button type="button" class="praise-sticker on" style="background:' +
+        '<button type="button" style="background:' +
         fill +
         '"' +
         praiseMark(visit) +
@@ -1033,10 +1074,22 @@
     }
   });
   bindFamilyBar();
-  pullState().then(() => {
-    draw();
-    paintFamilyBar();
-  });
+  pullShared()
+    .then(function () {
+      return pullState();
+    })
+    .then(function () {
+      draw();
+      paintFamilyBar();
+      pushShared();
+    });
+  setInterval(function () {
+    pullShared().then(function (changed) {
+      if (!changed) return;
+      if (state.selected) renderArtwork();
+      else draw();
+    });
+  }, 3000);
 
   function bindFamilyBar() {
     const form = document.getElementById("family-form");

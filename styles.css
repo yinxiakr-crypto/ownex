@@ -504,7 +504,9 @@ body.open .gcal-icon {
 .art-praise {
   grid-column: 2;
   grid-row: 2;
-  align-self: end;
+  align-self: start;
+  width: 100%;
+  max-width: 18rem;
 }
 
 img.poster {
@@ -794,8 +796,24 @@ footer a { color: var(--cool); font-size: 0.85rem; }
 
 .praise-sticker.on {
   cursor: pointer;
-  border-color: color-mix(in srgb, var(--blush) 70%, #fff);
-  box-shadow: 0 2px 6px rgba(20, 8, 12, 0.16);
+  border-color: color-mix(in srgb, #fff 55%, var(--blush));
+  box-shadow: 0 2px 6px rgba(20, 8, 12, 0.2);
+}
+
+.praise-sticker.on::after {
+  content: "";
+  position: absolute;
+  right: 0.18rem;
+  bottom: 0.18rem;
+  width: 0.35rem;
+  height: 0.35rem;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgba(40, 20, 20, 0.25);
+}
+
+.praise-sticker.on.current {
+  box-shadow: 0 0 0 2px var(--accent);
 }
 
 body.open .praise-sticker {
@@ -878,7 +896,8 @@ body.open .praise-sticker.on {
 .praise-sheet {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 0.4rem;
+  grid-template-rows: repeat(5, 1fr);
+  gap: 0.32rem;
 }
 
 .stamp {
@@ -1195,6 +1214,8 @@ body.open .review-line:hover { color: #b85a48; }
   .art-praise {
     grid-column: 1;
     grid-row: auto;
+    max-width: 100%;
+    width: 100%;
   }
 
   img.poster { max-height: 70vh; }

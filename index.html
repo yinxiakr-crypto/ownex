@@ -13,7 +13,7 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <script>
     (function () {
-      fetch("version.json?t=" + Date.now(), { cache: "no-store" })
+      fetch("build.json?t=" + Date.now(), { cache: "no-store" })
         .then(function (res) { return res.json(); })
         .then(function (info) {
           var now = String((info && info.build) || "");
@@ -29,7 +29,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Great+Vibes&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=page1" />
+  <link rel="stylesheet" href="styles.css?v=page2" />
   <style>
     body { margin: 0; min-height: 100vh; background: #351e28; color: #f6efe6; font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
     #front-row:not([hidden]) {
@@ -121,6 +121,6 @@
   <footer></footer>
 
   <script src="data.js"></script>
-  <script src="app.js?v=page1"></script>
+  <script src="app.js?v=page2"></script>
 </body>
 </html>
