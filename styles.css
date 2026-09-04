@@ -1212,20 +1212,26 @@ body.open .review-line:hover { color: #b85a48; }
   .review-cols { display: none; }
 
   .review-line {
-    grid-template-columns: 2rem 1fr;
-    grid-template-rows: auto auto;
-    gap: 0.15rem 0.55rem;
+    grid-template-columns: 1.8rem 5.6rem minmax(0, 1fr);
+    grid-template-rows: auto;
+    gap: 0.35rem 0.55rem;
     padding: 0.7rem 0.75rem;
-    font-size: 0.92rem;
+    font-size: 0.9rem;
+    align-items: center;
   }
 
-  .review-no { grid-row: 1; }
-
-  .review-date { grid-column: 2; }
+  .review-no,
+  .review-date,
+  .review-name {
+    grid-row: auto;
+    grid-column: auto;
+  }
 
   .review-name {
-    grid-column: 1 / -1;
-    white-space: normal;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .review-snip { display: none; }
