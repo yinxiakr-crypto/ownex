@@ -29,7 +29,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Great+Vibes&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=boxes1" />
+  <link rel="stylesheet" href="styles.css?v=menus1" />
   <style>
     body { margin: 0; min-height: 100vh; background: #351e28; color: #f6efe6; font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
     #front-row:not([hidden]) {
@@ -85,7 +85,7 @@
         <button type="button" class="save" id="family-enter">들어가기</button>
       </form>
       <div id="family-me" hidden>
-        <span id="family-who"></span>
+        <p id="family-who" class="family-hello"></p>
         <button type="button" id="family-out" class="save">나가기</button>
       </div>
       <p id="family-msg" class="quiet"></p>
@@ -100,16 +100,36 @@
     </div>
 
     <div class="picks-row">
-      <label class="year-pick">
+      <div class="year-pick">
         <span>연도</span>
-        <select id="year"></select>
-      </label>
+        <select id="year">
+          <option value="">연도를 고르세요</option>
+          <option value="all">전체</option>
+          <option value="2026">2026</option>
+          <option value="2027">2027</option>
+          <option value="2028">2028</option>
+        </select>
+      </div>
       <button type="button" id="year-all" class="year-all">전체</button>
       <button type="button" id="glance-home" class="year-all" hidden>처음</button>
-      <label class="year-pick" id="month-wrap" hidden>
+      <div class="year-pick" id="month-wrap">
         <span>월</span>
-        <select id="month"></select>
-      </label>
+        <select id="month">
+          <option value="">월을 고르세요</option>
+          <option value="01">1월</option>
+          <option value="02">2월</option>
+          <option value="03">3월</option>
+          <option value="04">4월</option>
+          <option value="05">5월</option>
+          <option value="06">6월</option>
+          <option value="07">7월</option>
+          <option value="08">8월</option>
+          <option value="09">9월</option>
+          <option value="10">10월</option>
+          <option value="11">11월</option>
+          <option value="12">12월</option>
+        </select>
+      </div>
       <a id="gcal-icon" class="gcal-icon" href="https://calendar.google.com" target="_blank" rel="noopener" title="내 Ownex 구글 달력" aria-label="내 Ownex 구글 달력">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <rect x="3.5" y="5" width="17" height="15" rx="3.5"/>
@@ -121,11 +141,33 @@
 
   <main>
     <div id="front-row" class="panel front-row">
-      <section id="feelings" class="feel"></section>
+      <section id="feelings" class="feel">
+        <div class="feel-head"><h2>Review</h2></div>
+        <div class="review-table">
+          <div class="review-cols" aria-hidden="true">
+            <span class="review-no">순번</span>
+            <span class="review-date">날짜</span>
+            <span class="review-name">제목</span>
+            <span class="review-snip">소감</span>
+          </div>
+          <div class="review-item empty-row"><div class="review-last-row"><div class="review-line"><span class="review-no">1</span><span class="review-date"></span><span class="review-name"></span><span class="review-snip"></span></div></div></div>
+          <div class="review-item empty-row"><div class="review-last-row"><div class="review-line"><span class="review-no">2</span><span class="review-date"></span><span class="review-name"></span><span class="review-snip"></span></div></div></div>
+          <div class="review-item empty-row"><div class="review-last-row"><div class="review-line"><span class="review-no">3</span><span class="review-date"></span><span class="review-name"></span><span class="review-snip"></span></div></div></div>
+        </div>
+      </section>
       <aside id="praise-board">
         <h2 class="praise-title">Achievement</h2>
+        <p class="praise-total"><span class="praise-num">0</span><span class="praise-total-label">다녀온 전시</span></p>
         <p class="praise-score">방문할 때마다 스티커가 붙습니다</p>
-        <div class="praise-art sheet"></div>
+        <div class="praise-art sheet">
+          <div class="praise-sheet">
+            <span class="praise-sticker empty"></span><span class="praise-sticker empty"></span><span class="praise-sticker empty"></span><span class="praise-sticker empty"></span><span class="praise-sticker empty"></span>
+            <span class="praise-sticker empty"></span><span class="praise-sticker empty"></span><span class="praise-sticker empty"></span><span class="praise-sticker empty"></span><span class="praise-sticker empty"></span>
+            <span class="praise-sticker empty"></span><span class="praise-sticker empty"></span><span class="praise-sticker empty"></span><span class="praise-sticker empty"></span><span class="praise-sticker empty"></span>
+            <span class="praise-sticker empty"></span><span class="praise-sticker empty"></span><span class="praise-sticker empty"></span><span class="praise-sticker empty"></span><span class="praise-sticker empty"></span>
+            <span class="praise-sticker empty"></span><span class="praise-sticker empty"></span><span class="praise-sticker empty"></span><span class="praise-sticker empty"></span><span class="praise-sticker empty"></span>
+          </div>
+        </div>
       </aside>
     </div>
     <section id="review-page" class="panel review-page" hidden></section>
@@ -137,6 +179,6 @@
   <footer></footer>
 
   <script src="data.js"></script>
-  <script src="app.js?v=boxes1"></script>
+  <script src="app.js?v=menus1"></script>
 </body>
 </html>

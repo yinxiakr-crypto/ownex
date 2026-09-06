@@ -70,7 +70,7 @@
   const praiseBoard = document.getElementById("praise-board");
   const gcalIcon = document.getElementById("gcal-icon");
 
-  if (data.google && data.google.open_url) gcalIcon.href = data.google.open_url;
+  if (gcalIcon && data.google && data.google.open_url) gcalIcon.href = data.google.open_url;
 
   fillYears();
   document.querySelectorAll(".field").forEach((btn) => {
@@ -80,11 +80,11 @@
       document.querySelectorAll(".field").forEach((el) => el.classList.toggle("on", el === btn));
       state.month = "";
       state.selected = null;
-      monthEl.value = "";
+      if (monthEl) monthEl.value = "";
       draw();
     });
   });
-  yearEl.addEventListener("change", () => {
+  if (yearEl) yearEl.addEventListener("change", () => {
     state.year = yearEl.value;
     if (state.year && state.year !== "all") {
       state.stickerYear = state.year;
@@ -93,19 +93,19 @@
     state.month = "";
     state.selected = null;
     state.space = "";
-    monthEl.value = "";
+    if (monthEl) monthEl.value = "";
     draw();
   });
-  yearAll.addEventListener("click", () => {
+  if (yearAll) yearAll.addEventListener("click", () => {
     state.year = "all";
-    yearEl.value = "all";
+    if (yearEl) yearEl.value = "all";
     state.month = "";
     state.selected = null;
     state.space = "";
-    monthEl.value = "";
+    if (monthEl) monthEl.value = "";
     draw();
   });
-  monthEl.addEventListener("change", () => {
+  if (monthEl) monthEl.addEventListener("change", () => {
     state.month = monthEl.value;
     state.selected = null;
     state.initial = "";
@@ -894,11 +894,13 @@
     const showFeel = !reviewOnly && !state.selected && (state.space === "feel" || !browsing);
     document.body.classList.toggle("reviews", reviewOnly);
     document.body.classList.toggle("open", !reviewOnly && browsing && state.space !== "feel");
-    monthWrap.hidden = reviewOnly || !state.year;
+    if (monthWrap) monthWrap.hidden = false;
     yearAll.classList.toggle("on", state.year === "all");
     const showMonth = !reviewOnly && browsing && !state.selected && state.space !== "feel";
-    frontRow.hidden = !showFeel;
-    if (frontRow) frontRow.style.display = "";
+    if (frontRow) {
+      frontRow.hidden = !showFeel;
+      if (showFeel) frontRow.removeAttribute("hidden");
+    }
     if (reviewPage) reviewPage.hidden = !reviewOnly;
     ownCal.hidden = !showMonth;
     monthList.hidden = !showMonth;
@@ -967,7 +969,8 @@
       const index = start + offset;
       const no = index + 1;
       const open = state.reviewId === item.id;
-      const snippet = item.body.length > 28 ? item.body.slice(0, 28) + "…" : item.body;
+      const bodyText = String((item && item.body) || "");
+      const snippet = bodyText.length > 28 ? bodyText.slice(0, 28) + "…" : bodyText;
       const show = (data.exhibitions || []).find((row) => itemId(row) === item.showId) || matchShow(item.title);
       return `<div class="review-item ${open ? "on" : ""}">
         <div class="review-last-row">
@@ -998,9 +1001,11 @@
     const moreOutside = preview
       ? '<div class="review-all-wrap"><button type="button" class="review-all-btn" data-reviews="all">전체 보기</button></div>'
       : "";
-    const empty = preview
-      ? `<p class="quiet">아직 남긴 감상평이 없습니다.</p>`
-      : '<p class="quiet">아직 남긴 감상평이 없습니다.</p>';
+    const empty = [1, 2, 3].map(function (no) {
+      return '<div class="review-item empty-row"><div class="review-last-row"><div class="review-line"><span class="review-no">' +
+        no +
+        '</span><span class="review-date"></span><span class="review-name"></span><span class="review-snip"></span></div></div></div>';
+    }).join("");
     const head = preview
       ? `<div class="feel-head"><h2>Review</h2></div>`
       : `<div class="feel-head"><h2>Review</h2><button type="button" class="back" data-reviews="home">앞페이지</button></div>`;
@@ -1577,42 +1582,29 @@
     });
   }
 
+  function greetName(user) {
+    const raw = String((user && user.name) || "").trim();
+    if (!raw) return "";
+    return raw.indexOf("@") >= 0 ? raw.split("@")[0] : raw;
+  }
+
   function paintFamilyBar() {
     const form = document.getElementById("family-form");
-    const me = document.getElementById("family-me");
+    const meBox = document.getElementById("family-me");
     const who = document.getElementById("family-who");
     const people = document.getElementById("family-people");
     const msg = document.getElementById("family-msg");
-    api("/api/family/me").then((user) => {
-      const inNow = Boolean(user && user.id);
-      const bar = document.querySelector(".family-bar");
-      if (bar) bar.classList.toggle("is-in", inNow);
-      if (form) form.hidden = inNow;
-      if (me) me.hidden = !inNow;
-      if (who) who.textContent = inNow ? user.name + (user.owner ? " · 관리" : "") : "";
-      if (msg) {
-        msg.textContent = inNow && !user.approved ? "관리자가 승인한 뒤에 Review를 같이 모읍니다." : "";
-      }
-      if (!people) return;
-      people.innerHTML = "";
-      if (!inNow) return;
-      api("/api/family/people").then((res) => {
-        (res.people || []).forEach((person) => {
-          if (person.owner) return;
-          const line = document.createElement("p");
-          line.className = "family-person";
-          line.textContent = person.name + (person.approved ? " · 승인됨" : " · 기다림 ");
-          if (!person.approved && user.owner) {
-            const btn = document.createElement("button");
-            btn.type = "button";
-            btn.className = "save";
-            btn.setAttribute("data-approve", person.id);
-            btn.textContent = "승인";
-            line.appendChild(btn);
-          }
-          people.appendChild(line);
-        });
-      });
-    });
+    const user = familyMe && familyMe.id ? familyMe : localMe();
+    const inNow = Boolean(user && user.id);
+    const bar = document.querySelector(".family-bar");
+    if (bar) bar.classList.toggle("is-in", inNow);
+    if (form) form.hidden = inNow;
+    if (meBox) meBox.hidden = !inNow;
+    if (who) who.textContent = inNow ? greetName(user) + "의 방문을 환영합니다." : "";
+    if (msg) {
+      msg.textContent = inNow && user.approved === false ? "관리자가 승인한 뒤에 Review를 같이 모읍니다." : "";
+    }
+    if (!people) return;
+    people.innerHTML = "";
   }
 })();

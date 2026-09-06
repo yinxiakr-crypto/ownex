@@ -272,8 +272,11 @@ h1 {
   min-height: 2.4rem;
 }
 
-#family-who {
-  font-size: 0.9rem;
+#family-who,
+.family-hello {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
 }
 
 .family-hint,
@@ -877,11 +880,18 @@ body.open .praise-num { color: #3a2430; }
   color: var(--muted);
 }
 
+#praise-board {
+  display: block;
+  min-width: 14rem;
+}
+
 .praise-art {
   position: relative;
   overflow: visible;
   width: 100%;
   max-width: 18rem;
+  min-width: 13.5rem;
+  min-height: 13.5rem;
   aspect-ratio: 1;
   border-radius: 0.85rem;
   background: transparent;
@@ -1206,7 +1216,13 @@ body.open .review-all-btn {
   border: 1px solid var(--line);
   border-radius: 0.7rem;
   overflow: hidden;
+  min-height: 8.5rem;
   background: color-mix(in srgb, #fff 8%, transparent);
+}
+
+.review-item.empty-row .review-line {
+  min-height: 2.1rem;
+  cursor: default;
 }
 
 .review-cols,
@@ -1416,7 +1432,10 @@ body.open .review-line:hover { color: #b85a48; }
 
   .feel-form .save { min-height: 2.75rem; }
 
-  .review-cols { display: none; }
+  .review-cols {
+    display: grid;
+    grid-template-columns: 1.8rem 5.6rem minmax(0, 1fr) minmax(0, 1fr);
+  }
 
   .review-line {
     grid-template-columns: 1.8rem 5.6rem minmax(0, 1fr);
