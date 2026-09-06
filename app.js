@@ -391,15 +391,18 @@
       writeLocalFamily(data);
       return Promise.resolve({ ok: true });
     }
-    if (path === "/api/family/signup" || path === "/api/family/login") {
-      const name = String((body && body.name) || "").trim();
+    if (path === "/api/family/signup" || path === "/api/family/login" || path === "/api/family/enter") {
+      let name = String((body && body.name) || "").trim();
       const pin = String((body && body.pin) || "");
-      if (!name || name.length > 12) return Promise.resolve({ error: "이름은 1~12자로 해 주세요." });
+      if (!name || name.length > 64) return Promise.resolve({ error: "이름 또는 이메일은 1~64자로 해 주세요." });
       if (pin.length < 4) return Promise.resolve({ error: "비밀번호는 4자 이상으로 해 주세요." });
+      if (name.indexOf("@") >= 0) name = name.toLowerCase();
+      const existing = data.users.find((item) => item.name === name);
+      if (path === "/api/family/enter") {
+        path = existing ? "/api/family/login" : "/api/family/signup";
+      }
       if (path === "/api/family/signup") {
-        if (data.users.some((user) => user.name === name)) {
-          return Promise.resolve({ error: "이미 있는 이름입니다." });
-        }
+        if (existing) return Promise.resolve({ error: "이미 있는 이름입니다." });
         const salt = String(Date.now());
         const isOwner = !data.users.some((user) => user.owner);
         const user = {
@@ -416,7 +419,7 @@
         writeLocalFamily(data);
         return Promise.resolve(Object.assign(publicLocalUser(user), { token: token }));
       }
-      const user = data.users.find((item) => item.name === name);
+      const user = existing;
       if (!user || user.pinHash !== localHash(pin, user.salt)) {
         return Promise.resolve({ error: "이름 또는 비밀번호가 다릅니다." });
       }
@@ -465,6 +468,12 @@
   }
 
   function probeFamily() {
+    if (isStaticHost()) {
+      familyBackend = "local";
+      const me = localMe();
+      if (me.id) switchNotesToUser(me);
+      return Promise.resolve(me);
+    }
     return fetch("/api/family/me", {
       headers: { Accept: "application/json" },
       credentials: "same-origin",
@@ -760,7 +769,7 @@
     const home = document.getElementById("glance-home");
     if (home) {
       const onHome = !state.selected && state.space !== "reviews" && !(state.year && state.month);
-      home.classList.toggle("on", onHome);
+      home.hidden = onHome;
     }
   }
 
@@ -841,12 +850,12 @@
 
   function countSiteGuests() {
     const cached = readCachedGuests();
-    if (cached) paintGuests(cached);
+    paintGuests(cached);
     const doHit = !alreadyCountedToday();
     return Promise.all([bumpLocalGuests(doHit), bumpSharedGuests(doHit)]).then((pair) => {
-      const total = pair[1] || pair[0] || cached;
+      const total = Math.max(pair[1] || 0, pair[0] || 0, cached || 0);
       if (doHit) markCountedToday();
-      if (total) paintGuests(total);
+      paintGuests(total);
       return total;
     });
   }
@@ -889,23 +898,7 @@
     yearAll.classList.toggle("on", state.year === "all");
     const showMonth = !reviewOnly && browsing && !state.selected && state.space !== "feel";
     frontRow.hidden = !showFeel;
-    if (frontRow) {
-      if (!showFeel) {
-        frontRow.style.display = "none";
-      } else if (isPhoneLayout()) {
-        frontRow.style.display = "flex";
-        frontRow.style.flexDirection = "column";
-        frontRow.style.gridTemplateColumns = "none";
-        frontRow.style.gap = "1.1rem";
-        frontRow.style.alignItems = "stretch";
-      } else {
-        frontRow.style.display = "grid";
-        frontRow.style.flexDirection = "";
-        frontRow.style.gridTemplateColumns = "minmax(18rem, 40rem) minmax(16rem, 1fr)";
-        frontRow.style.gap = "1.5rem 2rem";
-        frontRow.style.alignItems = "start";
-      }
-    }
+    if (frontRow) frontRow.style.display = "";
     if (reviewPage) reviewPage.hidden = !reviewOnly;
     ownCal.hidden = !showMonth;
     monthList.hidden = !showMonth;
@@ -1510,8 +1503,11 @@
     }
   });
   bindGlance();
+  paintGuests(readCachedGuests());
   countSiteGuests();
   bindFamilyBar();
+  draw();
+  paintFamilyBar();
   probeFamily()
     .then(function () {
       return pullShared();
@@ -1538,15 +1534,11 @@
   function bindFamilyBar() {
     const form = document.getElementById("family-form");
     const out = document.getElementById("family-out");
-    const signupBtn = document.getElementById("family-signup");
     if (form) {
       form.addEventListener("submit", (event) => {
         event.preventDefault();
-        enterFamily("/api/family/login");
+        enterFamily();
       });
-    }
-    if (signupBtn) {
-      signupBtn.addEventListener("click", () => enterFamily("/api/family/signup"));
     }
     if (out) {
       out.addEventListener("click", () => {
@@ -1565,17 +1557,19 @@
     });
   }
 
-  function enterFamily(path) {
+  function enterFamily() {
+    if (isStaticHost()) familyBackend = "local";
     const name = (document.getElementById("family-name") || {}).value || "";
     const pin = (document.getElementById("family-pin") || {}).value || "";
     const msg = document.getElementById("family-msg");
-    api(path, { name: String(name).trim(), pin: String(pin) }).then((res) => {
-      if (res.error) {
-        if (msg) msg.textContent = res.error;
+    if (msg) msg.textContent = "";
+    api("/api/family/enter", { name: String(name).trim(), pin: String(pin) }).then((res) => {
+      if (!res || res.error || !res.id) {
+        if (msg) msg.textContent = (res && res.error) || "이름 또는 이메일과 비밀번호를 다시 확인해 주세요.";
         return;
       }
       if (res.token) setFamilyToken(res.token);
-      if (res.id) switchNotesToUser(res);
+      switchNotesToUser(res);
       pullState().then(() => {
         draw();
         paintFamilyBar();

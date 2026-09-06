@@ -158,6 +158,10 @@ body.open .lead { display: none; }
 
 body.open .eyebrow { color: #b85a48; }
 
+body.open .open-count { color: #7a5c62; }
+
+body.open .open-count strong { color: #3a2430; }
+
 body.open .quiet, body.open .meta, body.open .name small { color: #7a5c62; }
 
 body.open footer a { color: #8c3b2f; }
@@ -201,6 +205,19 @@ body.open .feel-btn.on {
   letter-spacing: 0.28em;
   font-size: 0.72rem;
   color: var(--cool);
+}
+
+.open-count {
+  display: inline-block;
+  margin-left: 0.75rem;
+  letter-spacing: 0.08em;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.open-count strong {
+  font-weight: 600;
+  color: var(--ink);
 }
 
 h1 {
@@ -284,50 +301,6 @@ body.open .family-bar input {
   border-color: #e3d0c8;
 }
 
-.glance {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.55rem;
-  align-items: stretch;
-  margin: 0 0 1.4rem;
-}
-
-.glance-card,
-.glance-home {
-  border: 1px solid var(--line);
-  background: color-mix(in srgb, #fff 10%, transparent);
-  color: var(--ink);
-  font: inherit;
-}
-
-.glance-card { cursor: default; }
-
-.glance-home { cursor: pointer; }
-
-.glance-card {
-  min-width: 6.4rem;
-  padding: 0.55rem 0.85rem 0.6rem;
-  border-radius: 1rem;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.1rem;
-}
-
-.glance-num {
-  font-family: "Noto Serif KR", "Cormorant Garamond", serif;
-  font-size: 1.7rem;
-  font-weight: 600;
-  line-height: 1.1;
-  letter-spacing: -0.03em;
-}
-
-.glance-label {
-  font-size: 0.72rem;
-  letter-spacing: 0.08em;
-  color: var(--muted);
-}
-
 .ended-tag {
   display: inline-block;
   margin-left: 0.35rem;
@@ -343,48 +316,6 @@ body.open .family-bar input {
 body.open .ended-tag {
   background: #efe4dc;
   color: #7a5c62;
-}
-
-.glance-home {
-  min-height: 4.1rem;
-  padding: 0.7rem 1.15rem;
-  border-radius: 1rem;
-  background: var(--btn);
-  color: var(--btn-ink);
-  border-color: transparent;
-  font-weight: 600;
-}
-
-.glance-home.on {
-  background: var(--accent);
-  color: #fff;
-}
-
-.review-count {
-  display: inline-block;
-  margin-left: 0.35rem;
-  min-width: 1.4rem;
-  padding: 0.05rem 0.45rem;
-  border-radius: 999px;
-  background: var(--accent);
-  color: #fff;
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0;
-  vertical-align: middle;
-}
-
-body.open .glance-card {
-  background: #fff;
-  color: #3a2430;
-  border-color: #e3d0c8;
-}
-
-body.open .glance-label { color: #7a5c62; }
-
-body.open .glance-home {
-  background: #3a2430;
-  color: #f7f1ea;
 }
 
 .fields { display: flex; gap: 0.55rem; margin-bottom: 1.6rem; }
@@ -1164,7 +1095,6 @@ body.reviews .picks-row {
   display: none;
 }
 
-body.reviews .glance { margin-bottom: 0.4rem; }
 
 body.reviews .hero {
   min-height: 0;

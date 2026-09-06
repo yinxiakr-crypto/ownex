@@ -29,7 +29,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Great+Vibes&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=keep2" />
+  <link rel="stylesheet" href="styles.css?v=home1" />
   <style>
     body { margin: 0; min-height: 100vh; background: #351e28; color: #f6efe6; font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
     #front-row:not([hidden]) {
@@ -74,32 +74,23 @@
     <div class="page-bg-grain"></div>
   </div>
   <header class="hero">
-    <p class="eyebrow">OWNEX</p>
+    <p class="eyebrow">OWNEX <span class="open-count">접속 <strong id="glance-visitor-num">0</strong></span></p>
     <h1>오넥스</h1>
     <p class="lead">보고 듣고 가는 자리. 지금은 미술부터.</p>
 
     <div class="family-bar">
       <form id="family-form">
-        <input id="family-name" name="name" maxlength="12" placeholder="이름" autocomplete="username" />
+        <input id="family-name" name="name" maxlength="64" placeholder="이름 또는 이메일" autocomplete="username" />
         <input id="family-pin" name="pin" type="password" maxlength="32" placeholder="비밀번호" autocomplete="current-password" />
         <button type="submit" class="save">들어가기</button>
-        <button type="button" id="family-signup" class="save">가족 만들기</button>
       </form>
       <div id="family-me" hidden>
         <span id="family-who"></span>
         <button type="button" id="family-out" class="save">나가기</button>
       </div>
       <p id="family-msg" class="quiet"></p>
-      <p class="family-hint quiet">가족으로 들어가면 느낀 점은 같이 보고, 칭찬 스티커는 각자 모입니다.</p>
+      <p class="family-hint quiet">이름 또는 이메일과 비밀번호를 치면 들어갑니다. 접속 횟수는 로그인 없이 보입니다.</p>
       <div id="family-people"></div>
-    </div>
-
-    <div class="glance" id="glance">
-      <div class="glance-card" id="glance-visitors" title="오넥스를 연 횟수입니다. 전시 방문함과는 다릅니다.">
-        <span class="glance-num" id="glance-visitor-num">-</span>
-        <span class="glance-label">접속 횟수</span>
-      </div>
-      <button type="button" class="glance-home" id="glance-home" data-go="home">홈 · 앱</button>
     </div>
 
     <div class="fields" role="tablist" aria-label="분야">
@@ -114,6 +105,7 @@
         <select id="year"></select>
       </label>
       <button type="button" id="year-all" class="year-all">전체</button>
+      <button type="button" id="glance-home" class="year-all" hidden>처음</button>
       <label class="year-pick" id="month-wrap" hidden>
         <span>월</span>
         <select id="month"></select>
@@ -145,6 +137,6 @@
   <footer></footer>
 
   <script src="data.js"></script>
-  <script src="app.js?v=keep2"></script>
+  <script src="app.js?v=home1"></script>
 </body>
 </html>
