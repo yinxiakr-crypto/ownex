@@ -224,7 +224,7 @@
     const seed = data.saved;
     if (!seed || typeof seed !== "object") return;
     const seedNotes = seed.notes && typeof seed.notes === "object" ? seed.notes : {};
-    const rev = String(seed.rev || "visits-20260907");
+    const rev = String(seed.rev || "reviews-20260907k");
     let applied = "";
     try { applied = localStorage.getItem("ownex-seed-rev") || ""; } catch (err) {}
     Object.keys(seedNotes).forEach((key) => {

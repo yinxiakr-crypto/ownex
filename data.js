@@ -309,7 +309,7 @@ window.OWNEX = {
   ],
   "email": [
     {
-      "collected_date": "2026-09-04",
+      "collected_date": "2026-09-07",
       "title": "큐비스트: 시각의 혁신가들",
       "venue": "퐁피두센터 한화",
       "venue_address": "서울 영등포구 63로 50",
@@ -324,7 +324,7 @@ window.OWNEX = {
       "score_reason": "시각자료, 대표작품, 3곳포털홍보, 세계인기:피카소, 피카소, 르네상스, 작가작품전, 미술사가치, 주요미술관, 화제전시, 가볼만함, 주요뉴스, 지정미술관"
     },
     {
-      "collected_date": "2026-09-04",
+      "collected_date": "2026-09-07",
       "title": "서도호",
       "venue": "국립현대미술관 서울",
       "venue_address": "서울 종로구 삼청로 30",
@@ -339,7 +339,7 @@ window.OWNEX = {
       "score_reason": "시각자료, 3곳포털홍보, 국내선호:서도호, 서도호, 아시아작가:서도호, 현대미술, 작가작품전, 미술사가치, 주요미술관, 화제전시, 가볼만함, 주요뉴스, 지정미술관"
     },
     {
-      "collected_date": "2026-09-04",
+      "collected_date": "2026-09-07",
       "title": "게오르그 바젤리츠",
       "venue": "세화미술관",
       "venue_address": "서울 종로구 새문안로 68 흥국생명빌딩",
@@ -354,7 +354,7 @@ window.OWNEX = {
       "score_reason": "시각자료, 대표작품, 3곳포털홍보, 세계인기:바젤리츠, 바젤리츠, 근현대, 작가작품전, 주요미술관, 화제전시, 가볼만함, 주요뉴스, 지정미술관"
     },
     {
-      "collected_date": "2026-09-04",
+      "collected_date": "2026-09-07",
       "title": "박서보: 변하는 변하지 않는",
       "venue": "국제갤러리",
       "venue_address": "서울 종로구 삼청로 54",
@@ -369,7 +369,7 @@ window.OWNEX = {
       "score_reason": "시각자료, 대표작품, 3곳포털홍보, 국내선호:박서보, 박서보, 아시아작가:박서보, 단색화, 작가작품전, 주요미술관, 화제전시, 가볼만함, 지정미술관"
     },
     {
-      "collected_date": "2026-09-04",
+      "collected_date": "2026-09-07",
       "title": "유영국: 산은 내 안에 있다",
       "venue": "서울시립미술관 서소문본관",
       "venue_address": "서울 중구 덕수궁길 61",
@@ -384,7 +384,7 @@ window.OWNEX = {
       "score_reason": "시각자료, 대표작품, 3곳포털홍보, 국내선호:유영국, 유영국, 아시아작가:유영국, 추상, 작가작품전, 주요미술관, 화제전시, 주요뉴스, 지정미술관"
     },
     {
-      "collected_date": "2026-09-04",
+      "collected_date": "2026-09-07",
       "title": "구정아: 우스모스",
       "venue": "리움미술관",
       "venue_address": "서울 용산구 이태원로55길 60-16",
@@ -399,7 +399,7 @@ window.OWNEX = {
       "score_reason": "시각자료, 3곳포털홍보, 국내선호:구정아, 구정아, 아시아작가:구정아, 개인전, 작가작품전, 주요미술관, 화제전시, 가볼만함, 주요뉴스, 지정미술관"
     },
     {
-      "collected_date": "2026-09-04",
+      "collected_date": "2026-09-07",
       "title": "뱅크시 : Still Here",
       "venue": "더현대 서울 ALT.1",
       "venue_address": "서울 영등포구 여의대로 108 여의도 6층",
@@ -414,7 +414,7 @@ window.OWNEX = {
       "score_reason": "시각자료, 3곳포털홍보, 세계인기:뱅크시, 국내선호:뱅크시, 뱅크시, 현대미술, 미술사가치, 주요미술관, 화제전시, 가볼만함, 지정미술관"
     },
     {
-      "collected_date": "2026-09-04",
+      "collected_date": "2026-09-07",
       "title": "가우디: 서울에서 다시 태어나다",
       "venue": "신사하우스",
       "venue_address": "서울 강남구 강남대로162길 27",
@@ -429,7 +429,7 @@ window.OWNEX = {
       "score_reason": "시각자료, 3곳포털홍보, 세계인기:가우디, 가우디, 르네상스, 미술사가치, 주요미술관, 화제전시, 가볼만함, 주요뉴스, 지정미술관"
     },
     {
-      "collected_date": "2026-09-04",
+      "collected_date": "2026-09-07",
       "title": "솔 르윗: Open Structure",
       "venue": "아모레퍼시픽미술관",
       "venue_address": "서울 용산구 한강대로 100",
@@ -444,7 +444,7 @@ window.OWNEX = {
       "score_reason": "시각자료, 3곳포털홍보, 세계인기:솔 르윗, 솔 르윗, 근현대, 주요미술관, 화제전시, 가볼만함, 주요뉴스, 지정미술관"
     },
     {
-      "collected_date": "2026-09-04",
+      "collected_date": "2026-09-07",
       "title": "윤형근을 다시 상상하다",
       "venue": "PKM갤러리",
       "venue_address": "서울 종로구 삼청로7길 40",
@@ -459,7 +459,7 @@ window.OWNEX = {
       "score_reason": "시각자료, 대표작품, 2곳홍보, 국내선호:윤형근, 단색화, 작가작품전, 화제전시, 주요뉴스, 서울"
     },
     {
-      "collected_date": "2026-09-04",
+      "collected_date": "2026-09-07",
       "title": "김보희: TOWARDS There Was Light",
       "venue": "갤러리현대",
       "venue_address": "서울 종로구 삼청로 14",
@@ -474,7 +474,7 @@ window.OWNEX = {
       "score_reason": "시각자료, 대표작품, 2곳홍보, 회화전, 작가작품전, 화제전시, 주요뉴스, 서울"
     },
     {
-      "collected_date": "2026-09-04",
+      "collected_date": "2026-09-07",
       "title": "김희천: 두더지들",
       "venue": "서울시립 서서울미술관",
       "venue_address": "서울 금천구 시흥대로79길 65",
@@ -489,7 +489,7 @@ window.OWNEX = {
       "score_reason": "시각자료, 대표작품, 2곳홍보, 동시대, 작가작품전, 주요미술관, 화제전시, 지정미술관"
     },
     {
-      "collected_date": "2026-09-04",
+      "collected_date": "2026-09-07",
       "title": "함양아: 정의되지 않은 파노라마",
       "venue": "아트선재센터",
       "venue_address": "서울 종로구 율곡로3길 87",
@@ -502,26 +502,11 @@ window.OWNEX = {
       "image_url": "https://k-artnow.com/data/content/2026/08/6_0a09c8844ba8f0936c20bd791130d6b6.jpg",
       "source_urls": "https://www.artsonje.org/",
       "score_reason": "시각자료, 2곳홍보, 근현대, 작가작품전, 주요미술관, 화제전시, 주요뉴스, 서울"
-    },
-    {
-      "collected_date": "2026-09-04",
-      "title": "키아프·프리즈 서울 2026",
-      "venue": "코엑스",
-      "venue_address": "서울 강남구 영동대로 513",
-      "region_tag": "[서울]",
-      "reservation_url": "https://mediahub.seoul.go.kr/archives/2019208",
-      "start_date": "2026-09-02",
-      "end_date": "2026-09-06",
-      "reservation_open_date": "2026-08-26",
-      "summary": "키아프·프리즈 서울 2026",
-      "image_url": "https://design-plus.storage.googleapis.com/wp-content/uploads/2026/08/31004942/20260830154941-20260830_154941.jpg",
-      "source_urls": "https://mediahub.seoul.go.kr/archives/2019208",
-      "score_reason": "시각자료, 3곳포털홍보, 주요미술관, 화제전시, 주요뉴스, 지정미술관"
     }
   ],
   "calendar": [
     {
-      "collected_date": "2026-09-04",
+      "collected_date": "2026-09-07",
       "title": "큐비스트: 시각의 혁신가들",
       "venue": "퐁피두센터 한화",
       "venue_address": "서울 영등포구 63로 50",
@@ -536,7 +521,7 @@ window.OWNEX = {
       "score_reason": "시각자료, 대표작품, 3곳포털홍보, 세계인기:피카소, 피카소, 르네상스, 작가작품전, 미술사가치, 주요미술관, 화제전시, 가볼만함, 주요뉴스, 지정미술관"
     },
     {
-      "collected_date": "2026-09-04",
+      "collected_date": "2026-09-07",
       "title": "서도호",
       "venue": "국립현대미술관 서울",
       "venue_address": "서울 종로구 삼청로 30",
@@ -551,7 +536,7 @@ window.OWNEX = {
       "score_reason": "시각자료, 3곳포털홍보, 국내선호:서도호, 서도호, 아시아작가:서도호, 현대미술, 작가작품전, 미술사가치, 주요미술관, 화제전시, 가볼만함, 주요뉴스, 지정미술관"
     },
     {
-      "collected_date": "2026-09-04",
+      "collected_date": "2026-09-07",
       "title": "게오르그 바젤리츠",
       "venue": "세화미술관",
       "venue_address": "서울 종로구 새문안로 68 흥국생명빌딩",
@@ -566,7 +551,7 @@ window.OWNEX = {
       "score_reason": "시각자료, 대표작품, 3곳포털홍보, 세계인기:바젤리츠, 바젤리츠, 근현대, 작가작품전, 주요미술관, 화제전시, 가볼만함, 주요뉴스, 지정미술관"
     },
     {
-      "collected_date": "2026-09-04",
+      "collected_date": "2026-09-07",
       "title": "박서보: 변하는 변하지 않는",
       "venue": "국제갤러리",
       "venue_address": "서울 종로구 삼청로 54",
@@ -581,7 +566,7 @@ window.OWNEX = {
       "score_reason": "시각자료, 대표작품, 3곳포털홍보, 국내선호:박서보, 박서보, 아시아작가:박서보, 단색화, 작가작품전, 주요미술관, 화제전시, 가볼만함, 지정미술관"
     },
     {
-      "collected_date": "2026-09-04",
+      "collected_date": "2026-09-07",
       "title": "유영국: 산은 내 안에 있다",
       "venue": "서울시립미술관 서소문본관",
       "venue_address": "서울 중구 덕수궁길 61",
@@ -602,45 +587,45 @@ window.OWNEX = {
     "events": [
       {
         "title": "큐비스트: 시각의 혁신가들",
-        "start": "2026-09-04",
+        "start": "2026-09-07",
         "end": "2026-10-05",
         "location": "퐁피두센터 한화 서울 영등포구 63로 50",
-        "html_link": "https://www.google.com/calendar/event?eid=ZHIyODBsY3BxcmNncWN1azNnbjBoOWYyZXMgYjAzYTNlNDFlNTFmODZlYzZlNjUzNGIzOTM2MTVkODZjYThkY2UzYmVlNTJkM2ZlYmNkNGE4NzljNThiM2IxM0Bn"
+        "html_link": "https://www.google.com/calendar/event?eid=bGw3dDd1bG5jazJkbTRubm4xODVtY2UxbnMgYjAzYTNlNDFlNTFmODZlYzZlNjUzNGIzOTM2MTVkODZjYThkY2UzYmVlNTJkM2ZlYmNkNGE4NzljNThiM2IxM0Bn"
       },
       {
         "title": "서도호",
-        "start": "2026-09-04",
+        "start": "2026-09-07",
         "end": "2027-02-10",
         "location": "국립현대미술관 서울 서울 종로구 삼청로 30",
-        "html_link": "https://www.google.com/calendar/event?eid=ZWltbWZkaTgwbnB1OG0zMjhubjQ0aGw4czAgYjAzYTNlNDFlNTFmODZlYzZlNjUzNGIzOTM2MTVkODZjYThkY2UzYmVlNTJkM2ZlYmNkNGE4NzljNThiM2IxM0Bn"
+        "html_link": "https://www.google.com/calendar/event?eid=ZXZpNmRsZ3BvYXZwdTlxYXFnOTNyODdiY2sgYjAzYTNlNDFlNTFmODZlYzZlNjUzNGIzOTM2MTVkODZjYThkY2UzYmVlNTJkM2ZlYmNkNGE4NzljNThiM2IxM0Bn"
       },
       {
         "title": "게오르그 바젤리츠",
-        "start": "2026-09-04",
+        "start": "2026-09-07",
         "end": "2026-12-28",
         "location": "세화미술관 서울 종로구 새문안로 68 흥국생명빌딩",
-        "html_link": "https://www.google.com/calendar/event?eid=Njc1dXZ2djZmcWg0OW5yYjd0dDF2cjFzc28gYjAzYTNlNDFlNTFmODZlYzZlNjUzNGIzOTM2MTVkODZjYThkY2UzYmVlNTJkM2ZlYmNkNGE4NzljNThiM2IxM0Bn"
+        "html_link": "https://www.google.com/calendar/event?eid=bGs5aWxsYTNjNXVmaTcwbGhrNTdia2hzOHMgYjAzYTNlNDFlNTFmODZlYzZlNjUzNGIzOTM2MTVkODZjYThkY2UzYmVlNTJkM2ZlYmNkNGE4NzljNThiM2IxM0Bn"
       },
       {
         "title": "박서보: 변하는 변하지 않는",
-        "start": "2026-09-04",
+        "start": "2026-09-07",
         "end": "2026-10-19",
         "location": "국제갤러리 서울 종로구 삼청로 54",
-        "html_link": "https://www.google.com/calendar/event?eid=bTJnMmoxZjEyZDlwOGlzamdkOGQ0cTVoYjggYjAzYTNlNDFlNTFmODZlYzZlNjUzNGIzOTM2MTVkODZjYThkY2UzYmVlNTJkM2ZlYmNkNGE4NzljNThiM2IxM0Bn"
+        "html_link": "https://www.google.com/calendar/event?eid=bjR1czhrdmZwNGhldWxzcXRhbW5lYTg3Z2cgYjAzYTNlNDFlNTFmODZlYzZlNjUzNGIzOTM2MTVkODZjYThkY2UzYmVlNTJkM2ZlYmNkNGE4NzljNThiM2IxM0Bn"
       },
       {
         "title": "유영국: 산은 내 안에 있다",
-        "start": "2026-09-04",
+        "start": "2026-09-07",
         "end": "2026-10-26",
         "location": "서울시립미술관 서소문본관 서울 중구 덕수궁길 61",
-        "html_link": "https://www.google.com/calendar/event?eid=Nzg0YWJtOGcxNXNwdHBqc2RrN2VqbWZuZjQgYjAzYTNlNDFlNTFmODZlYzZlNjUzNGIzOTM2MTVkODZjYThkY2UzYmVlNTJkM2ZlYmNkNGE4NzljNThiM2IxM0Bn"
+        "html_link": "https://www.google.com/calendar/event?eid=dm9pNWN2amlubjA4aGU4dWVjNjFoaWJrMmMgYjAzYTNlNDFlNTFmODZlYzZlNjUzNGIzOTM2MTVkODZjYThkY2UzYmVlNTJkM2ZlYmNkNGE4NzljNThiM2IxM0Bn"
       }
     ],
     "embed_src": "https://calendar.google.com/calendar/embed?src=b03a3e41e51f86ec6e6534b393615d86ca8dce3bee52d3febcd4a879c58b3b13@group.calendar.google.com&ctz=Asia/Seoul&mode=MONTH&showPrint=0&showTz=0&showCalendars=0&bgcolor=%23D7EFFF",
     "open_url": "https://calendar.google.com/calendar/u/0/r?cid=b03a3e41e51f86ec6e6534b393615d86ca8dce3bee52d3febcd4a879c58b3b13@group.calendar.google.com"
   },
   "saved": {
-    "rev": "6stickers",
+    "rev": "reviews-20260907k",
     "notes": {
       "윤형근을 다시 상상하다|PKM갤러리|2026-08-26|2026-10-03": {
         "visited": false,
@@ -671,7 +656,7 @@ window.OWNEX = {
         "at": "2026-09-03"
       },
       "김희천: 두더지들|서울시립 서서울미술관|2026-08-20|2026-11-08": {
-        "visited": false,
+        "visited": true,
         "at": "2026-09-03"
       }
     },
