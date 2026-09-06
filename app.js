@@ -1566,8 +1566,12 @@
 
   window.ownexAfterEnter = function (user) {
     familyBackend = "local";
-    if (user && user.id) switchNotesToUser(user);
-    draw();
+    try {
+      if (user && user.id) switchNotesToUser(user);
+    } catch (err) {}
+    try {
+      draw();
+    } catch (err) {}
     paintFamilyBar();
   };
 
