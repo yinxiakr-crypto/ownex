@@ -29,7 +29,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Great+Vibes&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=home1" />
+  <link rel="stylesheet" href="styles.css?v=boxes1" />
   <style>
     body { margin: 0; min-height: 100vh; background: #351e28; color: #f6efe6; font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
     #front-row:not([hidden]) {
@@ -82,14 +82,14 @@
       <form id="family-form">
         <input id="family-name" name="name" maxlength="64" placeholder="이름 또는 이메일" autocomplete="username" />
         <input id="family-pin" name="pin" type="password" maxlength="32" placeholder="비밀번호" autocomplete="current-password" />
-        <button type="submit" class="save">들어가기</button>
+        <button type="button" class="save" id="family-enter">들어가기</button>
       </form>
       <div id="family-me" hidden>
         <span id="family-who"></span>
         <button type="button" id="family-out" class="save">나가기</button>
       </div>
       <p id="family-msg" class="quiet"></p>
-      <p class="family-hint quiet">이름 또는 이메일과 비밀번호를 치면 들어갑니다. 접속 횟수는 로그인 없이 보입니다.</p>
+      <p class="family-hint quiet">리뷰와 스티커는 바로 보입니다. 이름 또는 이메일과 비밀번호를 치면 들어갑니다.</p>
       <div id="family-people"></div>
     </div>
 
@@ -120,7 +120,7 @@
   </header>
 
   <main>
-    <div id="front-row" class="panel front-row" hidden>
+    <div id="front-row" class="panel front-row">
       <section id="feelings" class="feel"></section>
       <aside id="praise-board">
         <h2 class="praise-title">Achievement</h2>
@@ -137,6 +137,6 @@
   <footer></footer>
 
   <script src="data.js"></script>
-  <script src="app.js?v=home1"></script>
+  <script src="app.js?v=boxes1"></script>
 </body>
 </html>

@@ -1533,6 +1533,7 @@
 
   function bindFamilyBar() {
     const form = document.getElementById("family-form");
+    const enterBtn = document.getElementById("family-enter");
     const out = document.getElementById("family-out");
     if (form) {
       form.addEventListener("submit", (event) => {
@@ -1540,6 +1541,7 @@
         enterFamily();
       });
     }
+    if (enterBtn) enterBtn.addEventListener("click", enterFamily);
     if (out) {
       out.addEventListener("click", () => {
         api("/api/family/logout", {}).finally(() => {
@@ -1558,22 +1560,20 @@
   }
 
   function enterFamily() {
-    if (isStaticHost()) familyBackend = "local";
-    const name = (document.getElementById("family-name") || {}).value || "";
-    const pin = (document.getElementById("family-pin") || {}).value || "";
+    familyBackend = "local";
+    const name = String((document.getElementById("family-name") || {}).value || "").trim();
+    const pin = String((document.getElementById("family-pin") || {}).value || "");
     const msg = document.getElementById("family-msg");
     if (msg) msg.textContent = "";
-    api("/api/family/enter", { name: String(name).trim(), pin: String(pin) }).then((res) => {
+    localFamilyApi("/api/family/enter", { name: name, pin: pin }).then((res) => {
       if (!res || res.error || !res.id) {
         if (msg) msg.textContent = (res && res.error) || "이름 또는 이메일과 비밀번호를 다시 확인해 주세요.";
         return;
       }
       if (res.token) setFamilyToken(res.token);
       switchNotesToUser(res);
-      pullState().then(() => {
-        draw();
-        paintFamilyBar();
-      });
+      draw();
+      paintFamilyBar();
     });
   }
 
