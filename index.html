@@ -29,7 +29,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Great+Vibes&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=page2" />
+  <link rel="stylesheet" href="styles.css?v=keep2" />
   <style>
     body { margin: 0; min-height: 100vh; background: #351e28; color: #f6efe6; font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
     #front-row:not([hidden]) {
@@ -78,6 +78,30 @@
     <h1>오넥스</h1>
     <p class="lead">보고 듣고 가는 자리. 지금은 미술부터.</p>
 
+    <div class="family-bar">
+      <form id="family-form">
+        <input id="family-name" name="name" maxlength="12" placeholder="이름" autocomplete="username" />
+        <input id="family-pin" name="pin" type="password" maxlength="32" placeholder="비밀번호" autocomplete="current-password" />
+        <button type="submit" class="save">들어가기</button>
+        <button type="button" id="family-signup" class="save">가족 만들기</button>
+      </form>
+      <div id="family-me" hidden>
+        <span id="family-who"></span>
+        <button type="button" id="family-out" class="save">나가기</button>
+      </div>
+      <p id="family-msg" class="quiet"></p>
+      <p class="family-hint quiet">가족으로 들어가면 느낀 점은 같이 보고, 칭찬 스티커는 각자 모입니다.</p>
+      <div id="family-people"></div>
+    </div>
+
+    <div class="glance" id="glance">
+      <div class="glance-card" id="glance-visitors" title="오넥스를 연 횟수입니다. 전시 방문함과는 다릅니다.">
+        <span class="glance-num" id="glance-visitor-num">-</span>
+        <span class="glance-label">접속 횟수</span>
+      </div>
+      <button type="button" class="glance-home" id="glance-home" data-go="home">홈 · 앱</button>
+    </div>
+
     <div class="fields" role="tablist" aria-label="분야">
       <button type="button" class="field on" data-field="exhibition">미술</button>
       <button type="button" class="field" data-field="music" disabled>음악</button>
@@ -121,6 +145,6 @@
   <footer></footer>
 
   <script src="data.js"></script>
-  <script src="app.js?v=page2"></script>
+  <script src="app.js?v=keep2"></script>
 </body>
 </html>

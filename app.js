@@ -1,7 +1,11 @@
 (function () {
   const STORE = "ownex-notes-v1";
   const FEEL_STORE = "ownex-feelings-v1";
+  const FEEL_BACKUP = "ownex-feelings-backup-v1";
   const TOKEN_STORE = "ownex-family-token";
+  const LOCAL_FAMILY = "ownex-family-local-v1";
+  let familyMe = null;
+  let familyBackend = "unknown";
   const MONTHS = ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"];
   const ICONS = {
     exhibition:
@@ -118,43 +122,117 @@
     if (theme) theme.setAttribute("content", colors[season]);
   }
 
-  function loadNotes() {
+  function notesKey() {
+    return familyMe && familyMe.id ? STORE + ":" + familyMe.id : STORE;
+  }
+
+  function readNotesStore(key) {
     try {
-      return JSON.parse(localStorage.getItem(STORE) || "{}");
+      const raw = JSON.parse(localStorage.getItem(key) || "{}");
+      return raw && typeof raw === "object" && !Array.isArray(raw) ? raw : {};
     } catch (err) {
       return {};
     }
+  }
+
+  function fillNotes(source) {
+    Object.keys(notes).forEach((key) => delete notes[key]);
+    Object.keys(source || {}).forEach((key) => {
+      notes[key] = source[key];
+    });
+  }
+
+  function persistNotes() {
+    localStorage.setItem(notesKey(), JSON.stringify(notes));
+  }
+
+  function switchNotesToUser(user) {
+    familyMe = user && user.id ? user : null;
+    if (user && user.owner) {
+      try {
+        if (!localStorage.getItem("ownex-notes-moved")) {
+          const destKey = STORE + ":" + user.id;
+          const dest = readNotesStore(destKey);
+          const guest = readNotesStore(STORE);
+          if (!Object.keys(dest).length && Object.keys(guest).length) {
+            localStorage.setItem(destKey, JSON.stringify(guest));
+            localStorage.setItem("ownex-notes-moved", "1");
+          }
+        }
+      } catch (err) {}
+    }
+    fillNotes(readNotesStore(notesKey()));
+  }
+
+  function loadNotes() {
+    return readNotesStore(STORE);
   }
 
   const SHARE_URL = "shared-state.json";
   let shareAt = "";
   let shareQuiet = false;
 
-  function saveNotes() {
-    localStorage.setItem(STORE, JSON.stringify(notes));
-    pushState();
-    pushShared();
+  function isStaticHost() {
+    try {
+      return /github\.io$/i.test(location.hostname);
+    } catch (err) {
+      return false;
+    }
   }
 
-  function loadFeels() {
+  function saveNotes() {
+    persistNotes();
+    paintGlance();
+    pushState();
+  }
+
+  function readFeelStore(key, storage) {
     try {
-      const raw = JSON.parse(localStorage.getItem(FEEL_STORE) || "[]");
+      const raw = JSON.parse((storage && storage.getItem(key)) || "[]");
       return Array.isArray(raw) ? raw : [];
     } catch (err) {
       return [];
     }
   }
 
+  function writeFeelStore(list) {
+    const text = JSON.stringify(list);
+    try {
+      localStorage.setItem(FEEL_STORE, text);
+    } catch (err) {}
+    try {
+      sessionStorage.setItem(FEEL_BACKUP, text);
+    } catch (err) {}
+  }
+
+  function loadFeels() {
+    const bag = [];
+    const seen = {};
+    []
+      .concat(readFeelStore(FEEL_STORE, localStorage), readFeelStore(FEEL_BACKUP, sessionStorage))
+      .forEach((item) => {
+        if (!item) return;
+        const key = [item.id || "", item.title || "", item.body || "", item.at || "", item.by || ""].join("|");
+        if (seen[key]) return;
+        seen[key] = true;
+        bag.push(item);
+      });
+    return bag;
+  }
+
   function mergeSaved() {
     const seed = data.saved;
     if (!seed || typeof seed !== "object") return;
     const seedNotes = seed.notes && typeof seed.notes === "object" ? seed.notes : {};
-    const rev = String(seed.rev || "6stickers");
+    const rev = String(seed.rev || "visits-20260907");
     let applied = "";
     try { applied = localStorage.getItem("ownex-seed-rev") || ""; } catch (err) {}
     Object.keys(seedNotes).forEach((key) => {
+      const local = notes[key] && typeof notes[key] === "object" ? notes[key] : {};
+      const seedNote = seedNotes[key] && typeof seedNotes[key] === "object" ? seedNotes[key] : {};
       if (!notes[key] || applied !== rev) {
-        notes[key] = Object.assign({}, notes[key] || {}, seedNotes[key]);
+        notes[key] = Object.assign({}, seedNote, local);
+        notes[key].visited = Boolean(local.visited) || Boolean(seedNote.visited);
       }
     });
     try { localStorage.setItem("ownex-seed-rev", rev); } catch (err) {}
@@ -170,39 +248,62 @@
       feels.push(item);
     });
     try {
-      localStorage.setItem(STORE, JSON.stringify(notes));
-      localStorage.setItem(FEEL_STORE, JSON.stringify(feels));
+      persistNotes();
+      writeFeelStore(feels);
     } catch (err) {}
   }
 
   function saveFeels() {
-    localStorage.setItem(FEEL_STORE, JSON.stringify(feels));
+    writeFeelStore(feels);
+    paintGlance();
     pushState();
     pushShared();
   }
 
+  function feelKey(item) {
+    return [item.id || "", item.title || "", item.body || "", item.at || "", item.by || ""].join("|");
+  }
+
+  function mergeFeelsList(list) {
+    const seen = {};
+    let added = 0;
+    feels.forEach((item) => {
+      seen[feelKey(item)] = true;
+    });
+    (Array.isArray(list) ? list : []).forEach((item) => {
+      if (!item) return;
+      const key = feelKey(item);
+      if (seen[key]) return;
+      seen[key] = true;
+      feels.push(item);
+      added += 1;
+    });
+    writeFeelStore(feels);
+    return added;
+  }
+
   function sharePack() {
-    return { notes: notes, feels: feels, at: new Date().toISOString() };
+    return { feels: feels, at: new Date().toISOString() };
   }
 
   function pullShared() {
-    if (!SHARE_URL) return Promise.resolve(false);
+    if (!SHARE_URL || isStaticHost()) return Promise.resolve(false);
     return fetch(SHARE_URL + "?" + Date.now(), { cache: "no-store", headers: { Accept: "application/json" } })
       .then(function (res) { return res.json(); })
       .then(function (remote) {
-        if (!remote || !remote.notes) return false;
-        if (remote.at && remote.at === shareAt) return false;
-        shareAt = remote.at || "";
+        if (!remote || !Array.isArray(remote.feels)) return false;
+        if (remote.at && shareAt && remote.at === shareAt) return false;
         shareQuiet = true;
-        applyState(remote);
+        const added = mergeFeelsList(remote.feels);
         shareQuiet = false;
-        return true;
+        if (remote.at && (!shareAt || remote.at > shareAt)) shareAt = remote.at;
+        return added > 0;
       })
       .catch(function () { return false; });
   }
 
   function pushShared() {
-    if (shareQuiet) return Promise.resolve();
+    if (shareQuiet || isStaticHost()) return Promise.resolve();
     if (!SHARE_URL) return Promise.resolve();
     const body = sharePack();
     shareAt = body.at;
@@ -228,7 +329,130 @@
     } catch (err) {}
   }
 
+  function localHash(pin, salt) {
+    let h = 2166136261;
+    const s = String(salt) + String(pin);
+    for (let i = 0; i < s.length; i += 1) {
+      h ^= s.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return (h >>> 0).toString(16);
+  }
+
+  function readLocalFamily() {
+    try {
+      const data = JSON.parse(localStorage.getItem(LOCAL_FAMILY) || "{}");
+      if (!data || typeof data !== "object") return { users: [], sessions: {} };
+      return {
+        users: Array.isArray(data.users) ? data.users : [],
+        sessions: data.sessions && typeof data.sessions === "object" ? data.sessions : {},
+      };
+    } catch (err) {
+      return { users: [], sessions: {} };
+    }
+  }
+
+  function writeLocalFamily(data) {
+    try {
+      localStorage.setItem(LOCAL_FAMILY, JSON.stringify(data));
+    } catch (err) {}
+  }
+
+  function publicLocalUser(user) {
+    if (!user) return { id: "", name: "", owner: false, approved: false };
+    return {
+      id: user.id,
+      name: user.name,
+      owner: Boolean(user.owner),
+      approved: Boolean(user.approved),
+    };
+  }
+
+  function localMe() {
+    const token = familyToken();
+    const data = readLocalFamily();
+    const info = data.sessions[token];
+    if (!info) return { id: "", name: "", owner: false, approved: false };
+    const user = data.users.find((item) => item.id === info.user_id);
+    return publicLocalUser(user);
+  }
+
+  function localFamilyApi(path, body) {
+    const data = readLocalFamily();
+    if (path === "/api/family/me") return Promise.resolve(localMe());
+    if (path === "/api/family/people") {
+      if (!localMe().id) return Promise.resolve({ error: "목록을 볼 수 없습니다." });
+      return Promise.resolve({
+        people: data.users.map((user) => publicLocalUser(user)),
+      });
+    }
+    if (path === "/api/family/logout") {
+      delete data.sessions[familyToken()];
+      writeLocalFamily(data);
+      return Promise.resolve({ ok: true });
+    }
+    if (path === "/api/family/signup" || path === "/api/family/login") {
+      const name = String((body && body.name) || "").trim();
+      const pin = String((body && body.pin) || "");
+      if (!name || name.length > 12) return Promise.resolve({ error: "이름은 1~12자로 해 주세요." });
+      if (pin.length < 4) return Promise.resolve({ error: "비밀번호는 4자 이상으로 해 주세요." });
+      if (path === "/api/family/signup") {
+        if (data.users.some((user) => user.name === name)) {
+          return Promise.resolve({ error: "이미 있는 이름입니다." });
+        }
+        const salt = String(Date.now());
+        const isOwner = !data.users.some((user) => user.owner);
+        const user = {
+          id: "l" + Date.now().toString(16),
+          name: name,
+          salt: salt,
+          pinHash: localHash(pin, salt),
+          owner: isOwner,
+          approved: true,
+        };
+        data.users.push(user);
+        const token = "t" + Date.now().toString(16) + Math.random().toString(16).slice(2);
+        data.sessions[token] = { user_id: user.id };
+        writeLocalFamily(data);
+        return Promise.resolve(Object.assign(publicLocalUser(user), { token: token }));
+      }
+      const user = data.users.find((item) => item.name === name);
+      if (!user || user.pinHash !== localHash(pin, user.salt)) {
+        return Promise.resolve({ error: "이름 또는 비밀번호가 다릅니다." });
+      }
+      if (!user.approved) return Promise.resolve({ error: "아직 승인을 기다리고 있습니다." });
+      const token = "t" + Date.now().toString(16) + Math.random().toString(16).slice(2);
+      data.sessions[token] = { user_id: user.id };
+      writeLocalFamily(data);
+      return Promise.resolve(Object.assign(publicLocalUser(user), { token: token }));
+    }
+    if (path === "/api/family/approve") {
+      const me = localMe();
+      if (!me.owner) return Promise.resolve({ error: "승인할 수 없습니다." });
+      const user = data.users.find((item) => item.id === (body && body.id));
+      if (!user) return Promise.resolve({ error: "그 이름을 찾을 수 없습니다." });
+      user.approved = true;
+      writeLocalFamily(data);
+      return Promise.resolve(publicLocalUser(user));
+    }
+    if (path === "/api/family/state") {
+      const me = localMe();
+      if (!me.id) return Promise.resolve({ notes: {}, feels: feels });
+      if (body) {
+        const nextNotes = body.notes && typeof body.notes === "object" ? body.notes : notes;
+        localStorage.setItem(STORE + ":" + me.id, JSON.stringify(nextNotes));
+        if (Array.isArray(body.feels)) mergeFeelsList(body.feels);
+        return Promise.resolve({ notes: nextNotes, feels: feels });
+      }
+      return Promise.resolve({ notes: readNotesStore(STORE + ":" + me.id), feels: feels });
+    }
+    return Promise.resolve({ error: "없는 주소입니다." });
+  }
+
   function api(path, body) {
+    if (familyBackend === "local" && path.indexOf("/api/family/") === 0) {
+      return localFamilyApi(path, body);
+    }
     const headers = { Accept: "application/json" };
     const token = familyToken();
     if (token) headers.Authorization = "Bearer " + token;
@@ -240,53 +464,75 @@
     return fetch(path, opt).then((res) => res.json().catch(() => ({})));
   }
 
-  function applyState(payload) {
-    if (!payload || typeof payload !== "object") return;
-    const nextNotes = payload.notes && typeof payload.notes === "object" ? payload.notes : {};
-    Object.keys(notes).forEach((key) => delete notes[key]);
-    Object.keys(nextNotes).forEach((key) => {
-      notes[key] = nextNotes[key];
-    });
-    localStorage.setItem(STORE, JSON.stringify(notes));
-    feels.splice(0, feels.length);
-    (Array.isArray(payload.feels) ? payload.feels : []).forEach((item) => feels.push(item));
-    localStorage.setItem(FEEL_STORE, JSON.stringify(feels));
+  function probeFamily() {
+    return fetch("/api/family/me", {
+      headers: { Accept: "application/json" },
+      credentials: "same-origin",
+      cache: "no-store",
+    })
+      .then((res) => {
+        const ct = res.headers.get("content-type") || "";
+        if (!res.ok || ct.indexOf("json") < 0) {
+          familyBackend = "local";
+          const me = localMe();
+          if (me.id) switchNotesToUser(me);
+          return me;
+        }
+        familyBackend = "api";
+        return res.json().then((user) => {
+          if (user && user.id) switchNotesToUser(user);
+          return user;
+        });
+      })
+      .catch(() => {
+        familyBackend = "local";
+        const me = localMe();
+        if (me.id) switchNotesToUser(me);
+        return me;
+      });
+  }
+
+  function applyNotes(nextNotes) {
+    fillNotes(nextNotes && typeof nextNotes === "object" ? nextNotes : {});
+    persistNotes();
   }
 
   function pushState() {
-    api("/api/family/state", { notes: notes, feels: feels }).then((payload) => {
-      if (payload && payload.notes) applyState(payload);
+    const body = { feels: feels };
+    if (familyMe && familyMe.id) body.notes = notes;
+    return api("/api/family/state", body).then((payload) => {
+      if (!payload || payload.error) return;
+      if (familyMe && familyMe.id && payload.notes && typeof payload.notes === "object") applyNotes(payload.notes);
+      if (Array.isArray(payload.feels)) mergeFeelsList(payload.feels);
     }).catch(() => {});
   }
 
   function pullState() {
-    return api("/api/family/state").then((payload) => {
-      const remote = payload && !payload.error ? payload : { notes: {}, feels: [] };
-      const mergedNotes = Object.assign({}, remote.notes || {}, notes);
-      Object.keys(Object.assign({}, remote.notes || {}, notes)).forEach((key) => {
-        const a = notes[key] || {};
-        const b = (remote.notes || {})[key] || {};
-        const visited = Object.prototype.hasOwnProperty.call(a, "visited")
-          ? Boolean(a.visited)
-          : Boolean(b.visited);
-        mergedNotes[key] = Object.assign({}, b, a, { visited: visited });
-      });
-      const bag = [];
-      const seen = {};
-      []
-        .concat(remote.feels || [], feels)
-        .forEach((item) => {
-          if (!item) return;
-          const key = [item.id || "", item.title || "", item.body || "", item.at || ""].join("|");
-          const loose = [item.title || "", item.body || "", item.at || ""].join("|");
-          if (seen[key] || seen[loose]) return;
-          seen[key] = true;
-          seen[loose] = true;
-          bag.push(item);
+    return api("/api/family/state").then((shared) => {
+      if (shared && !shared.error && Array.isArray(shared.feels)) mergeFeelsList(shared.feels);
+      return api("/api/family/me").then((user) => {
+      if (!(user && user.id)) return;
+      switchNotesToUser(user);
+      return api("/api/family/state").then((payload) => {
+        if (!payload || payload.error) return;
+        mergeFeelsList(payload.feels || []);
+        const remoteNotes = payload.notes && typeof payload.notes === "object" ? payload.notes : {};
+        const mergedNotes = {};
+        Object.keys(Object.assign({}, remoteNotes, notes)).forEach((key) => {
+          const a = notes[key] || {};
+          const b = remoteNotes[key] || {};
+          const visited = Object.prototype.hasOwnProperty.call(a, "visited")
+            ? Boolean(a.visited)
+            : Boolean(b.visited);
+          mergedNotes[key] = Object.assign({}, b, a, { visited: visited });
         });
-      applyState({ notes: mergedNotes, feels: bag });
-      return api("/api/family/state", { notes: notes, feels: feels }).then((saved) => {
-        if (saved && saved.notes && !saved.error) applyState(saved);
+        applyNotes(mergedNotes);
+        return api("/api/family/state", { notes: notes, feels: feels }).then((saved) => {
+          if (!saved || saved.error) return;
+          if (saved.notes && typeof saved.notes === "object") applyNotes(saved.notes);
+          if (Array.isArray(saved.feels)) mergeFeelsList(saved.feels);
+        });
+      });
       });
     }).catch(() => {});
   }
@@ -317,8 +563,15 @@
 
   function allVisits() {
     const bag = notes && typeof notes === "object" && !Array.isArray(notes) ? notes : {};
+    const seen = {};
     return Object.keys(bag)
       .filter((id) => id && bag[id] && (bag[id].visited === true || bag[id].visited === "true"))
+      .filter((id) => {
+        const pair = id.split("|").slice(0, 2).join("|");
+        if (seen[pair]) return false;
+        seen[pair] = true;
+        return true;
+      })
       .sort((a, b) => String(bag[a].at || "").localeCompare(String(bag[b].at || "")));
   }
 
@@ -360,7 +613,7 @@
 
   function matchShow(text) {
     const cleaned = String(text || "")
-      .replace(/[〈〉《》\(\)]/g, " ")
+      .replace(/[〈〉《》\(\)·•]/g, " ")
       .replace(/감상|소감|방문|후기|느낌/g, " ")
       .replace(/\s+/g, " ")
       .trim();
@@ -405,6 +658,49 @@
   function itemId(row) {
     if (!row) return "";
     return [row.title || "", row.venue || "", row.start_date || "", row.end_date || ""].join("|");
+  }
+
+  function showPair(row) {
+    return [row && row.title ? row.title : "", row && row.venue ? row.venue : ""].join("|");
+  }
+
+  function showEnded(row) {
+    const end = (row && (row.end_date || row.start_date)) || "";
+    if (!end) return false;
+    return end < new Date().toISOString().slice(0, 10);
+  }
+
+  function endedTag(row) {
+    return showEnded(row) ? '<span class="ended-tag">종료</span>' : "";
+  }
+
+  function relatedNoteKeys(row) {
+    const id = itemId(row);
+    const pair = showPair(row) + "|";
+    const keys = Object.keys(notes).filter((key) => key === id || (pair !== "|" && key.indexOf(pair) === 0));
+    if (keys.indexOf(id) < 0) keys.push(id);
+    return keys;
+  }
+
+  function isVisited(row) {
+    return relatedNoteKeys(row).some((key) => notes[key] && (notes[key].visited === true || notes[key].visited === "true"));
+  }
+
+  function titleBits(text) {
+    return String(text || "")
+      .replace(/[〈〉《》()·•,.]/g, " ")
+      .replace(/\d{4}/g, " ")
+      .split(/\s+/)
+      .filter((part) => part.length >= 2);
+  }
+
+  function looseTitle(a, b) {
+    const left = titleBits(a);
+    const right = titleBits(b);
+    if (!left.length || !right.length) return false;
+    const short = left.length <= right.length ? left : right;
+    const long = left.length <= right.length ? right : left;
+    return short.every((tok) => long.some((item) => item.indexOf(tok) >= 0 || tok.indexOf(item) >= 0));
   }
 
   function choseong(text) {
@@ -460,7 +756,130 @@
     return events().filter((row) => overlapsMonth(row, state.year, state.month));
   }
 
+  function paintGlance() {
+    const home = document.getElementById("glance-home");
+    if (home) {
+      const onHome = !state.selected && state.space !== "reviews" && !(state.year && state.month);
+      home.classList.toggle("on", onHome);
+    }
+  }
+
+  function paintGuests(total) {
+    const el = document.getElementById("glance-visitor-num");
+    if (!el) return;
+    const n = Number(total);
+    if (!Number.isFinite(n) || n < 0) return;
+    el.textContent = String(n);
+    try {
+      localStorage.setItem("ownex-guest-total", String(n));
+    } catch (err) {}
+  }
+
+  function guestDay() {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  function alreadyCountedToday() {
+    try {
+      if (sessionStorage.getItem("ownex-open-hit") === "1") return true;
+      return localStorage.getItem("ownex-guest-day") === guestDay();
+    } catch (err) {
+      return false;
+    }
+  }
+
+  function markCountedToday() {
+    try {
+      sessionStorage.setItem("ownex-open-hit", "1");
+      localStorage.setItem("ownex-guest-day", guestDay());
+    } catch (err) {}
+  }
+
+  function readCachedGuests() {
+    try {
+      const n = Number(localStorage.getItem("ownex-guest-total") || "");
+      return Number.isFinite(n) && n > 0 ? n : 0;
+    } catch (err) {
+      return 0;
+    }
+  }
+
+  function countFrom(res) {
+    if (!res || typeof res !== "object") return 0;
+    const n = Number(res.total || res.value || res.count || 0);
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  function bumpSharedGuests(doHit) {
+    const hosts = ["https://abacus.jsn.cam/", "https://abacus.jasoncameron.dev/"];
+    const path = (doHit ? "hit" : "get") + "/ownex-yinxiakr/opens";
+    return hosts.reduce(function (wait, host) {
+      return wait.then(function (n) {
+        if (n) return n;
+        return fetch(host + path + "?" + Date.now(), { cache: "no-store" })
+          .then((res) => res.json())
+          .then((payload) => countFrom(payload))
+          .catch(() => 0);
+      });
+    }, Promise.resolve(0));
+  }
+
+  function bumpLocalGuests(doHit) {
+    return fetch("/api/visitors", {
+      method: doHit ? "POST" : "GET",
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+    })
+      .then((res) => {
+        const ct = res.headers.get("content-type") || "";
+        if (!res.ok || ct.indexOf("json") < 0) return 0;
+        return res.json();
+      })
+      .then((payload) => countFrom(payload))
+      .catch(() => 0);
+  }
+
+  function countSiteGuests() {
+    const cached = readCachedGuests();
+    if (cached) paintGuests(cached);
+    const doHit = !alreadyCountedToday();
+    return Promise.all([bumpLocalGuests(doHit), bumpSharedGuests(doHit)]).then((pair) => {
+      const total = pair[1] || pair[0] || cached;
+      if (doHit) markCountedToday();
+      if (total) paintGuests(total);
+      return total;
+    });
+  }
+
+  function goHomeApp() {
+    state.space = "";
+    state.selected = null;
+    state.year = "";
+    state.month = "";
+    state.initial = "";
+    if (yearEl) yearEl.value = "";
+    if (monthEl) monthEl.value = "";
+    if (location.hash === "#reviews") {
+      history.replaceState(null, "", location.pathname + location.search);
+    }
+    draw();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function bindGlance() {
+    const home = document.getElementById("glance-home");
+    if (home) home.addEventListener("click", goHomeApp);
+  }
+
+  function reviewDraftOpen() {
+    const box = document.getElementById("art-review-body");
+    if (!box) return false;
+    if (document.activeElement === box) return true;
+    return Boolean(String(box.value || "").trim());
+  }
+
   function draw() {
+    paintGlance();
     const reviewOnly = state.space === "reviews";
     const browsing = Boolean(state.year && state.month);
     const showFeel = !reviewOnly && !state.selected && (state.space === "feel" || !browsing);
@@ -561,7 +980,7 @@
         <div class="review-last-row">
         <button type="button" class="review-line" data-id="${escapeHtml(item.id)}">
           <span class="review-no">${no}</span>
-          <span class="review-date">${escapeHtml(item.at || "")}</span>
+          <span class="review-date">${escapeHtml(item.at || "")}${item.by ? `<span class="review-by">${escapeHtml(item.by)}</span>` : ""}</span>
           <span class="review-name">${escapeHtml(item.title)}</span>
           <span class="review-snip">${escapeHtml(open ? "접기" : snippet)}</span>
         </button>
@@ -623,15 +1042,6 @@
         if (!title || !body) return;
         const show = matchShow(title);
         addReview(title, body, show);
-        if (show) {
-          const id = itemId(show);
-          notes[id] = notes[id] || {};
-          notes[id].visited = true;
-          notes[id].at = new Date().toISOString().slice(0, 10);
-          state.stickerYear = notes[id].at.slice(0, 4);
-          saveNotes();
-        }
-        saveFeels();
         renderFeelings(box, mode);
       });
     }
@@ -753,6 +1163,9 @@
       '<div class="praise-head"><h2 class="praise-title">Achievement</h2><div class="praise-years">' +
       years +
       "</div></div>" +
+      '<p class="praise-total"><span class="praise-num">' +
+      allVisits().length +
+      "</span><span class="praise-total-label">다녀온 전시</span></p>" +
       '<p class="praise-score">' +
       praiseScoreText(count, allTime, page, pages) +
       "</p>" +
@@ -860,7 +1273,7 @@
                     : `<span class="name-art"></span>`;
                   return `<button type="button" class="name ${src ? "has-art" : ""}" data-id="${encodeURIComponent(itemId(row))}">
               ${art}
-              <span><strong>${escapeHtml(row.title)}</strong><small>${escapeHtml(row.venue || "")} · ${escapeHtml([row.start_date, row.end_date].filter(Boolean).join(" ~ "))}</small></span>
+              <span><strong>${escapeHtml(row.title)}</strong><small>${escapeHtml(row.venue || "")} · ${escapeHtml([row.start_date, row.end_date].filter(Boolean).join(" ~ "))}${endedTag(row)}</small></span>
             </button>`;
                 })
                 .join("")
@@ -914,7 +1327,21 @@
   }
 
   function reviewsForShow(showId, title) {
-    return feels.filter((item) => item.showId === showId || item.title === title);
+    const wantId = String(showId || "");
+    const wantTitle = String(title || "").trim();
+    const wantPair = wantId.split("|").slice(0, 2).join("|");
+    return feels.filter((item) => {
+      if (!item) return false;
+      if (wantId && item.showId === wantId) return true;
+      const haveId = String(item.showId || "");
+      const havePair = haveId.split("|").slice(0, 2).join("|");
+      if (wantPair && havePair && wantPair === havePair) return true;
+      const have = String(item.title || "").trim();
+      if (wantTitle && have === wantTitle) return true;
+      if (wantTitle && have && (have.indexOf(wantTitle) >= 0 || wantTitle.indexOf(have) >= 0)) return true;
+      if (looseTitle(have, wantTitle)) return true;
+      return false;
+    });
   }
 
   function addReview(title, body, show) {
@@ -924,17 +1351,11 @@
       body,
       at: new Date().toISOString().slice(0, 10),
       showId: show ? itemId(show) : "",
+      by: (familyMe && familyMe.name) || "",
     };
     feels.push(item);
+    writeFeelStore(feels);
     state.reviewId = item.id;
-    if (show) {
-      const showId = itemId(show);
-      notes[showId] = notes[showId] || {};
-      notes[showId].visited = true;
-      notes[showId].at = item.at;
-      state.stickerYear = item.at.slice(0, 4);
-      localStorage.setItem(STORE, JSON.stringify(notes));
-    }
     saveFeels();
     return item;
   }
@@ -943,19 +1364,20 @@
     const row = state.selected;
     if (!row) return;
     const id = itemId(row);
-    const saved = notes[id] || {};
+    const visited = isVisited(row);
     const imgs = imagesOf(row);
     const current = imgs[state.artIndex] || "";
     const poster = current
       ? `<img class="poster" src="${escapeHtml(current)}" alt="${escapeHtml(row.title || "")}">`
       : `<div class="poster typed"><p>${escapeHtml(row.title || "")}</p></div>`;
+    const draft = (artwork.querySelector("#art-review-body") || {}).value || "";
     const mine = reviewsForShow(id, row.title || "");
     const shown = mine.slice(-FRONT_REVIEWS);
     const mineHtml = shown.length
       ? shown
           .map(
             (item) =>
-              `<div class="art-review-item"><p class="art-review-date">${escapeHtml(item.at || "")}</p><p>${escapeHtml(item.body)}</p></div>`
+              `<div class="art-review-item"><p class="art-review-date">${escapeHtml(item.at || "")}${item.by ? " · " + escapeHtml(item.by) : ""}</p><p>${escapeHtml(item.body)}</p></div>`
           )
           .join("")
       : '<p class="quiet">아직 이 작품에 남긴 감상평이 없습니다.</p>';
@@ -975,6 +1397,7 @@
       escapeHtml(row.venue_address || "") +
       "<br>" +
       escapeHtml([row.start_date, row.end_date].filter(Boolean).join(" ~ ")) +
+      endedTag(row) +
       "</p><p class='meta'>" +
       escapeHtml(row.summary || "") +
       "</p><div class='links'>" +
@@ -989,20 +1412,39 @@
       searchUrl("youtube", row) +
       '" target="_blank" rel="noopener">유튜브</a>' +
       '<button type="button" class="mark' +
-      (saved.visited ? " on" : "") +
-      '" data-act="visit">방문함</button></div>' +
+      (visited ? " on" : "") +
+      '" data-act="visit" title="다녀온 전시면 눌러 주세요. 끝난 전시도 기록됩니다.">방문함</button></div>' +
       (imgs.length > 1
         ? '<div class="art-nav"><button type="button" class="nav-art" data-dir="-1">이전 장면</button><button type="button" class="nav-art" data-dir="1">다음 장면</button></div>'
         : "") +
       '<form class="art-review" id="art-review-form">' +
       "<h4>Review</h4>" +
       '<textarea id="art-review-body" name="body" placeholder="이 작품을 보고 느낀 점을 적어 주세요." required></textarea>' +
-      '<button type="submit" class="save">남기기</button>' +
+      '<button type="button" class="save" id="art-review-save">남기기</button>' +
       '<div class="art-review-list">' +
       mineHtml +
       moreBtn +
       "</div></form>" +
       "</div></div>";
+    const reviewForm = artwork.querySelector("#art-review-form");
+    const reviewBody = artwork.querySelector("#art-review-body");
+    const reviewSave = artwork.querySelector("#art-review-save");
+    if (reviewBody && draft) reviewBody.value = draft;
+    const keepReview = function () {
+      const text = String((reviewBody || {}).value || "").trim();
+      if (!text) return;
+      addReview(row.title || "감상", text, row);
+      renderArtwork();
+      paintGlance();
+      if (feelings) renderFeelings(feelings, "preview");
+    };
+    if (reviewForm) {
+      reviewForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        keepReview();
+      });
+    }
+    if (reviewSave) reviewSave.addEventListener("click", keepReview);
     const stage = artwork.querySelector(".artwork");
     try {
       const hold = document.createElement("div");
@@ -1020,10 +1462,16 @@
     }
     artwork.querySelectorAll("[data-act]").forEach((btn) => {
       btn.addEventListener("click", () => {
-        notes[id] = notes[id] || {};
-        if (btn.getAttribute("data-act") === "visit") notes[id].visited = !notes[id].visited;
-        notes[id].at = new Date().toISOString().slice(0, 10);
-        if (notes[id].visited) state.stickerYear = notes[id].at.slice(0, 4);
+        if (btn.getAttribute("data-act") === "visit") {
+          const on = !isVisited(row);
+          const at = new Date().toISOString().slice(0, 10);
+          relatedNoteKeys(row).forEach((key) => {
+            notes[key] = notes[key] || {};
+            notes[key].visited = on;
+            notes[key].at = at;
+          });
+          if (on) state.stickerYear = at.slice(0, 4);
+        }
         saveNotes();
         renderArtwork();
         renderPraise();
@@ -1036,18 +1484,6 @@
         renderArtwork();
       });
     });
-    const reviewForm = artwork.querySelector("#art-review-form");
-    if (reviewForm) {
-      reviewForm.addEventListener("submit", (event) => {
-        event.preventDefault();
-        const body = (artwork.querySelector("#art-review-body") || {}).value || "";
-        const text = String(body).trim();
-        if (!text) return;
-        addReview(row.title || "감상", text, row);
-        renderArtwork();
-        if (feelings) renderFeelings(feelings, "preview");
-      });
-    }
     const more = artwork.querySelector("[data-reviews='all']");
     if (more) more.addEventListener("click", openReviews);
   }
@@ -1073,8 +1509,13 @@
       draw();
     }
   });
+  bindGlance();
+  countSiteGuests();
   bindFamilyBar();
-  pullShared()
+  probeFamily()
+    .then(function () {
+      return pullShared();
+    })
     .then(function () {
       return pullState();
     })
@@ -1083,13 +1524,16 @@
       paintFamilyBar();
       pushShared();
     });
-  setInterval(function () {
-    pullShared().then(function (changed) {
-      if (!changed) return;
-      if (state.selected) renderArtwork();
-      else draw();
-    });
-  }, 3000);
+  if (!isStaticHost()) {
+    setInterval(function () {
+      pullShared().then(function (changed) {
+        if (!changed) return;
+        paintGlance();
+        if (reviewDraftOpen() || state.selected) return;
+        draw();
+      });
+    }, 3000);
+  }
 
   function bindFamilyBar() {
     const form = document.getElementById("family-form");
@@ -1108,6 +1552,8 @@
       out.addEventListener("click", () => {
         api("/api/family/logout", {}).finally(() => {
           setFamilyToken("");
+          switchNotesToUser(null);
+          draw();
           paintFamilyBar();
         });
       });
@@ -1128,7 +1574,8 @@
         if (msg) msg.textContent = res.error;
         return;
       }
-      if (res.id) setFamilyToken(familyToken());
+      if (res.token) setFamilyToken(res.token);
+      if (res.id) switchNotesToUser(res);
       pullState().then(() => {
         draw();
         paintFamilyBar();
@@ -1144,20 +1591,24 @@
     const msg = document.getElementById("family-msg");
     api("/api/family/me").then((user) => {
       const inNow = Boolean(user && user.id);
+      const bar = document.querySelector(".family-bar");
+      if (bar) bar.classList.toggle("is-in", inNow);
       if (form) form.hidden = inNow;
       if (me) me.hidden = !inNow;
       if (who) who.textContent = inNow ? user.name + (user.owner ? " · 관리" : "") : "";
-      if (msg) msg.textContent = "";
+      if (msg) {
+        msg.textContent = inNow && !user.approved ? "관리자가 승인한 뒤에 Review를 같이 모읍니다." : "";
+      }
       if (!people) return;
       people.innerHTML = "";
-      if (!(user && user.owner)) return;
+      if (!inNow) return;
       api("/api/family/people").then((res) => {
         (res.people || []).forEach((person) => {
           if (person.owner) return;
           const line = document.createElement("p");
           line.className = "family-person";
           line.textContent = person.name + (person.approved ? " · 승인됨" : " · 기다림 ");
-          if (!person.approved) {
+          if (!person.approved && user.owner) {
             const btn = document.createElement("button");
             btn.type = "button";
             btn.className = "save";

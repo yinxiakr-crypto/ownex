@@ -218,6 +218,175 @@ h1 {
   max-width: 22rem;
 }
 
+.family-bar {
+  margin: -0.6rem 0 1.5rem;
+  max-width: 32rem;
+}
+
+.family-bar form,
+#family-me {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.family-bar form[hidden],
+#family-me[hidden] {
+  display: none !important;
+}
+
+.family-bar input {
+  min-height: 2.4rem;
+  min-width: 6.5rem;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: color-mix(in srgb, #fff 10%, transparent);
+  color: var(--ink);
+  font: inherit;
+}
+
+.family-bar input::placeholder {
+  color: var(--muted);
+}
+
+.family-bar .save {
+  min-height: 2.4rem;
+}
+
+#family-who {
+  font-size: 0.9rem;
+}
+
+.family-hint,
+#family-msg {
+  margin: 0.35rem 0 0;
+}
+
+.family-bar.is-in .family-hint {
+  display: none;
+}
+
+.family-person {
+  margin: 0.35rem 0 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+body.open .family-bar input {
+  background: #fff;
+  color: #3a2430;
+  border-color: #e3d0c8;
+}
+
+.glance {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  align-items: stretch;
+  margin: 0 0 1.4rem;
+}
+
+.glance-card,
+.glance-home {
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, #fff 10%, transparent);
+  color: var(--ink);
+  font: inherit;
+}
+
+.glance-card { cursor: default; }
+
+.glance-home { cursor: pointer; }
+
+.glance-card {
+  min-width: 6.4rem;
+  padding: 0.55rem 0.85rem 0.6rem;
+  border-radius: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.1rem;
+}
+
+.glance-num {
+  font-family: "Noto Serif KR", "Cormorant Garamond", serif;
+  font-size: 1.7rem;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+}
+
+.glance-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.ended-tag {
+  display: inline-block;
+  margin-left: 0.35rem;
+  padding: 0.02rem 0.4rem;
+  border-radius: 999px;
+  font-size: 0.66rem;
+  letter-spacing: 0.04em;
+  vertical-align: middle;
+  background: color-mix(in srgb, #fff 16%, transparent);
+  color: var(--muted);
+}
+
+body.open .ended-tag {
+  background: #efe4dc;
+  color: #7a5c62;
+}
+
+.glance-home {
+  min-height: 4.1rem;
+  padding: 0.7rem 1.15rem;
+  border-radius: 1rem;
+  background: var(--btn);
+  color: var(--btn-ink);
+  border-color: transparent;
+  font-weight: 600;
+}
+
+.glance-home.on {
+  background: var(--accent);
+  color: #fff;
+}
+
+.review-count {
+  display: inline-block;
+  margin-left: 0.35rem;
+  min-width: 1.4rem;
+  padding: 0.05rem 0.45rem;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  vertical-align: middle;
+}
+
+body.open .glance-card {
+  background: #fff;
+  color: #3a2430;
+  border-color: #e3d0c8;
+}
+
+body.open .glance-label { color: #7a5c62; }
+
+body.open .glance-home {
+  background: #3a2430;
+  color: #f7f1ea;
+}
+
 .fields { display: flex; gap: 0.55rem; margin-bottom: 1.6rem; }
 
 .field, .year-pick select, .chip, .back, .save, .mark, .links a, .nav-art {
@@ -570,6 +739,13 @@ textarea {
   font-size: 1.05rem;
 }
 
+.review-hint {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
 .art-review textarea {
   min-height: 5.5rem;
   border-radius: 0.7rem;
@@ -715,6 +891,27 @@ footer a { color: var(--cool); font-size: 0.85rem; }
 }
 
 .praise-score { margin-bottom: 0.7rem; }
+
+.praise-total {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  margin: 0 0 0.35rem;
+}
+
+.praise-num {
+  font-family: "Noto Serif KR", serif;
+  font-size: 2rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.praise-total-label {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+body.open .praise-num { color: #3a2430; }
 
 .praise-nav {
   display: flex;
@@ -967,6 +1164,8 @@ body.reviews .picks-row {
   display: none;
 }
 
+body.reviews .glance { margin-bottom: 0.4rem; }
+
 body.reviews .hero {
   min-height: 0;
   padding-top: 1.6rem;
@@ -1125,6 +1324,17 @@ body.open .review-all-btn {
 
 .review-name { font-weight: 600; }
 
+.review-by {
+  display: block;
+  margin-top: 0.08rem;
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .review-open {
   padding: 0.15rem 0.7rem 0.65rem 2.85rem;
 }
@@ -1195,7 +1405,8 @@ body.open .review-line:hover { color: #b85a48; }
   .save,
   .back,
   .field,
-  .mark {
+  .mark,
+  .family-bar input {
     min-height: 2.75rem;
     font-size: 1rem;
   }
