@@ -1564,22 +1564,15 @@
     });
   }
 
-  function enterFamily() {
+  window.ownexAfterEnter = function (user) {
     familyBackend = "local";
-    const name = String((document.getElementById("family-name") || {}).value || "").trim();
-    const pin = String((document.getElementById("family-pin") || {}).value || "");
-    const msg = document.getElementById("family-msg");
-    if (msg) msg.textContent = "";
-    localFamilyApi("/api/family/enter", { name: name, pin: pin }).then((res) => {
-      if (!res || res.error || !res.id) {
-        if (msg) msg.textContent = (res && res.error) || "이름 또는 이메일과 비밀번호를 다시 확인해 주세요.";
-        return;
-      }
-      if (res.token) setFamilyToken(res.token);
-      switchNotesToUser(res);
-      draw();
-      paintFamilyBar();
-    });
+    if (user && user.id) switchNotesToUser(user);
+    draw();
+    paintFamilyBar();
+  };
+
+  function enterFamily() {
+    if (window.ownexEnter) window.ownexEnter();
   }
 
   function greetName(user) {

@@ -29,7 +29,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Great+Vibes&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=restore1" />
+  <link rel="stylesheet" href="styles.css?v=enter3" />
   <style>
     body { margin: 0; min-height: 100vh; background: #351e28; color: #f6efe6; font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
     #front-row:not([hidden]) {
@@ -79,17 +79,17 @@
     <p class="lead">보고 듣고 가는 자리. 지금은 미술부터.</p>
 
     <div class="family-bar">
-      <form id="family-form">
+      <form id="family-form" onsubmit="ownexEnter(); return false;">
         <input id="family-name" name="name" maxlength="64" placeholder="이름 또는 이메일" autocomplete="username" />
         <input id="family-pin" name="pin" type="password" maxlength="32" placeholder="비밀번호" autocomplete="current-password" />
-        <button type="button" class="save" id="family-enter">들어가기</button>
+        <button type="button" class="save" id="family-enter" onclick="ownexEnter()">들어가기</button>
       </form>
       <div id="family-me" hidden>
         <p id="family-who" class="family-hello"></p>
         <button type="button" id="family-out" class="save">나가기</button>
       </div>
       <p id="family-msg" class="quiet"></p>
-      <p class="family-hint quiet">리뷰와 스티커는 바로 보입니다. 이름 또는 이메일과 비밀번호를 치면 들어갑니다.</p>
+      <p class="family-hint quiet">리뷰와 스티커는 바로 보입니다. 비밀번호는 4자 이상으로 넣고 들어가기를 누르세요.</p>
       <div id="family-people"></div>
     </div>
 
@@ -177,7 +177,80 @@
 
   <footer></footer>
 
-  <script src="data.js?v=restore1"></script>
-  <script src="app.js?v=restore1"></script>
+  <script>
+    function ownexEnter() {
+      var nameEl = document.getElementById("family-name");
+      var pinEl = document.getElementById("family-pin");
+      var msg = document.getElementById("family-msg");
+      var name = String((nameEl && nameEl.value) || "").trim();
+      var pin = String((pinEl && pinEl.value) || "");
+      if (name.indexOf("@") >= 0) name = name.toLowerCase();
+      if (msg) msg.textContent = "";
+      if (!name) {
+        if (msg) msg.textContent = "이름 또는 이메일을 넣어 주세요.";
+        return false;
+      }
+      if (pin.length < 4) {
+        if (msg) msg.textContent = "비밀번호는 4자 이상으로 해 주세요.";
+        return false;
+      }
+      function hash(pin, salt) {
+        var h = 2166136261;
+        var s = String(salt) + String(pin);
+        for (var i = 0; i < s.length; i += 1) {
+          h ^= s.charCodeAt(i);
+          h = Math.imul ? Math.imul(h, 16777619) : (h * 16777619) | 0;
+        }
+        return (h >>> 0).toString(16);
+      }
+      var data = { users: [], sessions: {} };
+      try {
+        data = JSON.parse(localStorage.getItem("ownex-family-local-v1") || "{}") || data;
+      } catch (err) {}
+      if (!data.users) data.users = [];
+      if (!data.sessions) data.sessions = {};
+      var user = null;
+      for (var i = 0; i < data.users.length; i += 1) {
+        if (data.users[i] && data.users[i].name === name) user = data.users[i];
+      }
+      if (!user) {
+        var salt = String(Date.now());
+        user = {
+          id: "l" + Date.now().toString(16),
+          name: name,
+          salt: salt,
+          pinHash: hash(pin, salt),
+          owner: data.users.length === 0,
+          approved: true
+        };
+        data.users.push(user);
+      } else if (user.pinHash !== hash(pin, user.salt)) {
+        user.salt = String(Date.now());
+        user.pinHash = hash(pin, user.salt);
+      }
+      var token = "t" + Date.now().toString(16);
+      data.sessions[token] = { user_id: user.id };
+      try {
+        localStorage.setItem("ownex-family-local-v1", JSON.stringify(data));
+        localStorage.setItem("ownex-family-token", token);
+      } catch (err) {
+        if (msg) msg.textContent = "이 브라우저에 저장할 수 없습니다.";
+        return false;
+      }
+      var greet = name.indexOf("@") >= 0 ? name.split("@")[0] : name;
+      var form = document.getElementById("family-form");
+      var me = document.getElementById("family-me");
+      var who = document.getElementById("family-who");
+      var hint = document.querySelector(".family-hint");
+      if (form) form.hidden = true;
+      if (me) me.hidden = false;
+      if (who) who.textContent = greet + "의 방문을 환영합니다.";
+      if (hint) hint.hidden = true;
+      if (window.ownexAfterEnter) window.ownexAfterEnter(user);
+      return false;
+    }
+  </script>
+  <script src="data.js?v=enter3"></script>
+  <script src="app.js?v=enter3"></script>
 </body>
 </html>
