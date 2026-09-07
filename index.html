@@ -35,7 +35,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Great+Vibes&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=fix37" />
+  <link rel="stylesheet" href="styles.css?v=fix38" />
   <style>
     body { margin: 0; min-height: 100vh; background: #351e28; color: #f6efe6; font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
     #front-row:not([hidden]) {
@@ -161,16 +161,16 @@
       <p id="family-who" class="family-hello"></p>
       <label class="mail-opt" id="mail-want-wrap">
         <input type="checkbox" id="mail-want" />
-        전시 일정 메일 수신 원함
+        메일 수신을 원함
       </label>
       <label id="mail-email-wrap" class="mail-email-wrap" hidden>
         받을 이메일
         <input id="mail-email" type="email" inputmode="email" autocomplete="email" placeholder="이메일" />
       </label>
       <p id="mail-ask-msg" class="quiet"></p>
-      <label class="mail-refuse" id="mail-refuse-wrap">
+      <label class="mail-refuse" id="mail-refuse-wrap" hidden>
         <input type="checkbox" id="mail-refuse" />
-        메일수신을 거부합니다
+        메일 수신을 거부합니다
       </label>
       <button type="button" id="family-out" class="save" onclick="ownexLeave()">나가기</button>
     </div>
@@ -337,6 +337,7 @@
           localStorage.setItem("ownex-family-local-v1", JSON.stringify(data));
         } catch (err) {}
       }
+      var collectingMail = false;
       function mailAddrOf(user) {
         if (!user) return "";
         if (looksEmail(user.mailEmail)) return String(user.mailEmail).trim().toLowerCase();
@@ -355,14 +356,19 @@
           user.mailRefused = true;
           writeUser(user);
         }
+        var receiving = Boolean(user && user.wantMail);
+        var wantWrap = document.getElementById("mail-want-wrap");
+        var refuseWrap = document.getElementById("mail-refuse-wrap");
         var hasMail = Boolean(user && looksEmail(mailAddrOf(user)));
-        if (want) want.checked = Boolean(user && user.wantMail);
-        if (refuse) refuse.checked = Boolean(user && user.mailRefused);
+        if (wantWrap) wantWrap.hidden = receiving;
+        if (refuseWrap) refuseWrap.hidden = !receiving;
+        if (want) want.checked = Boolean(!receiving && collectingMail);
+        if (refuse) refuse.checked = false;
         if (mail && user && looksEmail(user.mailEmail || user.name) && !mail.value) {
           mail.value = mailAddrOf(user);
         }
-        if (wrap) wrap.hidden = !(want && want.checked && !hasMail);
-        if (msg && !(want && want.checked && !hasMail)) msg.textContent = "";
+        if (wrap) wrap.hidden = receiving || !collectingMail;
+        if (msg && (receiving || !collectingMail)) msg.textContent = "";
       }
       function sendMailPref(want, email, name) {
         var addr = String(email || "").trim().toLowerCase();
@@ -390,6 +396,7 @@
         if (!user) return;
         var addr = String(email || mailAddrOf(user) || "").trim().toLowerCase();
         if (want && !looksEmail(addr)) return false;
+        collectingMail = false;
         user.mailAsked = true;
         user.wantMail = Boolean(want);
         user.mailRefused = Boolean(refuse) && !user.wantMail;
@@ -771,6 +778,7 @@
         var msg = document.getElementById("mail-ask-msg");
         var addr = mailAddrOf(user);
         if (!looksEmail(addr)) {
+          collectingMail = true;
           if (mailWant) mailWant.checked = true;
           if (mailRefuse) mailRefuse.checked = false;
           if (wrap) wrap.hidden = false;
@@ -829,7 +837,7 @@
       }
     })();
   </script>
-  <script src="data.js?v=fix37"></script>
-  <script src="app.js?v=fix37"></script>
+  <script src="data.js?v=fix38"></script>
+  <script src="app.js?v=fix38"></script>
 </body>
 </html>
