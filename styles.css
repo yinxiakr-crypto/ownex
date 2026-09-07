@@ -156,7 +156,8 @@ header, main, footer {
 }
 
 #family-form:not(.login-open) #family-fields,
-#family-form:not(.login-open) input {
+#family-form:not(.login-open) input,
+.family-bar:not(.login-open) input {
   display: none !important;
 }
 
@@ -176,6 +177,7 @@ header, main, footer {
 }
 
 #family-form.login-open input {
+  display: block;
   width: 100%;
   min-width: 0;
   border-radius: 0.7rem;
@@ -311,6 +313,7 @@ body.reviews .family-bar,
 }
 
 .family-bar form,
+#family-form,
 #family-me {
   display: flex;
   flex-wrap: wrap;
@@ -319,6 +322,7 @@ body.reviews .family-bar,
 }
 
 .family-bar form[hidden],
+#family-form[hidden],
 #family-me[hidden] {
   display: none !important;
 }

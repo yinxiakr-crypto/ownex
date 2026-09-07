@@ -26,7 +26,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Great+Vibes&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=fix16" />
+  <link rel="stylesheet" href="styles.css?v=fix17" />
   <style>
     body { margin: 0; min-height: 100vh; background: #351e28; color: #f6efe6; font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
     #front-row:not([hidden]) {
@@ -52,8 +52,8 @@
     .family-hello-box .family-hello { margin: 0; font-size: 0.78rem; font-weight: 500; text-align: right; line-height: 1.35; }
     .family-hello-box .save { min-height: 1.85rem; min-width: auto; padding: 0.2rem 0.75rem; font-size: 0.75rem; }
     #family-form:not(.login-open) #family-fields,
-    #family-form:not(.login-open) #family-name,
-    #family-form:not(.login-open) #family-pin {
+    #family-form:not(.login-open) input,
+    .family-bar:not(.login-open) input {
       display: none !important;
       visibility: hidden !important;
       position: absolute !important;
@@ -83,7 +83,8 @@
       visibility: visible;
     }
     #family-form.login-open #family-name,
-    #family-form.login-open #family-pin {
+    #family-form.login-open #family-pin,
+    #family-form.login-open input {
       display: block !important;
       width: 100% !important;
       min-width: 0 !important;
@@ -136,12 +137,11 @@
     <p class="lead">보고 듣고 가는 자리. 지금은 미술부터.</p>
 
     <div class="family-bar" id="family-bar">
-      <form id="family-form" class="login-closed" action="#" method="post" onsubmit="ownexEnter(); return false;">
+      <div id="family-form" class="login-closed" role="group">
         <button type="button" class="save" id="family-enter">로그인</button>
-        <div id="family-fields"></div>
-      </form>
+      </div>
       <p id="family-msg" class="quiet"></p>
-      <p class="family-hint quiet">로그인을 누르면 오른쪽에 이름과 비밀번호 칸이 나옵니다. 넣은 뒤 다시 로그인을 누르세요.</p>
+      <p class="family-hint quiet">처음에는 로그인 버튼만 보입니다. 누르면 오른쪽에 이름과 비밀번호 칸이 위아래로 나옵니다.</p>
       <div id="family-people"></div>
     </div>
 
@@ -293,6 +293,18 @@
         if (hint) hint.hidden = true;
         say("");
       }
+      function closeFields() {
+        var bar = document.getElementById("family-bar");
+        var form = document.getElementById("family-form");
+        if (bar) bar.classList.remove("login-open");
+        if (form) {
+          form.classList.remove("login-open");
+          form.classList.add("login-closed");
+          Array.prototype.slice.call(form.querySelectorAll("input, #family-fields")).forEach(function (el) {
+            el.parentNode.removeChild(el);
+          });
+        }
+      }
       function showOut() {
         staying = false;
         clearKeep();
@@ -300,14 +312,11 @@
         var me = document.getElementById("family-me");
         var who = document.getElementById("family-who");
         var hint = document.querySelector(".family-hint");
-        var fields = document.getElementById("family-fields");
         if (form) {
           form.hidden = false;
           form.removeAttribute("hidden");
-          form.classList.remove("login-open");
-          form.classList.add("login-closed");
         }
-        if (fields) fields.innerHTML = "";
+        closeFields();
         if (me) me.hidden = true;
         if (who) who.textContent = "";
         if (hint) hint.hidden = false;
@@ -469,17 +478,21 @@
         return false;
       };
       function openFields() {
+        var bar = document.getElementById("family-bar");
         var form = document.getElementById("family-form");
+        var btn = document.getElementById("family-enter");
+        if (!form || !btn) return;
         var fields = document.getElementById("family-fields");
-        if (!fields) return;
-        if (!fields.querySelector("input")) {
-          fields.innerHTML = '<input id="family-name" name="ownex-name" maxlength="64" placeholder="이름 또는 이메일" autocomplete="username" enterkeyhint="next" />' +
-            '<input id="family-pin" name="ownex-pin" type="password" maxlength="32" placeholder="비밀번호" autocomplete="current-password" enterkeyhint="go" />';
+        if (!fields) {
+          fields = document.createElement("div");
+          fields.id = "family-fields";
+          btn.insertAdjacentElement("afterend", fields);
         }
-        if (form) {
-          form.classList.add("login-open");
-          form.classList.remove("login-closed");
-        }
+        fields.innerHTML = '<input id="family-name" maxlength="64" placeholder="이름 또는 이메일" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" enterkeyhint="next" />' +
+          '<input id="family-pin" type="password" maxlength="32" placeholder="비밀번호" autocomplete="off" enterkeyhint="go" />';
+        if (bar) bar.classList.add("login-open");
+        form.classList.add("login-open");
+        form.classList.remove("login-closed");
         var nameOpen = document.getElementById("family-name");
         var pinOpen = document.getElementById("family-pin");
         function goEnter(event) {
@@ -543,10 +556,18 @@
           if (user) {
             staying = true;
             showIn(user.name);
+          } else {
+            closeFields();
           }
-        } catch (err) {}
+        } catch (err) {
+          closeFields();
+        }
       }
+      closeFields();
       restore();
+      window.addEventListener("pageshow", function () {
+        if (!window.ownexIsIn()) closeFields();
+      });
       var form = document.getElementById("family-form");
       var btn = document.getElementById("family-enter");
       var out = document.getElementById("family-out");
@@ -570,7 +591,7 @@
       }
     })();
   </script>
-  <script src="data.js?v=fix16"></script>
-  <script src="app.js?v=fix16"></script>
+  <script src="data.js?v=fix17"></script>
+  <script src="app.js?v=fix17"></script>
 </body>
 </html>
