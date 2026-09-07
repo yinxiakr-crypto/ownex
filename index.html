@@ -26,7 +26,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Great+Vibes&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=fix11" />
+  <link rel="stylesheet" href="styles.css?v=fix12" />
   <style>
     body { margin: 0; min-height: 100vh; background: #351e28; color: #f6efe6; font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
     #front-row:not([hidden]) {
@@ -116,7 +116,7 @@
     </div>
 
     <div class="fields" role="tablist" aria-label="분야">
-      <button type="button" class="field on" data-field="exhibition">미술</button>
+      <button type="button" class="field on" data-field="exhibition" onclick="ownexGoFront()">미술</button>
       <button type="button" class="field" data-field="music" disabled>음악</button>
       <button type="button" class="field" data-field="stage" disabled>공연</button>
     </div>
@@ -527,7 +527,7 @@
       }
     })();
   </script>
-  <script src="data.js?v=fix11"></script>
-  <script src="app.js?v=fix11"></script>
+  <script src="data.js?v=fix12"></script>
+  <script src="app.js?v=fix12"></script>
 </body>
 </html>

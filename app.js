@@ -88,9 +88,12 @@
     btn.addEventListener("click", () => {
       if (btn.disabled) return;
       const next = btn.getAttribute("data-field");
-      if (next === state.field) return;
       state.field = next;
       document.querySelectorAll(".field").forEach((el) => el.classList.toggle("on", el === btn));
+      if (next === "exhibition") {
+        goHomeApp();
+        return;
+      }
       state.selected = null;
       draw();
     });
