@@ -26,7 +26,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Great+Vibes&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=fix18" />
+  <link rel="stylesheet" href="styles.css?v=fix19" />
   <style>
     body { margin: 0; min-height: 100vh; background: #351e28; color: #f6efe6; font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
     #front-row:not([hidden]) {
@@ -141,7 +141,7 @@
         <button type="button" class="save" id="family-enter">로그인</button>
       </div>
       <p id="family-msg" class="quiet"></p>
-      <p class="family-hint quiet">처음에는 로그인 버튼만 보입니다. 누르면 오른쪽에 이름과 비밀번호 칸이 위아래로 나옵니다.</p>
+      <p class="family-hint quiet">로그인을 누르면 오른쪽에 칸이 나옵니다. 다시 누르면 닫힙니다. 넣은 뒤 Enter로 들어가세요.</p>
       <div id="family-people"></div>
     </div>
 
@@ -497,7 +497,7 @@
         function goEnter(event) {
           if (!event || event.key !== "Enter") return;
           event.preventDefault();
-          window.ownexEnter();
+          submitLogin();
         }
         if (nameOpen) {
           nameOpen.onkeydown = goEnter;
@@ -508,7 +508,7 @@
       window.ownexOpenFields = openFields;
       function tryFinish(name, pin) {
         if (!name) {
-          say("이름 또는 이메일을 넣은 뒤 로그인을 누르세요.");
+          say("이름 또는 이메일을 넣은 뒤 Enter를 누르세요.");
           var nameEl = document.getElementById("family-name");
           if (nameEl) try { nameEl.focus(); } catch (err) {}
           return false;
@@ -522,23 +522,27 @@
         finish(name, pin);
         return true;
       }
-      window.ownexEnter = function () {
-        if (Date.now() < busy) return false;
-        busy = Date.now() + 250;
-        say("");
-        var form = document.getElementById("family-form");
-        if (!form || !form.classList.contains("login-open")) {
-          openFields();
-          return false;
-        }
+      function submitLogin() {
         var first = readFields();
-        if (tryFinish(first.name, first.pin)) return false;
+        if (tryFinish(first.name, first.pin)) return true;
         setTimeout(function () {
           var second = readFields();
           if (second.name !== first.name || second.pin !== first.pin) {
             tryFinish(second.name, second.pin);
           }
         }, 120);
+        return false;
+      }
+      window.ownexEnter = function () {
+        if (Date.now() < busy) return false;
+        busy = Date.now() + 200;
+        say("");
+        var form = document.getElementById("family-form");
+        if (form && form.classList.contains("login-open")) {
+          closeFields();
+          return false;
+        }
+        openFields();
         return false;
       };
       function restore() {
@@ -573,7 +577,7 @@
       if (form) {
         form.addEventListener("submit", function (event) {
           event.preventDefault();
-          window.ownexEnter();
+          submitLogin();
         });
       }
       if (btn) {
@@ -590,7 +594,7 @@
       }
     })();
   </script>
-  <script src="data.js?v=fix18"></script>
-  <script src="app.js?v=fix18"></script>
+  <script src="data.js?v=fix19"></script>
+  <script src="app.js?v=fix19"></script>
 </body>
 </html>
