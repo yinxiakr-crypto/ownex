@@ -107,10 +107,24 @@
   function isIn() {
     if (familyMe && familyMe.id) return true;
     try {
-      return Boolean(localStorage.getItem(TOKEN_STORE));
+      const me = localMe();
+      return Boolean(me && me.id);
     } catch (err) {
       return false;
     }
+  }
+
+  function showPraiseBox(on) {
+    if (!praiseBoard) return;
+    if (on) {
+      praiseBoard.hidden = false;
+      praiseBoard.removeAttribute("hidden");
+      praiseBoard.style.removeProperty("display");
+      return;
+    }
+    praiseBoard.hidden = true;
+    praiseBoard.setAttribute("hidden", "");
+    praiseBoard.style.setProperty("display", "none", "important");
   }
   function needLogin() {
     if (yearEl) yearEl.value = "";
@@ -1048,7 +1062,9 @@
       }
     }
     const showMonth = !reviewOnly && browsing && !state.selected && state.space !== "feel";
+    const inNow = isIn();
     if (frontRow) {
+      frontRow.classList.toggle("review-only", !inNow);
       frontRow.hidden = !showFeel;
       if (!showFeel) {
         frontRow.style.setProperty("display", "none", "important");
@@ -1063,12 +1079,15 @@
         } else {
           frontRow.style.setProperty("display", "grid", "important");
           frontRow.style.flexDirection = "";
-          frontRow.style.gridTemplateColumns = "minmax(18rem, 40rem) minmax(16rem, 1fr)";
+          frontRow.style.gridTemplateColumns = inNow
+            ? "minmax(18rem, 40rem) minmax(16rem, 1fr)"
+            : "minmax(18rem, 40rem)";
           frontRow.style.gap = "1.5rem 2rem";
           frontRow.style.alignItems = "start";
         }
       }
     }
+    showPraiseBox(showFeel && inNow);
     if (reviewPage) reviewPage.hidden = !reviewOnly;
     if (ownCal) ownCal.hidden = !showMonth || !state.month;
     if (monthList) monthList.hidden = !showMonth;
@@ -1089,10 +1108,12 @@
       try {
         renderFeelings(feelings, "preview");
       } catch (err) {}
-      try {
-        renderPraise();
-      } catch (err) {
-        renderPraiseFallback();
+      if (inNow) {
+        try {
+          renderPraise();
+        } catch (err) {
+          renderPraiseFallback();
+        }
       }
     }
     if (showMonth) {
@@ -1297,13 +1318,21 @@
   }
 
   function renderPraise() {
-    if (!praiseBoard) return;
+    if (!praiseBoard || !isIn()) {
+      showPraiseBox(false);
+      return;
+    }
+    showPraiseBox(true);
     praiseBoard.innerHTML = praiseBoardHtml();
     bindPraiseBoard(praiseBoard);
   }
 
   function renderPraiseFallback() {
-    if (!praiseBoard) return;
+    if (!praiseBoard || !isIn()) {
+      showPraiseBox(false);
+      return;
+    }
+    showPraiseBox(true);
     praiseBoard.innerHTML = praiseBoardHtml();
   }
 

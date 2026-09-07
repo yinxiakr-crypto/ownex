@@ -949,6 +949,14 @@ body.open .praise-num { color: #3a2430; }
   min-width: 14rem;
 }
 
+#praise-board[hidden] {
+  display: none !important;
+}
+
+.front-row.review-only {
+  grid-template-columns: minmax(18rem, 40rem);
+}
+
 .praise-art {
   position: relative;
   overflow: visible;

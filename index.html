@@ -26,7 +26,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Great+Vibes&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=fix14" />
+  <link rel="stylesheet" href="styles.css?v=fix15" />
   <style>
     body { margin: 0; min-height: 100vh; background: #351e28; color: #f6efe6; font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
     #front-row:not([hidden]) {
@@ -35,6 +35,10 @@
       gap: 1.5rem 2rem;
       align-items: start;
     }
+    #front-row:not([hidden]).review-only {
+      grid-template-columns: minmax(18rem, 40rem) !important;
+    }
+    #praise-board[hidden] { display: none !important; }
     #front-row[hidden] { display: none !important; }
     #month-list[hidden],
     #own-cal[hidden],
@@ -181,20 +185,7 @@
           <button type="button" class="review-all-btn" data-reviews="all" onclick="ownexReviews()">전체보기</button>
         </div>
       </section>
-      <aside id="praise-board">
-        <h2 class="praise-title">Achievement</h2>
-        <p class="praise-total"><span class="praise-num">7</span><span class="praise-total-label">다녀온 전시</span></p>
-        <p class="praise-score">7 / 25</p>
-        <div class="praise-art sheet">
-          <div class="praise-sheet">
-            <span class="praise-sticker on" style="background:#e39a86" title="구정아: 우스모스"></span><span class="praise-sticker on" style="background:#d4a05c" title="가우디: 서울에서 다시 태어나다"></span><span class="praise-sticker on" style="background:#c9849a" title="게오르그 바젤리츠"></span><span class="praise-sticker on" style="background:#6faf8e" title="뱅크시 : Still Here"></span><span class="praise-sticker on" style="background:#d9b15a" title="박서보: 변하는 변하지 않는"></span>
-            <span class="praise-sticker on" style="background:#c87868" title="큐비스트: 시각의 혁신가들"></span><span class="praise-sticker on" style="background:#7ea4b8" title="김희천: 두더지들"></span><span class="praise-sticker empty"></span><span class="praise-sticker empty"></span><span class="praise-sticker empty"></span>
-            <span class="praise-sticker empty"></span><span class="praise-sticker empty"></span><span class="praise-sticker empty"></span><span class="praise-sticker empty"></span><span class="praise-sticker empty"></span>
-            <span class="praise-sticker empty"></span><span class="praise-sticker empty"></span><span class="praise-sticker empty"></span><span class="praise-sticker empty"></span><span class="praise-sticker empty"></span>
-            <span class="praise-sticker empty"></span><span class="praise-sticker empty"></span><span class="praise-sticker empty"></span><span class="praise-sticker empty"></span><span class="praise-sticker empty"></span>
-          </div>
-        </div>
-      </aside>
+      <aside id="praise-board" hidden></aside>
     </div>
     <section id="review-page" class="panel review-page" hidden></section>
     <section id="own-cal" class="panel own-cal" hidden></section>
@@ -528,7 +519,7 @@
       }
     })();
   </script>
-  <script src="data.js?v=fix14"></script>
-  <script src="app.js?v=fix14"></script>
+  <script src="data.js?v=fix15"></script>
+  <script src="app.js?v=fix15"></script>
 </body>
 </html>
