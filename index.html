@@ -18,7 +18,12 @@
         .then(function (info) {
           var now = String((info && info.build) || "");
           if (!now) return;
+          var seen = "";
+          try { seen = localStorage.getItem("ownex-build") || ""; } catch (err) {}
           try { localStorage.setItem("ownex-build", now); } catch (err) {}
+          if (seen && seen !== now) {
+            location.reload();
+          }
         })
         .catch(function () {});
     })();
@@ -26,7 +31,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Great+Vibes&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=fix20" />
+  <link rel="stylesheet" href="styles.css?v=fix21" />
   <style>
     body { margin: 0; min-height: 100vh; background: #351e28; color: #f6efe6; font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
     #front-row:not([hidden]) {
@@ -141,7 +146,7 @@
         <button type="button" class="save" id="family-enter">로그인</button>
       </div>
       <p id="family-msg" class="quiet"></p>
-      <p class="family-hint quiet">로그인을 해야 전시 정보를 보실 수 있습니다</p>
+      <p id="login-note" class="family-hint quiet">로그인을 해야 전시 정보를 보실 수 있습니다</p>
       <div id="family-people"></div>
     </div>
 
@@ -270,7 +275,10 @@
         var raw = String(name || "");
         return raw.indexOf("@") >= 0 ? raw.split("@")[0] : raw;
       }
-      function say(text) {
+      function setLoginNote() {
+        var hint = document.getElementById("login-note") || document.querySelector(".family-hint");
+        if (hint) hint.textContent = "로그인을 해야 전시 정보를 보실 수 있습니다";
+      }
         var msg = document.getElementById("family-msg");
         if (!msg) return;
         msg.textContent = text || "";
@@ -567,6 +575,7 @@
         }
       }
       closeFields();
+      setLoginNote();
       restore();
       window.addEventListener("pageshow", function () {
         if (!window.ownexIsIn()) closeFields();
@@ -594,7 +603,7 @@
       }
     })();
   </script>
-  <script src="data.js?v=fix20"></script>
-  <script src="app.js?v=fix20"></script>
+  <script src="data.js?v=fix21"></script>
+  <script src="app.js?v=fix21"></script>
 </body>
 </html>

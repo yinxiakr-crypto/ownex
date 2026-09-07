@@ -1916,6 +1916,11 @@
     if (form) form.hidden = inNow;
     if (meBox) meBox.hidden = !inNow;
     if (who) who.textContent = inNow ? greetName(user) + "의 방문을 환영합니다." : "";
+    const hint = document.getElementById("login-note") || document.querySelector(".family-hint");
+    if (hint) {
+      hint.textContent = "로그인을 해야 전시 정보를 보실 수 있습니다";
+      hint.hidden = inNow;
+    }
     if (msg) {
       msg.textContent = inNow && user.approved === false ? "관리자가 승인한 뒤에 Review를 같이 모읍니다." : "";
     }
