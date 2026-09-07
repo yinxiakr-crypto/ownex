@@ -301,19 +301,70 @@
     } catch (err) {}
   }
 
+  function feelText(item) {
+    return String((item && item.body) || "").replace(/\s+/g, " ").trim();
+  }
+
+  function feelTitle(item) {
+    return String((item && item.title) || "").replace(/\s+/g, " ").trim();
+  }
+
+  function sameFeel(a, b) {
+    if (!a || !b) return false;
+    if (a.id && b.id && String(a.id) === String(b.id)) return true;
+    const title = feelTitle(a);
+    const body = feelText(a);
+    return Boolean(title && body && title === feelTitle(b) && body === feelText(b));
+  }
+
+  function keepFeel(a, b) {
+    if (!a) return b;
+    if (!b) return a;
+    if (isSeedReview(a) && !isSeedReview(b)) return a;
+    if (!isSeedReview(a) && isSeedReview(b)) return b;
+    if ((a.by && !b.by) || (a.showId && !b.showId)) return a;
+    if ((!a.by && b.by) || (!a.showId && b.showId)) return b;
+    return a;
+  }
+
+  function foldFeel(into, from) {
+    if (!into || !from) return into;
+    if (from.by && !into.by) into.by = from.by;
+    if (from.byId && !into.byId) into.byId = from.byId;
+    if (from.ownerSeed) into.ownerSeed = true;
+    if (from.showId && !into.showId) into.showId = from.showId;
+    return into;
+  }
+
+  function uniqueFeels(list) {
+    const kept = [];
+    (Array.isArray(list) ? list : []).forEach((item) => {
+      if (!item) return;
+      const idx = kept.findIndex((row) => sameFeel(row, item));
+      if (idx < 0) {
+        kept.push(item);
+        return;
+      }
+      const win = keepFeel(kept[idx], item);
+      const other = win === kept[idx] ? item : kept[idx];
+      kept[idx] = foldFeel(win, other);
+    });
+    return kept;
+  }
+
+  function dedupeFeels() {
+    const kept = uniqueFeels(feels);
+    if (kept.length === feels.length) return false;
+    feels.splice(0, feels.length);
+    kept.forEach((item) => feels.push(item));
+    try {
+      writeFeelStore(feels);
+    } catch (err) {}
+    return true;
+  }
+
   function loadFeels() {
-    const bag = [];
-    const seen = {};
-    []
-      .concat(readFeelStore(FEEL_STORE, localStorage), readFeelStore(FEEL_BACKUP, sessionStorage))
-      .forEach((item) => {
-        if (!item) return;
-        const key = [item.id || "", item.title || "", item.body || "", item.at || "", item.by || ""].join("|");
-        if (seen[key]) return;
-        seen[key] = true;
-        bag.push(item);
-      });
-    return bag;
+    return uniqueFeels([].concat(readFeelStore(FEEL_STORE, localStorage), readFeelStore(FEEL_BACKUP, sessionStorage)));
   }
 
   function mergeSaved() {
@@ -344,6 +395,7 @@
       feels.push(item);
     });
     dropAnonymousFeels();
+    dedupeFeels();
     try {
       persistNotes();
       writeFeelStore(feels);
@@ -358,13 +410,7 @@
   }
 
   function feelKey(item) {
-    return [item.id || "", item.title || "", item.body || "", item.at || "", item.by || ""].join("|");
-  }
-
-  function sameFeel(a, b) {
-    if (!a || !b) return false;
-    if (a.id && b.id && String(a.id) === String(b.id)) return true;
-    return [a.title || "", a.body || "", a.at || ""].join("|") === [b.title || "", b.body || "", b.at || ""].join("|");
+    return [item.id || "", feelTitle(item), feelText(item), item.at || "", item.by || ""].join("|");
   }
 
   function isSeedReview(item) {
@@ -408,19 +454,18 @@
   }
 
   function mergeFeelsList(list) {
-    const seen = {};
     let added = 0;
-    feels.forEach((item) => {
-      seen[feelKey(item)] = true;
-    });
     (Array.isArray(list) ? list : []).forEach((item) => {
       if (!item || isAnonymousReview(item)) return;
-      const key = feelKey(item);
-      if (seen[key]) return;
-      seen[key] = true;
+      const existing = feels.find((row) => sameFeel(row, item));
+      if (existing) {
+        foldFeel(existing, item);
+        return;
+      }
       feels.push(item);
       added += 1;
     });
+    dedupeFeels();
     writeFeelStore(feels);
     return added;
   }
@@ -441,7 +486,7 @@
   }
 
   function dropAnonymousFeels() {
-    const kept = feels.filter((item) => !isAnonymousReview(item));
+    const kept = uniqueFeels(feels.filter((item) => !isAnonymousReview(item)));
     if (kept.length === feels.length) return;
     feels.splice(0, feels.length);
     kept.forEach((item) => feels.push(item));
@@ -451,7 +496,7 @@
   }
 
   function visibleFeels() {
-    return feels.filter((item) => !isAnonymousReview(item));
+    return uniqueFeels(feels.filter((item) => !isAnonymousReview(item)));
   }
 
   function pullShared() {
@@ -852,8 +897,15 @@
   }
 
   function events() {
-    const rows = (data.exhibitions || []).map((row) => Object.assign({ kind: row.kind || "exhibition" }, row));
-    return rows.filter((row) => row.kind === state.field);
+    const byId = {};
+    (data.exhibitions || []).forEach((row) => {
+      const next = Object.assign({ kind: row.kind || "exhibition" }, row);
+      if (next.kind !== state.field) return;
+      const id = itemId(next);
+      const have = byId[id];
+      if (!have || (next.poster && !have.poster)) byId[id] = next;
+    });
+    return Object.keys(byId).map((id) => byId[id]);
   }
 
   function itemId(row) {
@@ -1741,7 +1793,7 @@
     const wantId = String(showId || "");
     const wantTitle = String(title || "").trim();
     const wantPair = wantId.split("|").slice(0, 2).join("|");
-    return feels.filter((item) => {
+    return uniqueFeels(feels.filter((item) => {
       if (!item || isAnonymousReview(item)) return false;
       if (wantId && item.showId === wantId) return true;
       const haveId = String(item.showId || "");
@@ -1752,7 +1804,7 @@
       if (wantTitle && have && (have.indexOf(wantTitle) >= 0 || wantTitle.indexOf(have) >= 0)) return true;
       if (looseTitle(have, wantTitle)) return true;
       return false;
-    });
+    }));
   }
 
   function addReview(title, body, show, extra) {
@@ -1933,6 +1985,7 @@
   try {
     seedCubistFeel();
     dropAnonymousFeels();
+    dedupeFeels();
   } catch (err) {}
   if (location.hash === "#reviews") state.space = "reviews";
   window.addEventListener("hashchange", () => {

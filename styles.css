@@ -130,10 +130,10 @@ header, main, footer {
   right: max(1.2rem, 8vw);
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: stretch;
   gap: 0.3rem;
   z-index: 6;
-  max-width: 18rem;
+  max-width: 14.5rem;
 }
 
 .family-hello-box[hidden] {
@@ -149,106 +149,72 @@ header, main, footer {
 }
 
 .family-hello-box .save {
+  align-self: flex-end;
   min-height: 1.85rem;
   min-width: auto;
   padding: 0.2rem 0.75rem;
   font-size: 0.75rem;
 }
 
+.mail-opt,
 .mail-refuse {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.35rem;
   font-size: 0.72rem;
+  line-height: 1.35;
   color: var(--muted);
   cursor: pointer;
   user-select: none;
+  text-align: left;
 }
 
+.mail-opt input,
+.mail-refuse input {
+  width: 0.9rem;
+  height: 0.9rem;
+  margin: 0.12rem 0 0;
+  flex: none;
+}
+
+.mail-opt[hidden],
 .mail-refuse[hidden],
-.mail-ask[hidden] {
-  display: none !important;
-}
-
-.mail-ask {
-  position: static;
-  inset: auto;
-  z-index: auto;
-  display: grid;
-  gap: 0.45rem;
-  width: 16.5rem;
-  max-width: calc(100vw - 2.4rem);
-  margin: 0.15rem 0 0.2rem;
-  padding: 0.7rem 0.75rem 0.65rem;
-  background: color-mix(in srgb, #fff 14%, transparent);
-  border: 1px solid color-mix(in srgb, #fff 28%, transparent);
-  border-radius: 0.85rem;
-  color: var(--ink);
-}
-
-.mail-ask p {
-  margin: 0;
-  font-size: 0.78rem;
-  line-height: 1.4;
-  text-align: right;
-}
-
-.mail-email-wrap {
-  display: grid;
-  gap: 0.25rem;
-  font-size: 0.72rem;
-  text-align: right;
-}
-
 .mail-email-wrap[hidden] {
   display: none !important;
 }
 
+#mail-ask-msg {
+  margin: 0;
+  font-size: 0.68rem;
+  line-height: 1.35;
+  text-align: left;
+}
+
+#mail-ask-msg:empty {
+  display: none;
+}
+
+.mail-email-wrap {
+  display: grid;
+  gap: 0.2rem;
+  font-size: 0.68rem;
+  text-align: left;
+}
+
 .mail-email-wrap input {
-  min-height: 2.1rem;
+  min-height: 1.85rem;
   width: 100%;
   border: 1px solid var(--line);
-  border-radius: 0.7rem;
-  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+  padding: 0.15rem 0.65rem;
   font: inherit;
+  font-size: 0.72rem;
   background: color-mix(in srgb, #fff 12%, transparent);
   color: var(--ink);
 }
 
-.mail-ask-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.35rem;
-}
-
-.mail-ask-actions button {
-  min-height: 1.9rem;
-  padding: 0.2rem 0.75rem;
-  border: 0;
-  border-radius: 999px;
-  font: inherit;
-  font-size: 0.75rem;
-  cursor: pointer;
-}
-
-#mail-yes {
-  background: var(--accent);
-  color: #fff;
-}
-
-#mail-no {
-  background: var(--btn);
-  color: var(--btn-ink);
-}
-
-body.open .mail-ask {
-  background: #fff;
-  border-color: #e3d0c8;
-  color: #3a2430;
-}
-
-body.open .mail-ask p,
-body.open .mail-email-wrap {
+body.open .mail-opt,
+body.open .mail-refuse {
   color: #3a2430;
 }
 

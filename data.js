@@ -475,21 +475,6 @@ window.OWNEX = {
     },
     {
       "collected_date": "2026-09-07",
-      "title": "김희천: 두더지들",
-      "venue": "서울시립 서서울미술관",
-      "venue_address": "서울 금천구 시흥대로79길 65",
-      "region_tag": "[서울]",
-      "reservation_url": "https://sema.seoul.go.kr/",
-      "start_date": "2026-08-20",
-      "end_date": "2026-11-08",
-      "reservation_open_date": "2026-08-13",
-      "summary": "서서울미술관",
-      "image_url": "https://design-plus.storage.googleapis.com/wp-content/uploads/2026/08/31011722/20260830161718-Frieze-Seoul-2025-10.jpg",
-      "source_urls": "https://sema.seoul.go.kr/",
-      "score_reason": "시각자료, 대표작품, 2곳홍보, 동시대, 작가작품전, 주요미술관, 화제전시, 지정미술관"
-    },
-    {
-      "collected_date": "2026-09-07",
       "title": "함양아: 정의되지 않은 파노라마",
       "venue": "아트선재센터",
       "venue_address": "서울 종로구 율곡로3길 87",
