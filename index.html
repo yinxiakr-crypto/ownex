@@ -31,7 +31,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Great+Vibes&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=fix21" />
+  <link rel="stylesheet" href="styles.css?v=fix22" />
   <style>
     body { margin: 0; min-height: 100vh; background: #351e28; color: #f6efe6; font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
     #front-row:not([hidden]) {
@@ -447,7 +447,8 @@
           bar.style.removeProperty("visibility");
         }
         closeFields();
-        say("로그인을 해야 전시 정보를 보실 수 있습니다");
+        setLoginNote();
+        say("");
         return false;
       };
       window.ownexUsePicks = function () {
@@ -604,7 +605,7 @@
       }
     })();
   </script>
-  <script src="data.js?v=fix21"></script>
-  <script src="app.js?v=fix21"></script>
+  <script src="data.js?v=fix22"></script>
+  <script src="app.js?v=fix22"></script>
 </body>
 </html>
