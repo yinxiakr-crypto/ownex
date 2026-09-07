@@ -312,9 +312,14 @@
   function sameFeel(a, b) {
     if (!a || !b) return false;
     if (a.id && b.id && String(a.id) === String(b.id)) return true;
+    const bodyA = feelText(a);
+    const bodyB = feelText(b);
+    if (bodyA && bodyA.length >= 12 && bodyA === bodyB) return true;
+    const showA = String(a.showId || "").split("|").slice(0, 2).join("|");
+    const showB = String(b.showId || "").split("|").slice(0, 2).join("|");
+    if (showA && showA === showB && bodyA && bodyA === bodyB) return true;
     const title = feelTitle(a);
-    const body = feelText(a);
-    return Boolean(title && body && title === feelTitle(b) && body === feelText(b));
+    return Boolean(title && bodyA && title === feelTitle(b) && bodyA === bodyB);
   }
 
   function keepFeel(a, b) {
@@ -838,7 +843,8 @@
   }
 
   function seedCubistFeel() {
-    if (feels.some((item) => item.title === "큐비스트 감상")) return;
+    const body = "유럽의 거장 큐비스트들을 통해 한국의 나헤석, 김환기 작가 등 한국 근현대 미술가들이 오버랩되어 한국의 큐비즘의 태동을 만난 것 같았다.";
+    if (feels.some((item) => item.id === "seed-cubist" || item.title === "큐비스트 감상" || feelText(item) === feelText({ body: body }))) return;
     const show = matchShow("큐비스트 감상");
     feels.unshift({
       id: "seed-cubist",
@@ -1821,6 +1827,11 @@
       by: by,
       byId: (me && me.id) || "",
     };
+    const existing = feels.find((row) => sameFeel(row, item));
+    if (existing) {
+      state.reviewId = existing.id;
+      return existing;
+    }
     feels.push(item);
     writeFeelStore(feels);
     state.reviewId = item.id;
@@ -2015,6 +2026,8 @@
       return pullState();
     })
     .then(function () {
+      dropAnonymousFeels();
+      dedupeFeels();
       draw();
       paintFamilyBar();
       pushShared();
