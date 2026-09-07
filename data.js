@@ -625,7 +625,7 @@ window.OWNEX = {
     "open_url": "https://calendar.google.com/calendar/u/0/r?cid=b03a3e41e51f86ec6e6534b393615d86ca8dce3bee52d3febcd4a879c58b3b13@group.calendar.google.com"
   },
   "saved": {
-    "rev": "stickers-20260907u",
+    "rev": "reviews-20260907z",
     "notes": {
       "윤형근을 다시 상상하다|PKM갤러리|2026-08-26|2026-10-03": {
         "visited": false,

@@ -343,6 +343,7 @@
       }
       feels.push(item);
     });
+    dropAnonymousFeels();
     try {
       persistNotes();
       writeFeelStore(feels);
@@ -413,7 +414,7 @@
       seen[feelKey(item)] = true;
     });
     (Array.isArray(list) ? list : []).forEach((item) => {
-      if (!item) return;
+      if (!item || isAnonymousReview(item)) return;
       const key = feelKey(item);
       if (seen[key]) return;
       seen[key] = true;
@@ -428,8 +429,33 @@
     return { feels: feels, at: new Date().toISOString() };
   }
 
+  function reviewAuthor(item) {
+    return String((item && item.by) || "").trim();
+  }
+
+  function isAnonymousReview(item) {
+    if (!item) return true;
+    if (isSeedReview(item)) return false;
+    const by = reviewAuthor(item);
+    return !by || by === "익명";
+  }
+
+  function dropAnonymousFeels() {
+    const kept = feels.filter((item) => !isAnonymousReview(item));
+    if (kept.length === feels.length) return;
+    feels.splice(0, feels.length);
+    kept.forEach((item) => feels.push(item));
+    try {
+      writeFeelStore(feels);
+    } catch (err) {}
+  }
+
+  function visibleFeels() {
+    return feels.filter((item) => !isAnonymousReview(item));
+  }
+
   function pullShared() {
-    if (!SHARE_URL || isStaticHost()) return Promise.resolve(false);
+    if (!SHARE_URL) return Promise.resolve(false);
     return fetch(SHARE_URL + "?" + Date.now(), { cache: "no-store", headers: { Accept: "application/json" } })
       .then(function (res) { return res.json(); })
       .then(function (remote) {
@@ -437,6 +463,7 @@
         if (remote.at && shareAt && remote.at === shareAt) return false;
         shareQuiet = true;
         const added = mergeFeelsList(remote.feels);
+        dropAnonymousFeels();
         shareQuiet = false;
         if (remote.at && (!shareAt || remote.at > shareAt)) shareAt = remote.at;
         return added > 0;
@@ -772,8 +799,11 @@
       id: "seed-cubist",
       title: "큐비스트 감상",
       body: "유럽의 거장 큐비스트들을 통해 한국의 나헤석, 김환기 작가 등 한국 근현대 미술가들이 오버랩되어 한국의 큐비즘의 태동을 만난 것 같았다.",
-      at: new Date().toISOString().slice(0, 10),
+      at: "2026-09-03",
       showId: show ? itemId(show) : "",
+      by: "은하",
+      byId: "owner",
+      ownerSeed: true,
     });
     saveFeels();
   }
@@ -1196,7 +1226,7 @@
 
   function showMoreReviews() {
     const shown = frontReviewCount();
-    if (shown >= feels.length) {
+    if (shown >= visibleFeels().length) {
       openReviews();
       return;
     }
@@ -1240,9 +1270,10 @@
     const preview = mode !== "full";
     const box = root || (preview ? feelings : reviewPage);
     if (!box) return;
-    const limit = preview ? frontReviewCount() : feels.length;
-    const start = preview ? Math.max(0, feels.length - limit) : 0;
-    const items = feels.slice(start);
+    const list = visibleFeels();
+    const limit = preview ? frontReviewCount() : list.length;
+    const start = preview ? Math.max(0, list.length - limit) : 0;
+    const items = list.slice(start);
     const rows = items.map((item, offset) => {
       const index = start + offset;
       const no = index + 1;
@@ -1711,7 +1742,7 @@
     const wantTitle = String(title || "").trim();
     const wantPair = wantId.split("|").slice(0, 2).join("|");
     return feels.filter((item) => {
-      if (!item) return false;
+      if (!item || isAnonymousReview(item)) return false;
       if (wantId && item.showId === wantId) return true;
       const haveId = String(item.showId || "");
       const havePair = haveId.split("|").slice(0, 2).join("|");
@@ -1727,13 +1758,15 @@
   function addReview(title, body, show, extra) {
     extra = extra || {};
     const me = familyMe && familyMe.id ? familyMe : localMe();
+    const by = String(extra.by || greetName(me) || "").trim();
+    if (!isIn() || !by || by === "익명") return needLogin();
     const item = {
       id: String(Date.now()),
       title,
       body,
       at: extra.at || new Date().toISOString().slice(0, 10),
       showId: show ? itemId(show) : "",
-      by: extra.by || greetName(me) || "",
+      by: by,
       byId: (me && me.id) || "",
     };
     feels.push(item);
@@ -1814,6 +1847,7 @@
     const reviewSave = artwork.querySelector("#art-review-save");
     if (reviewBody && draft) reviewBody.value = draft;
     const keepReview = function () {
+      if (!isIn()) return needLogin();
       const text = String((reviewBody || {}).value || "").trim();
       if (!text) return;
       addReview(row.title || "감상", text, row);
@@ -1898,6 +1932,7 @@
 
   try {
     seedCubistFeel();
+    dropAnonymousFeels();
   } catch (err) {}
   if (location.hash === "#reviews") state.space = "reviews";
   window.addEventListener("hashchange", () => {

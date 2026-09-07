@@ -1,0 +1,19 @@
+{
+  "name": "OWNEX",
+  "short_name": "OWNEX",
+  "description": "오넥스 전시 도우미",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#351e28",
+  "theme_color": "#351e28",
+  "lang": "ko",
+  "icons": [
+    {
+      "src": "apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
