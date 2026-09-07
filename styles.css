@@ -434,14 +434,6 @@ body.open .gcal-icon {
   letter-spacing: 0.08em;
 }
 
-#show-wrap {
-  flex: 1 1 12rem;
-}
-
-#show-wrap select {
-  min-width: 12rem;
-}
-
 .year-pick select {
   min-width: 10rem;
   min-height: 2.6rem;

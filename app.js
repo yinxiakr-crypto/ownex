@@ -66,8 +66,6 @@
   const yearAll = document.getElementById("year-all");
   const monthEl = document.getElementById("month");
   const monthWrap = document.getElementById("month-wrap");
-  const showEl = document.getElementById("show");
-  let pickShows = [];
   const monthList = document.getElementById("month-list");
   const ownCal = document.getElementById("own-cal");
   const artwork = document.getElementById("artwork");
@@ -128,16 +126,6 @@
   if (monthEl) {
     monthEl.addEventListener("change", onMonthPick);
     monthEl.addEventListener("input", onMonthPick);
-  }
-  function onShowPick() {
-    const raw = showEl && showEl.value;
-    if (raw === "" || raw == null) return;
-    const row = pickShows[Number(raw)];
-    if (row) openShow(row);
-  }
-  if (showEl) {
-    showEl.addEventListener("change", onShowPick);
-    showEl.addEventListener("input", onShowPick);
   }
 
   function applySeason() {
@@ -795,43 +783,6 @@
     return events().filter((row) => overlapsMonth(row, state.year, state.month));
   }
 
-  function uniqueShows(rows) {
-    const seen = {};
-    return (rows || []).filter((row) => {
-      const id = itemId(row);
-      if (!id || seen[id]) return false;
-      seen[id] = true;
-      return true;
-    });
-  }
-
-  function showsForPicks() {
-    const rows = events().filter((row) => {
-      if (state.month) return overlapsMonth(row, state.year || "all", state.month);
-      if (state.year && state.year !== "all") {
-        const from = (row.start_date || "").slice(0, 4);
-        const to = (row.end_date || row.start_date || "").slice(0, 4);
-        return from <= state.year && to >= state.year;
-      }
-      return true;
-    });
-    return uniqueShows(rows).sort((a, b) => String(a.start_date || "").localeCompare(String(b.start_date || "")));
-  }
-
-  function fillShows() {
-    if (!showEl) return;
-    pickShows = showsForPicks();
-    const selectedId = state.selected ? itemId(state.selected) : "";
-    showEl.innerHTML =
-      '<option value="">전시회를 고르세요</option>' +
-      pickShows
-        .map((row, i) => {
-          const on = selectedId && itemId(row) === selectedId ? " selected" : "";
-          return '<option value="' + i + '"' + on + ">" + escapeHtml(row.title || "") + "</option>";
-        })
-        .join("");
-  }
-
   function paintGlance() {
     const home = document.getElementById("glance-home");
     if (home) {
@@ -967,7 +918,6 @@
 
   function draw() {
     paintGlance();
-    fillShows();
     const reviewOnly = state.space === "reviews";
     const browsing = Boolean(state.year && state.month);
     const showFeel = !reviewOnly && !state.selected && (state.space === "feel" || !browsing);
