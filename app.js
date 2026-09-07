@@ -207,6 +207,42 @@
     if (theme) theme.setAttribute("content", colors[season]);
   }
 
+  function currentViewer() {
+    return familyMe && familyMe.id ? familyMe : localMe();
+  }
+
+  function isSiteOwnerName(name) {
+    const raw = String(name || "").trim().toLowerCase();
+    if (!raw) return false;
+    const greet = raw.indexOf("@") >= 0 ? raw.split("@")[0] : raw;
+    return greet === "은하" || greet === "yinxiakr" || raw === "yinxiakr@gmail.com";
+  }
+
+  function isSiteOwner(user) {
+    return isSiteOwnerName(user && (user.name || user.mailEmail || ""));
+  }
+
+  function seedVisitKeys() {
+    const seedNotes = data.saved && data.saved.notes && typeof data.saved.notes === "object" ? data.saved.notes : {};
+    return Object.keys(seedNotes).filter((key) => seedNotes[key] && (seedNotes[key].visited === true || seedNotes[key].visited === "true"));
+  }
+
+  function onlyOwnVisits(source) {
+    const mine = {};
+    const seedKeys = {};
+    seedVisitKeys().forEach((key) => {
+      seedKeys[key] = true;
+    });
+    Object.keys(source || {}).forEach((key) => {
+      const note = source[key];
+      if (!note || typeof note !== "object") return;
+      const visited = note.visited === true || note.visited === "true";
+      if (visited && seedKeys[key] && !note.ownVisit) return;
+      mine[key] = note;
+    });
+    return mine;
+  }
+
   function notesKey() {
     return familyMe && familyMe.id ? STORE + ":" + familyMe.id : STORE;
   }
@@ -232,32 +268,31 @@
   }
 
   function switchNotesToUser(user) {
-    const before = {};
-    Object.keys(notes).forEach((key) => {
-      before[key] = notes[key];
-    });
     familyMe = user && user.id ? user : null;
-    const dest = user && user.id ? readNotesStore(STORE + ":" + user.id) : readNotesStore(STORE);
-    const guest = readNotesStore(STORE);
-    const seedNotes = data.saved && data.saved.notes && typeof data.saved.notes === "object" ? data.saved.notes : {};
-    const merged = {};
-    const sources = [seedNotes, guest, before, dest];
-    sources.forEach((source) => {
-      Object.keys(source || {}).forEach((key) => {
-        const prev = merged[key] && typeof merged[key] === "object" ? merged[key] : {};
-        const next = source[key] && typeof source[key] === "object" ? source[key] : {};
-        merged[key] = Object.assign({}, prev, next, {
-          visited: Boolean(prev.visited) || Boolean(next.visited) || prev.visited === "true" || next.visited === "true",
-          at: next.at || prev.at || "",
+    const dest = user && user.id ? readNotesStore(STORE + ":" + user.id) : {};
+    if (isSiteOwner(user)) {
+      const seedNotes = data.saved && data.saved.notes && typeof data.saved.notes === "object" ? data.saved.notes : {};
+      const merged = {};
+      [seedNotes, dest].forEach((source) => {
+        Object.keys(source || {}).forEach((key) => {
+          const prev = merged[key] && typeof merged[key] === "object" ? merged[key] : {};
+          const next = source[key] && typeof source[key] === "object" ? source[key] : {};
+          merged[key] = Object.assign({}, prev, next, {
+            visited: Boolean(prev.visited) || Boolean(next.visited) || prev.visited === "true" || next.visited === "true",
+            at: next.at || prev.at || "",
+            ownerSeed: Boolean(prev.ownerSeed) || Boolean(next.ownerSeed) || (seedNotes[key] && seedNotes[key].visited),
+          });
         });
       });
-    });
-    fillNotes(merged);
+      fillNotes(merged);
+    } else {
+      fillNotes(onlyOwnVisits(dest));
+    }
     try {
       persistNotes();
     } catch (err) {}
     mergeSaved();
-    stampOwnerOnSeedReviews(user);
+    restoreSeedReviewAuthors();
   }
 
   function loadNotes() {
@@ -377,16 +412,19 @@
     if (!seed || typeof seed !== "object") return;
     const seedNotes = seed.notes && typeof seed.notes === "object" ? seed.notes : {};
     const rev = String(seed.rev || "reviews-20260907k");
-    let applied = "";
-    try { applied = localStorage.getItem("ownex-seed-rev") || ""; } catch (err) {}
-    Object.keys(seedNotes).forEach((key) => {
-      const local = notes[key] && typeof notes[key] === "object" ? notes[key] : {};
-      const seedNote = seedNotes[key] && typeof seedNotes[key] === "object" ? seedNotes[key] : {};
-      notes[key] = Object.assign({}, seedNote, local);
-      notes[key].visited = Boolean(local.visited) || Boolean(seedNote.visited) || local.visited === "true" || seedNote.visited === "true";
-      if (!notes[key].at) notes[key].at = seedNote.at || local.at || "";
-    });
     try { localStorage.setItem("ownex-seed-rev", rev); } catch (err) {}
+    if (isSiteOwner(currentViewer())) {
+      Object.keys(seedNotes).forEach((key) => {
+        const local = notes[key] && typeof notes[key] === "object" ? notes[key] : {};
+        const seedNote = seedNotes[key] && typeof seedNotes[key] === "object" ? seedNotes[key] : {};
+        notes[key] = Object.assign({}, seedNote, local);
+        notes[key].visited = Boolean(local.visited) || Boolean(seedNote.visited) || local.visited === "true" || seedNote.visited === "true";
+        if (!notes[key].at) notes[key].at = seedNote.at || local.at || "";
+        if (seedNote.visited) notes[key].ownerSeed = true;
+      });
+    } else {
+      fillNotes(onlyOwnVisits(notes));
+    }
     (Array.isArray(seed.feels) ? seed.feels : []).forEach((item) => {
       if (!item) return;
       const existing = feels.find((row) => sameFeel(row, item));
@@ -437,16 +475,13 @@
     return maskPublicName(greetName({ name: (item && item.by) || "" }));
   }
 
-  function stampOwnerOnSeedReviews(user) {
-    if (!user || !user.owner) return;
-    const name = greetName(user);
-    if (!name) return;
+  function restoreSeedReviewAuthors() {
     let changed = false;
     feels.forEach((item) => {
       if (!isSeedReview(item)) return;
-      if (item.by !== name || item.byId !== user.id) {
-        item.by = name;
-        item.byId = user.id;
+      if (item.by !== "은하" || item.byId !== "owner") {
+        item.by = "은하";
+        item.byId = "owner";
         item.ownerSeed = true;
         changed = true;
       }
@@ -623,13 +658,12 @@
       if (path === "/api/family/signup") {
         if (existing) return Promise.resolve({ error: "이미 있는 이름입니다." });
         const salt = String(Date.now());
-        const isOwner = !data.users.some((user) => user.owner);
         const user = {
           id: "l" + Date.now().toString(16),
           name: name,
           salt: salt,
           pinHash: localHash(pin, salt),
-          owner: isOwner,
+          owner: isSiteOwnerName(name),
           approved: true,
         };
         data.users.push(user);
@@ -725,18 +759,20 @@
     const incoming = Object.keys(nextNotes).length;
     const haveVisit = Object.keys(notes).some((key) => notes[key] && (notes[key].visited === true || notes[key].visited === "true"));
     if (!incoming && haveVisit) return;
+    const incomingNotes = isSiteOwner(currentViewer()) ? nextNotes : onlyOwnVisits(nextNotes);
     const merged = {};
-    [notes, nextNotes].forEach((source) => {
+    [notes, incomingNotes].forEach((source) => {
       Object.keys(source || {}).forEach((key) => {
         const prev = merged[key] && typeof merged[key] === "object" ? merged[key] : {};
         const next = source[key] && typeof source[key] === "object" ? source[key] : {};
         merged[key] = Object.assign({}, prev, next, {
           visited: Boolean(prev.visited) || Boolean(next.visited) || prev.visited === "true" || next.visited === "true",
           at: next.at || prev.at || "",
+          ownVisit: Boolean(prev.ownVisit) || Boolean(next.ownVisit),
         });
       });
     });
-    fillNotes(merged);
+    fillNotes(isSiteOwner(currentViewer()) ? merged : onlyOwnVisits(merged));
     persistNotes();
     mergeSaved();
   }
@@ -808,8 +844,10 @@
   function allVisits() {
     const bag = notes && typeof notes === "object" && !Array.isArray(notes) ? notes : {};
     const seen = {};
+    const mineOnly = !isSiteOwner(currentViewer());
     return Object.keys(bag)
       .filter((id) => id && bag[id] && (bag[id].visited === true || bag[id].visited === "true"))
+      .filter((id) => !mineOnly || bag[id].ownVisit)
       .filter((id) => {
         const pair = id.split("|").slice(0, 2).join("|");
         if (seen[pair]) return false;
@@ -942,7 +980,12 @@
   }
 
   function isVisited(row) {
-    return relatedNoteKeys(row).some((key) => notes[key] && (notes[key].visited === true || notes[key].visited === "true"));
+    const mineOnly = !isSiteOwner(currentViewer());
+    return relatedNoteKeys(row).some((key) => {
+      const note = notes[key];
+      if (!note || (note.visited !== true && note.visited !== "true")) return false;
+      return mineOnly ? Boolean(note.ownVisit) : true;
+    });
   }
 
   function titleBits(text) {
@@ -1949,6 +1992,8 @@
             notes[key] = notes[key] || {};
             notes[key].visited = on;
             notes[key].at = at;
+            notes[key].ownVisit = on;
+            notes[key].byId = (currentViewer() && currentViewer().id) || "";
           });
           if (on) state.stickerYear = at.slice(0, 4);
         }
@@ -1996,6 +2041,7 @@
   try {
     seedCubistFeel();
     dropAnonymousFeels();
+    restoreSeedReviewAuthors();
     dedupeFeels();
   } catch (err) {}
   if (location.hash === "#reviews") state.space = "reviews";
