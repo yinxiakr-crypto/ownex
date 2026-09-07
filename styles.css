@@ -179,6 +179,8 @@ header, main, footer {
 
 .mail-opt[hidden],
 .mail-refuse[hidden],
+#mail-want-wrap[hidden],
+#mail-refuse-wrap[hidden],
 .mail-email-wrap[hidden] {
   display: none !important;
 }
