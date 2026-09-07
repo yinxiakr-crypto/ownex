@@ -26,7 +26,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Great+Vibes&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=fix19" />
+  <link rel="stylesheet" href="styles.css?v=fix20" />
   <style>
     body { margin: 0; min-height: 100vh; background: #351e28; color: #f6efe6; font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
     #front-row:not([hidden]) {
@@ -141,7 +141,7 @@
         <button type="button" class="save" id="family-enter">로그인</button>
       </div>
       <p id="family-msg" class="quiet"></p>
-      <p class="family-hint quiet">로그인을 누르면 오른쪽에 칸이 나옵니다. 다시 누르면 닫힙니다. 넣은 뒤 Enter로 들어가세요.</p>
+      <p class="family-hint quiet">로그인을 해야 전시 정보를 보실 수 있습니다</p>
       <div id="family-people"></div>
     </div>
 
@@ -438,7 +438,7 @@
           bar.style.removeProperty("visibility");
         }
         closeFields();
-        say("로그인한 뒤에 전시를 볼 수 있습니다.");
+        say("로그인을 해야 전시 정보를 보실 수 있습니다");
         return false;
       };
       window.ownexUsePicks = function () {
@@ -594,7 +594,7 @@
       }
     })();
   </script>
-  <script src="data.js?v=fix19"></script>
-  <script src="app.js?v=fix19"></script>
+  <script src="data.js?v=fix20"></script>
+  <script src="app.js?v=fix20"></script>
 </body>
 </html>
