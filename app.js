@@ -202,22 +202,32 @@
   }
 
   function switchNotesToUser(user) {
+    const before = {};
+    Object.keys(notes).forEach((key) => {
+      before[key] = notes[key];
+    });
     familyMe = user && user.id ? user : null;
-    if (user && user.owner) {
-      try {
-        if (!localStorage.getItem("ownex-notes-moved")) {
-          const destKey = STORE + ":" + user.id;
-          const dest = readNotesStore(destKey);
-          const guest = readNotesStore(STORE);
-          if (!Object.keys(dest).length && Object.keys(guest).length) {
-            localStorage.setItem(destKey, JSON.stringify(guest));
-            localStorage.setItem("ownex-notes-moved", "1");
-          }
-        }
-      } catch (err) {}
-    }
-    fillNotes(readNotesStore(notesKey()));
+    const dest = user && user.id ? readNotesStore(STORE + ":" + user.id) : readNotesStore(STORE);
+    const guest = readNotesStore(STORE);
+    const seedNotes = data.saved && data.saved.notes && typeof data.saved.notes === "object" ? data.saved.notes : {};
+    const merged = {};
+    const sources = (!user || user.owner) ? [seedNotes, guest, before, dest] : [guest, before, dest];
+    sources.forEach((source) => {
+      Object.keys(source || {}).forEach((key) => {
+        const prev = merged[key] && typeof merged[key] === "object" ? merged[key] : {};
+        const next = source[key] && typeof source[key] === "object" ? source[key] : {};
+        merged[key] = Object.assign({}, prev, next, {
+          visited: Boolean(prev.visited) || Boolean(next.visited) || prev.visited === "true" || next.visited === "true",
+          at: next.at || prev.at || "",
+        });
+      });
+    });
+    fillNotes(merged);
+    try {
+      persistNotes();
+    } catch (err) {}
     mergeSaved();
+    stampOwnerOnSeedReviews(user);
   }
 
   function loadNotes() {
@@ -292,15 +302,16 @@
       }
     });
     try { localStorage.setItem("ownex-seed-rev", rev); } catch (err) {}
-    const seen = {};
-    feels.forEach((item) => {
-      seen[[item.id || "", item.title || "", item.body || "", item.at || ""].join("|")] = true;
-    });
     (Array.isArray(seed.feels) ? seed.feels : []).forEach((item) => {
       if (!item) return;
-      const key = [item.id || "", item.title || "", item.body || "", item.at || ""].join("|");
-      if (seen[key]) return;
-      seen[key] = true;
+      const existing = feels.find((row) => sameFeel(row, item));
+      if (existing) {
+        if (item.by && !existing.by) existing.by = item.by;
+        if (item.byId && !existing.byId) existing.byId = item.byId;
+        if (item.ownerSeed) existing.ownerSeed = true;
+        if (item.showId && !existing.showId) existing.showId = item.showId;
+        return;
+      }
       feels.push(item);
     });
     try {
@@ -318,6 +329,52 @@
 
   function feelKey(item) {
     return [item.id || "", item.title || "", item.body || "", item.at || "", item.by || ""].join("|");
+  }
+
+  function sameFeel(a, b) {
+    if (!a || !b) return false;
+    if (a.id && b.id && String(a.id) === String(b.id)) return true;
+    return [a.title || "", a.body || "", a.at || ""].join("|") === [b.title || "", b.body || "", b.at || ""].join("|");
+  }
+
+  function isSeedReview(item) {
+    if (!item) return false;
+    if (item.ownerSeed) return true;
+    const id = String(item.id || "");
+    return id === "seed-cubist" || id === "1788479088443";
+  }
+
+  function maskPublicName(raw) {
+    const text = String(raw || "").trim();
+    if (!text) return "익명";
+    const units = Array.from(text);
+    if (units.length <= 3) return units.join("");
+    return units.slice(0, 3).join("") + "*".repeat(units.length - 3);
+  }
+
+  function authorLabel(item) {
+    return maskPublicName(greetName({ name: (item && item.by) || "" }));
+  }
+
+  function stampOwnerOnSeedReviews(user) {
+    if (!user || !user.owner) return;
+    const name = greetName(user);
+    if (!name) return;
+    let changed = false;
+    feels.forEach((item) => {
+      if (!isSeedReview(item)) return;
+      if (item.by !== name || item.byId !== user.id) {
+        item.by = name;
+        item.byId = user.id;
+        item.ownerSeed = true;
+        changed = true;
+      }
+    });
+    if (changed) {
+      try {
+        writeFeelStore(feels);
+      } catch (err) {}
+    }
   }
 
   function mergeFeelsList(list) {
@@ -1125,9 +1182,10 @@
         <div class="review-last-row">
         <button type="button" class="review-line" data-id="${escapeHtml(item.id)}" data-title="${escapeHtml(item.title)}" data-show="${escapeHtml(item.showId || "")}" onclick="ownexGoReview(this)">
           <span class="review-no">${no}</span>
-          <span class="review-date">${escapeHtml(item.at || "")}${item.by ? `<span class="review-by">${escapeHtml(item.by)}</span>` : ""}</span>
+          <span class="review-date">${escapeHtml(item.at || "")}</span>
           <span class="review-name">${escapeHtml(item.title)}</span>
           <span class="review-snip">${escapeHtml(open ? "접기" : snippet)}</span>
+          <span class="review-who">${escapeHtml(authorLabel(item))}</span>
         </button>
         </div>
         ${
@@ -1156,7 +1214,7 @@
     const empty = [1, 2, 3].map(function (no) {
       return '<div class="review-item empty-row"><div class="review-last-row"><div class="review-line"><span class="review-no">' +
         no +
-        '</span><span class="review-date"></span><span class="review-name"></span><span class="review-snip"></span></div></div></div>';
+        '</span><span class="review-date"></span><span class="review-name"></span><span class="review-snip"></span><span class="review-who"></span></div></div></div>';
     }).join("");
     const head = preview
       ? `<div class="feel-head"><h2>Review</h2></div>`
@@ -1179,6 +1237,7 @@
           <span class="review-date">날짜</span>
           <span class="review-name">제목</span>
           <span class="review-snip">소감</span>
+          <span class="review-who">작성자</span>
         </div>
         ${rows || empty}
       </div>` +
@@ -1515,7 +1574,8 @@
       body,
       at: new Date().toISOString().slice(0, 10),
       showId: show ? itemId(show) : "",
-      by: (familyMe && familyMe.name) || "",
+      by: (familyMe && greetName(familyMe)) || "",
+      byId: (familyMe && familyMe.id) || "",
     };
     feels.push(item);
     writeFeelStore(feels);
@@ -1541,7 +1601,7 @@
       ? shown
           .map(
             (item) =>
-              `<div class="art-review-item"><p class="art-review-date">${escapeHtml(item.at || "")}${item.by ? " · " + escapeHtml(item.by) : ""}</p><p>${escapeHtml(item.body)}</p></div>`
+              `<div class="art-review-item"><p class="art-review-date">${escapeHtml(item.at || "")} · ${escapeHtml(authorLabel(item))}</p><p>${escapeHtml(item.body)}</p></div>`
           )
           .join("")
       : '<p class="quiet">아직 이 작품에 남긴 감상평이 없습니다.</p>';

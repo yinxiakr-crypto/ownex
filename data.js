@@ -625,7 +625,7 @@ window.OWNEX = {
     "open_url": "https://calendar.google.com/calendar/u/0/r?cid=b03a3e41e51f86ec6e6534b393615d86ca8dce3bee52d3febcd4a879c58b3b13@group.calendar.google.com"
   },
   "saved": {
-    "rev": "stickers-20260907q",
+    "rev": "stickers-20260907t",
     "notes": {
       "윤형근을 다시 상상하다|PKM갤러리|2026-08-26|2026-10-03": {
         "visited": false,
@@ -666,14 +666,20 @@ window.OWNEX = {
         "title": "큐비스트 감상",
         "body": "유럽의 거장 큐비스트들을 통해 한국의 나헤석, 김환기 작가 등 한국 근현대 미술가들이 오버랩되어 한국의 큐비즘의 태동을 만난 것 같았다.",
         "at": "2026-09-03",
-        "showId": "큐비스트: 시각의 혁신가들|퐁피두센터 한화|2026-06-04|2026-10-04"
+        "showId": "큐비스트: 시각의 혁신가들|퐁피두센터 한화|2026-06-04|2026-10-04",
+        "by": "은하",
+        "byId": "owner",
+        "ownerSeed": true
       },
       {
         "id": "1788479088443",
         "title": "김희천: 두더지들",
         "body": "바쁜 현대 사회를 살아 가면서 잠깐 빠져 나오게\n해 주는 작품이었습니다.",
         "at": "2026-09-03",
-        "showId": "김희천: 두더지들|서울시립 서서울미술관|2026-08-20|2026-11-08"
+        "showId": "김희천: 두더지들|서울시립 서서울미술관|2026-08-20|2026-11-08",
+        "by": "은하",
+        "byId": "owner",
+        "ownerSeed": true
       }
     ]
   }
