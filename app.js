@@ -18,10 +18,14 @@
 
   const data = window.OWNEX || { exhibitions: [], google: {} };
 
-  applySeason();
+  try {
+    applySeason();
+  } catch (err) {}
   const notes = loadNotes();
   const feels = loadFeels();
-  mergeSaved();
+  try {
+    mergeSaved();
+  } catch (err) {}
   const state = {
     field: "exhibition",
     year: "",
@@ -769,6 +773,7 @@
   }
 
   function fillYears() {
+    if (!yearEl || !monthEl) return;
     const years = yearChoices();
     yearEl.innerHTML =
       '<option value="">연도를 고르세요</option><option value="all">전체</option>' +
@@ -926,22 +931,24 @@
     document.body.classList.toggle("reviews", reviewOnly);
     document.body.classList.toggle("open", !reviewOnly && browsing && state.space !== "feel");
     if (monthWrap) monthWrap.hidden = false;
-    yearAll.classList.toggle("on", state.year === "all");
+    if (yearAll) yearAll.classList.toggle("on", state.year === "all");
     const showMonth = !reviewOnly && browsing && !state.selected && state.space !== "feel";
     if (frontRow) {
       frontRow.hidden = !showFeel;
       if (showFeel) frontRow.removeAttribute("hidden");
     }
     if (reviewPage) reviewPage.hidden = !reviewOnly;
-    ownCal.hidden = !showMonth;
-    monthList.hidden = !showMonth;
+    if (ownCal) ownCal.hidden = !showMonth;
+    if (monthList) monthList.hidden = !showMonth;
     artwork.hidden = reviewOnly || !state.selected;
     if (reviewOnly) {
       renderFeelings(reviewPage, "full");
       return;
     }
     if (showFeel) {
-      renderFeelings(feelings, "preview");
+      try {
+        renderFeelings(feelings, "preview");
+      } catch (err) {}
       try {
         renderPraise();
       } catch (err) {
@@ -1554,7 +1561,19 @@
       .replace(/"/g, "&quot;");
   }
 
-  seedCubistFeel();
+  window.ownexOpenReviews = openReviews;
+  window.ownexMoreReviews = showMoreReviews;
+  window.ownexHome = closeReviews;
+  window.ownexOpenByTitle = function (title) {
+    const show =
+      (data.exhibitions || []).find((row) => itemId(row) === String(title || "")) ||
+      matchShow(title);
+    if (show) openShow(show);
+  };
+
+  try {
+    seedCubistFeel();
+  } catch (err) {}
   if (location.hash === "#reviews") state.space = "reviews";
   window.addEventListener("hashchange", () => {
     const want = location.hash === "#reviews";
@@ -1567,12 +1586,14 @@
       draw();
     }
   });
-  bindGlance();
-  paintGuests(readCachedGuests());
-  countSiteGuests();
-  bindFamilyBar();
-  draw();
-  paintFamilyBar();
+  try {
+    bindGlance();
+    paintGuests(readCachedGuests());
+    countSiteGuests();
+    bindFamilyBar();
+    draw();
+    paintFamilyBar();
+  } catch (err) {}
   probeFamily()
     .then(function () {
       return pullShared();
@@ -1640,16 +1661,6 @@
       draw();
     } catch (err) {}
     paintFamilyBar();
-  };
-
-  window.ownexOpenReviews = openReviews;
-  window.ownexMoreReviews = showMoreReviews;
-  window.ownexHome = closeReviews;
-  window.ownexOpenByTitle = function (title) {
-    const show =
-      (data.exhibitions || []).find((row) => itemId(row) === String(title || "")) ||
-      matchShow(title);
-    if (show) openShow(show);
   };
 
   function enterFamily() {

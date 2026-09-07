@@ -13,23 +13,12 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <script>
     (function () {
-      var looping = false;
-      try { looping = sessionStorage.getItem("ownex-reloading") === "1"; } catch (err) {}
-      if (looping) {
-        try { sessionStorage.removeItem("ownex-reloading"); } catch (err) {}
-        return;
-      }
       fetch("build.json?t=" + Date.now(), { cache: "no-store" })
         .then(function (res) { return res.json(); })
         .then(function (info) {
           var now = String((info && info.build) || "");
-          var seen = "";
-          try { seen = localStorage.getItem("ownex-build") || ""; } catch (err) {}
-          if (!now || now === seen) return;
+          if (!now) return;
           try { localStorage.setItem("ownex-build", now); } catch (err) {}
-          try { sessionStorage.setItem("ownex-reloading", "1"); } catch (err) {}
-          var path = location.pathname || "/";
-          location.replace(path + "?b=" + encodeURIComponent(now));
         })
         .catch(function () {});
     })();
@@ -37,7 +26,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Great+Vibes&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=fix1" />
+  <link rel="stylesheet" href="styles.css?v=fix2" />
   <style>
     body { margin: 0; min-height: 100vh; background: #351e28; color: #f6efe6; font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
     #front-row:not([hidden]) {
@@ -358,11 +347,23 @@
         return false;
       };
       window.ownexReviews = function () {
-        if (window.ownexOpenReviews) window.ownexOpenReviews();
+        if (window.ownexOpenReviews) {
+          window.ownexOpenReviews();
+          return false;
+        }
+        var front = document.getElementById("front-row");
+        var page = document.getElementById("review-page");
+        if (front) front.hidden = true;
+        if (page) {
+          page.hidden = false;
+          page.removeAttribute("hidden");
+          if (!page.innerHTML) page.innerHTML = document.getElementById("feelings") ? document.getElementById("feelings").innerHTML : "";
+        }
         return false;
       };
       window.ownexMore = function () {
         if (window.ownexMoreReviews) window.ownexMoreReviews();
+        else window.ownexReviews();
         return false;
       };
       window.ownexGoReview = function (el) {
@@ -374,7 +375,10 @@
             title = name ? String(name.textContent || "").trim() : String(el.textContent || "").trim();
           }
         }
-        if (window.ownexOpenByTitle) window.ownexOpenByTitle(title);
+        if (window.ownexOpenByTitle) {
+          window.ownexOpenByTitle(title);
+          return false;
+        }
         return false;
       };
       window.ownexEnter = function () {
@@ -433,7 +437,7 @@
       }
     })();
   </script>
-  <script src="data.js?v=fix1"></script>
-  <script src="app.js?v=fix1"></script>
+  <script src="data.js?v=fix2"></script>
+  <script src="app.js?v=fix2"></script>
 </body>
 </html>
