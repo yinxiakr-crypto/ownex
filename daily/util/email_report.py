@@ -535,15 +535,12 @@ def collect_posters(rows: list[dict]) -> list[bytes | None]:
     return posters
 
 
+PUBLIC_HOME = "https://yinxiakr-crypto.github.io/ownex/"
+
+
 def _home_url() -> str:
-    for path in (ROOT / "ownex-url.txt", ROOT / "아이폰홈화면.txt"):
-        if not path.exists():
-            continue
-        for line in path.read_text(encoding="utf-8").splitlines():
-            text = line.strip()
-            if text.startswith("http"):
-                return text
-    return "https://yinxiakr-crypto.github.io/ownex/"
+    # Mail must never use ownex.localhost or a PC-only address.
+    return PUBLIC_HOME
 
 
 def _activity_counts() -> tuple[int, int]:
@@ -602,7 +599,7 @@ def _html_body(rows: list[dict], calendar_from: date | None, has_card: bool) -> 
     visits, reviews = _activity_counts()
     home = _home_url()
     glance = f"""
-      <table role="presentation" cellpadding="0" cellspacing="0" style="margin:16px 0 20px 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" style="margin:16px 0 8px 0;">
         <tr>
           <td style="padding:10px 16px;background:#351e28;color:#f6efe6;border-radius:12px;text-align:center;">
             <div style="font-size:22px;font-weight:700;">{visits}</div>
@@ -614,11 +611,14 @@ def _html_body(rows: list[dict], calendar_from: date | None, has_card: bool) -> 
             <div style="font-size:12px;">Review</div>
           </td>
           <td style="width:10px;"></td>
-          <td style="padding:12px 16px;background:#e24a1b;border-radius:12px;text-align:center;">
-            <a href="{home}" style="color:#fff;text-decoration:none;font-weight:700;">오넥스 홈 · 앱 열기</a>
+          <td style="background:#e24a1b;border-radius:12px;text-align:center;">
+            <a href="{home}" target="_blank" style="display:block;padding:14px 18px;color:#ffffff;text-decoration:none;font-weight:700;font-size:15px;">오넥스 홈 · 앱 열기</a>
           </td>
         </tr>
       </table>
+      <p style="margin:0 0 20px 0;font-size:13px;">
+        <a href="{home}" target="_blank" style="color:#8a3b12;word-break:break-all;">{home}</a>
+      </p>
     """
     return f"""
     <div style="font-family:'Malgun Gothic',sans-serif;max-width:640px;margin:0 auto;color:#222;">
@@ -686,7 +686,10 @@ def send_exhibition_email(rows: list[dict], cfg, calendar_from: date | None = No
             message["Bcc"] = ", ".join(extra)
         message["Subject"] = f"오늘의 전시 {date.today().isoformat()}"
         alt = MIMEMultipart("alternative")
+        home = _home_url()
+        alt.attach(MIMEText(f"오늘의 전시 {date.today().isoformat()}\n오넥스 열기: {home}\n", "plain", "utf-8"))
         alt.attach(MIMEText(_html_body(rows, calendar_from, True), "html", "utf-8"))
+        LOGGER.info(f"[메일] 홈 주소는 {home} 입니다.")
         message.attach(alt)
         card_part = MIMEImage(card, _subtype="jpeg")
         card_part.add_header("Content-ID", "<schedulecard>")
