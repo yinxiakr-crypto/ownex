@@ -471,16 +471,23 @@
     return units.slice(0, 3).join("") + "*".repeat(units.length - 3);
   }
 
+  function authorId(user) {
+    const raw = String((user && (user.name || user.mailEmail || user.by)) || "").trim();
+    if (!raw) return "";
+    return raw.indexOf("@") >= 0 ? raw.split("@")[0] : raw;
+  }
+
   function authorLabel(item) {
-    return maskPublicName(greetName({ name: (item && item.by) || "" }));
+    const id = authorId({ name: (item && item.by) || "" });
+    return maskPublicName(id);
   }
 
   function restoreSeedReviewAuthors() {
     let changed = false;
     feels.forEach((item) => {
       if (!isSeedReview(item)) return;
-      if (item.by !== "은하" || item.byId !== "owner") {
-        item.by = "은하";
+      if (item.by !== "yinxiakr" || item.byId !== "owner") {
+        item.by = "yinxiakr";
         item.byId = "owner";
         item.ownerSeed = true;
         changed = true;
@@ -890,7 +897,7 @@
       body: "유럽의 거장 큐비스트들을 통해 한국의 나헤석, 김환기 작가 등 한국 근현대 미술가들이 오버랩되어 한국의 큐비즘의 태동을 만난 것 같았다.",
       at: "2026-09-03",
       showId: show ? itemId(show) : "",
-      by: "은하",
+      by: "yinxiakr",
       byId: "owner",
       ownerSeed: true,
     });
@@ -1859,7 +1866,7 @@
   function addReview(title, body, show, extra) {
     extra = extra || {};
     const me = familyMe && familyMe.id ? familyMe : localMe();
-    const by = String(extra.by || greetName(me) || "").trim();
+    const by = String(extra.by || authorId(me) || "").trim();
     if (!isIn() || !by || by === "익명") return needLogin();
     const item = {
       id: String(Date.now()),
