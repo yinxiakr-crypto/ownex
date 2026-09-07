@@ -279,6 +279,7 @@
         var hint = document.getElementById("login-note") || document.querySelector(".family-hint");
         if (hint) hint.textContent = "로그인을 해야 전시 정보를 보실 수 있습니다";
       }
+      function say(text) {
         var msg = document.getElementById("family-msg");
         if (!msg) return;
         msg.textContent = text || "";
