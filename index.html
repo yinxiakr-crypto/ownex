@@ -31,7 +31,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Great+Vibes&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=fix25" />
+  <link rel="stylesheet" href="styles.css?v=fix26" />
   <style>
     body { margin: 0; min-height: 100vh; background: #351e28; color: #f6efe6; font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
     #front-row:not([hidden]) {
@@ -73,6 +73,15 @@
       flex-wrap: nowrap !important;
       align-items: center !important;
       gap: 0.55rem;
+    }
+    #family-form.login-open[hidden],
+    #family-form[hidden],
+    .family-bar.is-in {
+      display: none !important;
+      visibility: hidden !important;
+      height: 0 !important;
+      overflow: hidden !important;
+      margin: 0 !important;
     }
     #family-form.login-open #family-fields {
       display: flex !important;
@@ -291,10 +300,20 @@
       function showIn(name) {
         if (!staying) return;
         var form = document.getElementById("family-form");
+        var bar = document.getElementById("family-bar");
         var me = document.getElementById("family-me");
         var who = document.getElementById("family-who");
-        var hint = document.querySelector(".family-hint");
-        if (form) form.hidden = true;
+        var hint = document.getElementById("login-note") || document.querySelector(".family-hint");
+        closeFields();
+        if (form) {
+          form.hidden = true;
+          form.setAttribute("hidden", "");
+        }
+        if (bar) {
+          bar.classList.add("is-in");
+          bar.hidden = true;
+          bar.setAttribute("hidden", "");
+        }
         if (me) me.removeAttribute("hidden");
         if (who) who.textContent = greetOf(name) + "의 방문을 환영합니다.";
         if (hint) hint.hidden = true;
@@ -316,12 +335,20 @@
         staying = false;
         clearKeep();
         var form = document.getElementById("family-form");
+        var bar = document.getElementById("family-bar");
         var me = document.getElementById("family-me");
         var who = document.getElementById("family-who");
-        var hint = document.querySelector(".family-hint");
+        var hint = document.getElementById("login-note") || document.querySelector(".family-hint");
         if (form) {
           form.hidden = false;
           form.removeAttribute("hidden");
+        }
+        if (bar) {
+          bar.classList.remove("is-in");
+          bar.hidden = false;
+          bar.removeAttribute("hidden");
+          bar.style.removeProperty("display");
+          bar.style.removeProperty("visibility");
         }
         closeFields();
         if (me) me.hidden = true;
@@ -610,7 +637,7 @@
       }
     })();
   </script>
-  <script src="data.js?v=fix25"></script>
-  <script src="app.js?v=fix25"></script>
+  <script src="data.js?v=fix26"></script>
+  <script src="app.js?v=fix26"></script>
 </body>
 </html>

@@ -321,8 +321,10 @@ body.reviews .family-bar,
   align-items: center;
 }
 
-.family-bar form[hidden],
+.family-bar.is-in,
+.family-bar.is-in #family-form,
 #family-form[hidden],
+#family-form.login-open[hidden],
 #family-me[hidden] {
   display: none !important;
 }

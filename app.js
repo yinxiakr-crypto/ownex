@@ -248,7 +248,7 @@
     const guest = readNotesStore(STORE);
     const seedNotes = data.saved && data.saved.notes && typeof data.saved.notes === "object" ? data.saved.notes : {};
     const merged = {};
-    const sources = (!user || user.owner) ? [seedNotes, guest, before, dest] : [guest, before, dest];
+    const sources = [seedNotes, guest, before, dest];
     sources.forEach((source) => {
       Object.keys(source || {}).forEach((key) => {
         const prev = merged[key] && typeof merged[key] === "object" ? merged[key] : {};
@@ -333,10 +333,9 @@
     Object.keys(seedNotes).forEach((key) => {
       const local = notes[key] && typeof notes[key] === "object" ? notes[key] : {};
       const seedNote = seedNotes[key] && typeof seedNotes[key] === "object" ? seedNotes[key] : {};
-      if (!notes[key] || applied !== rev) {
-        notes[key] = Object.assign({}, seedNote, local);
-        notes[key].visited = Boolean(local.visited) || Boolean(seedNote.visited);
-      }
+      notes[key] = Object.assign({}, seedNote, local);
+      notes[key].visited = Boolean(local.visited) || Boolean(seedNote.visited) || local.visited === "true" || seedNote.visited === "true";
+      if (!notes[key].at) notes[key].at = seedNote.at || local.at || "";
     });
     try { localStorage.setItem("ownex-seed-rev", rev); } catch (err) {}
     (Array.isArray(seed.feels) ? seed.feels : []).forEach((item) => {
@@ -652,8 +651,24 @@
   }
 
   function applyNotes(nextNotes) {
-    fillNotes(nextNotes && typeof nextNotes === "object" ? nextNotes : {});
+    if (!nextNotes || typeof nextNotes !== "object" || Array.isArray(nextNotes)) return;
+    const incoming = Object.keys(nextNotes).length;
+    const haveVisit = Object.keys(notes).some((key) => notes[key] && (notes[key].visited === true || notes[key].visited === "true"));
+    if (!incoming && haveVisit) return;
+    const merged = {};
+    [notes, nextNotes].forEach((source) => {
+      Object.keys(source || {}).forEach((key) => {
+        const prev = merged[key] && typeof merged[key] === "object" ? merged[key] : {};
+        const next = source[key] && typeof source[key] === "object" ? source[key] : {};
+        merged[key] = Object.assign({}, prev, next, {
+          visited: Boolean(prev.visited) || Boolean(next.visited) || prev.visited === "true" || next.visited === "true",
+          at: next.at || prev.at || "",
+        });
+      });
+    });
+    fillNotes(merged);
     persistNotes();
+    mergeSaved();
   }
 
   function pushState() {
@@ -1078,8 +1093,10 @@
     if (monthWrap) monthWrap.hidden = false;
     if (yearAll) yearAll.classList.toggle("on", state.year === "all");
     const familyBar = document.getElementById("family-bar") || document.querySelector(".family-bar");
+    const inNow = isIn();
     if (familyBar) {
-      const hideLogin = !showFeel || browsing || reviewOnly || Boolean(state.selected);
+      const hideLogin = inNow || !showFeel || browsing || reviewOnly || Boolean(state.selected);
+      familyBar.classList.toggle("is-in", inNow);
       familyBar.hidden = hideLogin;
       if (hideLogin) {
         familyBar.setAttribute("hidden", "");
@@ -1092,7 +1109,6 @@
       }
     }
     const showMonth = !reviewOnly && browsing && !state.selected && state.space !== "feel";
-    const inNow = isIn();
     if (frontRow) {
       frontRow.classList.toggle("review-only", !inNow);
       frontRow.hidden = !showFeel;
@@ -1908,6 +1924,17 @@
     const inNow = Boolean(user && user.id);
     const bar = document.querySelector(".family-bar");
     if (bar) bar.classList.toggle("is-in", inNow);
+    if (bar) {
+      bar.hidden = inNow;
+      if (inNow) {
+        bar.setAttribute("hidden", "");
+        bar.style.setProperty("display", "none", "important");
+      } else {
+        bar.removeAttribute("hidden");
+        bar.style.removeProperty("display");
+        bar.style.removeProperty("visibility");
+      }
+    }
     if (form) form.hidden = inNow;
     if (meBox) meBox.hidden = !inNow;
     if (who) who.textContent = inNow ? greetName(user) + "의 방문을 환영합니다." : "";
