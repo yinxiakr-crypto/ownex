@@ -1197,15 +1197,15 @@ body.reviews .picks-row {
   display: none;
 }
 
+body.reviews main {
+  display: flex;
+  justify-content: center;
+}
 
 body.reviews .hero {
   min-height: 0;
   padding-top: 1.6rem;
   padding-bottom: 1.2rem;
-}
-
-.review-page {
-  max-width: 40rem;
 }
 
 .review-page[hidden] {
@@ -1317,6 +1317,62 @@ body.open .review-all-btn {
 
 .feel-form .save {
   flex: 0 0 auto;
+}
+
+.review-editor {
+  display: grid;
+  gap: 0.7rem;
+  margin: 0 auto 1.2rem;
+  max-width: 32rem;
+  padding: 1rem 1.05rem 1.1rem;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: color-mix(in srgb, #fff 8%, transparent);
+}
+
+.review-editor-title {
+  margin: 0;
+  font-family: "Noto Serif KR", serif;
+  font-size: 1.05rem;
+}
+
+.review-editor label {
+  display: grid;
+  gap: 0.28rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.review-editor input,
+.review-editor textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 0.55rem;
+  padding: 0.5rem 0.7rem;
+  font: inherit;
+  font-size: 0.9rem;
+  background: color-mix(in srgb, #fff 10%, transparent);
+  color: var(--ink);
+  box-sizing: border-box;
+}
+
+.review-editor textarea {
+  min-height: 7rem;
+  resize: vertical;
+}
+
+.review-editor input[readonly] {
+  opacity: 0.85;
+}
+
+.review-editor-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.review-table {
+  overflow-x: auto;
+}
   padding: 0.35rem 0.75rem;
   font-size: 0.78rem;
 }
@@ -1424,8 +1480,16 @@ body.open .review-all-btn {
 }
 
 body.open .feel-form input,
-body.open .feel-form textarea {
+body.open .feel-form textarea,
+body.open .review-editor input,
+body.open .review-editor textarea {
   background: #fff;
+  color: #3a2430;
+}
+
+body.open .review-editor {
+  background: #fff;
+  border-color: #e3d0c8;
   color: #3a2430;
 }
 
@@ -1578,6 +1642,14 @@ body.open .review-who { color: #8a6b72; }
   }
 
   .review-snip { display: none; }
+
+  body.reviews .review-snip { display: block; }
+
+  body.reviews .review-cols,
+  body.reviews .review-line {
+    grid-template-columns: 2.2rem 6.4rem minmax(5rem, 0.9fr) minmax(6rem, 1.1fr) 4.6rem;
+    min-width: 36rem;
+  }
 
   .review-open { padding: 0 0.75rem 0.8rem; }
 }

@@ -38,6 +38,7 @@
     stickerYear: String(Math.max(2026, new Date().getFullYear())),
     stickerPage: 0,
     frontExtra: 0,
+    reviewWrite: false,
   };
   const FRONT_REVIEWS = 3;
 
@@ -52,7 +53,7 @@
   }
 
   function frontReviewBase() {
-    return isPhoneLayout() ? 2 : FRONT_REVIEWS;
+    return FRONT_REVIEWS;
   }
 
   function frontReviewCount() {
@@ -1204,6 +1205,7 @@
   function openReviews() {
     state.space = "reviews";
     state.selected = null;
+    state.reviewWrite = false;
     try {
       draw();
     } catch (err) {}
@@ -1225,6 +1227,7 @@
 
   function closeReviews() {
     state.space = "";
+    state.reviewWrite = false;
     if (location.hash === "#reviews") {
       history.replaceState(null, "", location.pathname + location.search);
     }
@@ -1274,10 +1277,11 @@
     }).join("");
     const moreOutside = preview
       ? '<div class="review-foot">' +
-        '<button type="button" class="review-more-btn" data-reviews="more" onclick="ownexMore()">계속</button>' +
         '<button type="button" class="review-all-btn" data-reviews="all" onclick="ownexReviews()">전체보기</button>' +
         "</div>"
-      : "";
+      : '<div class="review-foot">' +
+        '<button type="button" class="review-all-btn" data-reviews="write">등록하기</button>' +
+        "</div>";
     const empty = [1, 2, 3].map(function (no) {
       return '<div class="review-item empty-row"><div class="review-last-row"><div class="review-line"><span class="review-no">' +
         no +
@@ -1286,19 +1290,27 @@
     const head = preview
       ? `<div class="feel-head"><h2>Review</h2></div>`
       : `<div class="feel-head"><h2>Review</h2><button type="button" class="back" data-reviews="home" onclick="ownexHome()">앞페이지</button></div>`;
-    const writeForm = preview
-      ? ""
-      : `<form class="feel-form" id="feel-form">
-        <div class="feel-row">
-          <input id="feel-title" name="title" maxlength="80" placeholder="제목" autocomplete="off" required />
-          <button type="submit" class="save">남기기</button>
-        </div>
-        <textarea id="feel-body" name="body" placeholder="소감" required></textarea>
-      </form>`;
+    const me = familyMe && familyMe.id ? familyMe : localMe();
+    const writer = greetName(me) || "";
+    const today = new Date().toISOString().slice(0, 10);
+    const editor = !preview && state.reviewWrite
+      ? `<form class="review-editor" id="review-editor">
+          <p class="review-editor-title">리뷰 등록</p>
+          <label>날짜<input id="edit-at" type="date" value="${escapeHtml(today)}" required /></label>
+          <label>제목<input id="edit-title" maxlength="80" placeholder="제목" autocomplete="off" required /></label>
+          <label>소감<textarea id="edit-body" placeholder="소감" required></textarea></label>
+          <label>작성자<input id="edit-who" value="${escapeHtml(writer)}" readonly /></label>
+          <div class="review-editor-actions">
+            <button type="submit" class="save">확인</button>
+          </div>
+        </form>`
+      : "";
     box.innerHTML =
       head +
-      writeForm +
-      `<div class="review-table">
+      editor +
+      (editor
+        ? ""
+        : `<div class="review-table">
         <div class="review-cols" aria-hidden="true">
           <span class="review-no">순번</span>
           <span class="review-date">날짜</span>
@@ -1307,17 +1319,23 @@
           <span class="review-who">작성자</span>
         </div>
         ${rows || empty}
-      </div>` +
-      moreOutside;
-    const form = box.querySelector("#feel-form");
+      </div>` + moreOutside);
+    const form = box.querySelector("#review-editor");
     if (form) {
       form.addEventListener("submit", (event) => {
         event.preventDefault();
-        const title = box.querySelector("#feel-title").value.trim();
-        const body = box.querySelector("#feel-body").value.trim();
-        if (!title || !body) return;
-        const show = matchShow(title);
-        addReview(title, body, show);
+        if (!isIn()) return needLogin();
+        const title = (box.querySelector("#edit-title") || {}).value || "";
+        const body = (box.querySelector("#edit-body") || {}).value || "";
+        const at = (box.querySelector("#edit-at") || {}).value || "";
+        const who = (box.querySelector("#edit-who") || {}).value || "";
+        if (!String(title).trim() || !String(body).trim()) return;
+        const show = matchShow(String(title).trim());
+        addReview(String(title).trim(), String(body).trim(), show, {
+          at: String(at).trim(),
+          by: String(who).trim(),
+        });
+        state.reviewWrite = false;
         renderFeelings(box, mode);
       });
     }
@@ -1357,6 +1375,14 @@
       btn.addEventListener("click", function (event) {
         event.preventDefault();
         openReviews();
+      });
+    });
+    box.querySelectorAll("[data-reviews='write']").forEach((btn) => {
+      btn.addEventListener("click", function (event) {
+        event.preventDefault();
+        if (!isIn()) return needLogin();
+        state.reviewWrite = true;
+        renderFeelings(box, "full");
       });
     });
     const homeBtn = box.querySelector("[data-reviews='home']");
@@ -1642,15 +1668,17 @@
     });
   }
 
-  function addReview(title, body, show) {
+  function addReview(title, body, show, extra) {
+    extra = extra || {};
+    const me = familyMe && familyMe.id ? familyMe : localMe();
     const item = {
       id: String(Date.now()),
       title,
       body,
-      at: new Date().toISOString().slice(0, 10),
+      at: extra.at || new Date().toISOString().slice(0, 10),
       showId: show ? itemId(show) : "",
-      by: (familyMe && greetName(familyMe)) || "",
-      byId: (familyMe && familyMe.id) || "",
+      by: extra.by || greetName(me) || "",
+      byId: (me && me.id) || "",
     };
     feels.push(item);
     writeFeelStore(feels);

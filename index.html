@@ -31,7 +31,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Great+Vibes&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=fix26" />
+  <link rel="stylesheet" href="styles.css?v=fix27" />
   <style>
     body { margin: 0; min-height: 100vh; background: #351e28; color: #f6efe6; font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
     #front-row:not([hidden]) {
@@ -108,7 +108,12 @@
     body.reviews .family-bar,
     .family-bar[hidden] { display: none !important; visibility: hidden !important; height: 0 !important; overflow: hidden !important; margin: 0 !important; }
     #feelings.feel { max-width: 40rem; width: 100%; }
-    #review-page.review-page { max-width: 40rem; }
+    #review-page.review-page {
+      max-width: min(56rem, 94vw);
+      width: min(56rem, 94vw);
+      margin-left: auto;
+      margin-right: auto;
+    }
     #praise-board {
       min-width: 14rem;
       max-width: 18rem;
@@ -219,7 +224,6 @@
           <div class="review-item"><div class="review-last-row"><button type="button" class="review-line" data-title="김희천: 두더지들" data-show="김희천: 두더지들|서울시립 서서울미술관|2026-08-20|2026-11-08" onclick="ownexGoReview(this)"><span class="review-no">2</span><span class="review-date">2026-09-03</span><span class="review-name">김희천: 두더지들</span><span class="review-snip">바쁜 현대 사회를 살아 가면서 잠깐 빠져 나오게 해 주는 작품이었습니다.</span><span class="review-who">은하</span></button></div></div>
         </div>
         <div class="review-foot">
-          <button type="button" class="review-more-btn" data-reviews="more" onclick="ownexMore()">계속</button>
           <button type="button" class="review-all-btn" data-reviews="all" onclick="ownexReviews()">전체보기</button>
         </div>
       </section>
@@ -637,7 +641,7 @@
       }
     })();
   </script>
-  <script src="data.js?v=fix26"></script>
-  <script src="app.js?v=fix26"></script>
+  <script src="data.js?v=fix27"></script>
+  <script src="app.js?v=fix27"></script>
 </body>
 </html>
