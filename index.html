@@ -35,7 +35,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Great+Vibes&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=fix32" />
+  <link rel="stylesheet" href="styles.css?v=fix33" />
   <style>
     body { margin: 0; min-height: 100vh; background: #351e28; color: #f6efe6; font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
     #front-row:not([hidden]) {
@@ -56,7 +56,7 @@
     #artwork:not([hidden]) { display: block !important; }
     h1 { margin: 0 0 0.7rem; }
     .family-bar { margin: 0.2rem 0 1.4rem; position: relative; z-index: 2; }
-    .family-hello-box { position: absolute; top: 1.5rem; right: max(1.2rem, 8vw); display: flex; flex-direction: column; align-items: flex-end; gap: 0.3rem; z-index: 5; max-width: 16rem; }
+    .family-hello-box { position: absolute; top: 1.5rem; right: max(1.2rem, 8vw); display: flex; flex-direction: column; align-items: flex-end; gap: 0.3rem; z-index: 6; max-width: 18rem; }
     .family-hello-box[hidden] { display: none !important; }
     .family-hello-box .family-hello { margin: 0; font-size: 0.78rem; font-weight: 500; text-align: right; line-height: 1.35; }
     .family-hello-box .save { min-height: 1.85rem; min-width: auto; padding: 0.2rem 0.75rem; font-size: 0.75rem; }
@@ -154,15 +154,8 @@
     <p class="eyebrow">OWNEX <span class="open-count">접속 <strong id="glance-visitor-num">0</strong></span></p>
     <div id="family-me" class="family-hello-box" hidden>
       <p id="family-who" class="family-hello"></p>
-      <label class="mail-refuse" id="mail-refuse-wrap">
-        <input type="checkbox" id="mail-refuse" />
-        메일수신을 거부합니다
-      </label>
-      <button type="button" id="family-out" class="save" onclick="ownexLeave()">나가기</button>
-    </div>
-    <div id="mail-ask" class="mail-ask" hidden>
-      <div class="mail-ask-card">
-        <p>매주 월요일 전시회 업데이트 메일을 받아보겠습니까?</p>
+      <div id="mail-ask" class="mail-ask" hidden>
+        <p>매주 월요일 전시회 일정 업데이트를 받으시겠습니까?</p>
         <label id="mail-email-wrap" class="mail-email-wrap" hidden>
           받을 이메일
           <input id="mail-email" type="email" inputmode="email" autocomplete="email" placeholder="이메일" />
@@ -173,6 +166,11 @@
           <button type="button" id="mail-no">아니오</button>
         </div>
       </div>
+      <label class="mail-refuse" id="mail-refuse-wrap">
+        <input type="checkbox" id="mail-refuse" />
+        메일수신을 거부합니다
+      </label>
+      <button type="button" id="family-out" class="save" onclick="ownexLeave()">나가기</button>
     </div>
     <h1>오넥스</h1>
     <p class="lead">보고 듣고 가는 자리. 지금은 미술부터.</p>
@@ -339,9 +337,11 @@
       }
       function paintMailRefuse() {
         var box = document.getElementById("mail-refuse");
+        var wrap = document.getElementById("mail-refuse-wrap");
+        var ask = document.getElementById("mail-ask");
         var user = currentUser();
-        if (!box) return;
-        box.checked = Boolean(user && user.mailAsked && user.wantMail === false);
+        if (box) box.checked = Boolean(user && user.mailAsked && user.wantMail === false);
+        if (wrap) wrap.hidden = Boolean(ask && !ask.hidden);
       }
       function sendMailPref(want, email, name) {
         var addr = String(email || "").trim().toLowerCase();
@@ -384,16 +384,22 @@
         if (box) box.hidden = true;
         if (wrap) wrap.hidden = true;
         if (msg) msg.textContent = "";
+        paintMailRefuse();
       }
       function askMailIfNeeded(user) {
-        if (!user || user.mailAsked) return;
+        if (!user || user.mailAsked) {
+          paintMailRefuse();
+          return;
+        }
         var box = document.getElementById("mail-ask");
         var mail = document.getElementById("mail-email");
         var wrap = document.getElementById("mail-email-wrap");
+        var refuse = document.getElementById("mail-refuse-wrap");
         if (!box) return;
         if (mail) mail.value = looksEmail(user.name) ? String(user.name).toLowerCase() : (user.mailEmail || "");
         if (wrap) wrap.hidden = true;
         box.hidden = false;
+        if (refuse) refuse.hidden = true;
       }
       function setLoginNote() {
         var hint = document.getElementById("login-note") || document.querySelector(".family-hint");
@@ -812,7 +818,7 @@
       }
     })();
   </script>
-  <script src="data.js?v=fix32"></script>
-  <script src="app.js?v=fix32"></script>
+  <script src="data.js?v=fix33"></script>
+  <script src="app.js?v=fix33"></script>
 </body>
 </html>
