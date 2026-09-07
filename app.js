@@ -93,43 +93,40 @@
       draw();
     });
   });
-  function onYearPick() {
-    if (!yearEl) return;
-    state.year = yearEl.value;
-    if (state.year && state.year !== "all") {
-      state.stickerYear = state.year;
+  let pickLock = false;
+  function syncPicks(fromUser) {
+    if (pickLock || !yearEl || !monthEl) return;
+    const y = String(yearEl.value || "");
+    const m = String(monthEl.value || "");
+    if (!fromUser && y === state.year && m === state.month) return;
+    state.year = y;
+    state.month = m;
+    if (y && y !== "all") {
+      state.stickerYear = y;
       state.stickerPage = 0;
     }
-    state.month = "";
-    state.selected = null;
-    state.space = "";
-    if (monthEl) monthEl.value = "";
+    if (fromUser) {
+      state.selected = null;
+      state.space = "";
+      state.initial = "";
+    }
     draw();
   }
+  window.ownexSyncPicks = function () {
+    syncPicks(true);
+    return false;
+  };
   if (yearEl) {
-    yearEl.addEventListener("change", onYearPick);
-    yearEl.addEventListener("input", onYearPick);
+    yearEl.addEventListener("change", function () { syncPicks(true); });
+    yearEl.addEventListener("blur", function () { syncPicks(true); });
   }
   if (yearAll) yearAll.addEventListener("click", () => {
-    state.year = "all";
     if (yearEl) yearEl.value = "all";
-    state.month = "";
-    state.selected = null;
-    state.space = "";
-    if (monthEl) monthEl.value = "";
-    draw();
+    syncPicks(true);
   });
-  function onMonthPick() {
-    if (!monthEl) return;
-    state.month = monthEl.value;
-    state.selected = null;
-    state.initial = "";
-    state.space = "";
-    draw();
-  }
   if (monthEl) {
-    monthEl.addEventListener("change", onMonthPick);
-    monthEl.addEventListener("input", onMonthPick);
+    monthEl.addEventListener("change", function () { syncPicks(true); });
+    monthEl.addEventListener("blur", function () { syncPicks(true); });
   }
 
   function applySeason() {
@@ -673,10 +670,19 @@
     state.month = month || state.month;
     state.selected = row;
     state.space = "";
+    pickLock = true;
     if (yearEl && state.year) yearEl.value = state.year;
     if (monthEl && state.month) monthEl.value = state.month;
-    draw();
-    if (artwork && !artwork.hidden) {
+    try {
+      draw();
+    } catch (err) {}
+    pickLock = false;
+    if (artwork) {
+      artwork.hidden = false;
+      artwork.removeAttribute("hidden");
+      try {
+        renderArtwork();
+      } catch (err) {}
       artwork.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   }
