@@ -472,24 +472,28 @@
   }
 
   function authorId(user) {
+    if (isSiteOwner(user) || isSiteOwnerName(user && (user.name || user.mailEmail || user.by))) return "yinxiakr";
     const raw = String((user && (user.name || user.mailEmail || user.by)) || "").trim();
     if (!raw) return "";
     return raw.indexOf("@") >= 0 ? raw.split("@")[0] : raw;
   }
 
   function authorLabel(item) {
-    const id = authorId({ name: (item && item.by) || "" });
-    return maskPublicName(id);
+    const raw = (item && item.by) || "";
+    if ((item && item.ownerSeed) || isSiteOwnerName(raw)) return maskPublicName("yinxiakr");
+    return maskPublicName(authorId({ name: raw }));
   }
 
   function restoreSeedReviewAuthors() {
     let changed = false;
     feels.forEach((item) => {
-      if (!isSeedReview(item)) return;
+      if (!item) return;
+      const ownerRow = isSeedReview(item) || isSiteOwnerName(item.by);
+      if (!ownerRow) return;
       if (item.by !== "yinxiakr" || item.byId !== "owner") {
         item.by = "yinxiakr";
         item.byId = "owner";
-        item.ownerSeed = true;
+        if (isSeedReview(item)) item.ownerSeed = true;
         changed = true;
       }
     });
@@ -1432,7 +1436,7 @@
       ? `<div class="feel-head"><h2>Review</h2></div>`
       : `<div class="feel-head"><h2>Review</h2><button type="button" class="back" data-reviews="home" onclick="ownexHome()">앞페이지</button></div>`;
     const me = familyMe && familyMe.id ? familyMe : localMe();
-    const writer = greetName(me) || "";
+    const writer = maskPublicName(authorId(me)) || "";
     const today = new Date().toISOString().slice(0, 10);
     const editor = !preview && state.reviewWrite
       ? `<form class="review-editor" id="review-editor">
