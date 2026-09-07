@@ -160,11 +160,25 @@ header, main, footer {
   display: none !important;
 }
 
+#family-form.login-open {
+  flex-wrap: nowrap;
+  align-items: center;
+}
+
 #family-form.login-open #family-fields {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  align-items: center;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  gap: 0.35rem;
+  align-items: stretch;
+  width: 14.5rem;
+  max-width: calc(100vw - 9rem);
+}
+
+#family-form.login-open input {
+  width: 100%;
+  min-width: 0;
+  border-radius: 0.7rem;
 }
 
 body.open .family-hello-box .family-hello {

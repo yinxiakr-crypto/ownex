@@ -26,7 +26,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Great+Vibes&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=fix15" />
+  <link rel="stylesheet" href="styles.css?v=fix16" />
   <style>
     body { margin: 0; min-height: 100vh; background: #351e28; color: #f6efe6; font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
     #front-row:not([hidden]) {
@@ -62,7 +62,33 @@
       overflow: hidden !important;
       opacity: 0 !important;
     }
-    #family-form.login-open #family-fields { display: flex !important; flex-wrap: wrap; gap: 0.4rem; align-items: center; position: static; width: auto; height: auto; opacity: 1; visibility: visible; }
+    #family-form.login-open {
+      display: flex !important;
+      flex-direction: row !important;
+      flex-wrap: nowrap !important;
+      align-items: center !important;
+      gap: 0.55rem;
+    }
+    #family-form.login-open #family-fields {
+      display: flex !important;
+      flex-direction: column !important;
+      flex-wrap: nowrap !important;
+      gap: 0.35rem;
+      align-items: stretch;
+      position: static;
+      width: 14.5rem;
+      max-width: calc(100vw - 9rem);
+      height: auto;
+      opacity: 1;
+      visibility: visible;
+    }
+    #family-form.login-open #family-name,
+    #family-form.login-open #family-pin {
+      display: block !important;
+      width: 100% !important;
+      min-width: 0 !important;
+      box-sizing: border-box;
+    }
     body.open .family-bar,
     body.reviews .family-bar,
     .family-bar[hidden] { display: none !important; visibility: hidden !important; height: 0 !important; overflow: hidden !important; margin: 0 !important; }
@@ -111,11 +137,11 @@
 
     <div class="family-bar" id="family-bar">
       <form id="family-form" class="login-closed" action="#" method="post" onsubmit="ownexEnter(); return false;">
-        <div id="family-fields"></div>
         <button type="button" class="save" id="family-enter">로그인</button>
+        <div id="family-fields"></div>
       </form>
       <p id="family-msg" class="quiet"></p>
-      <p class="family-hint quiet">로그인을 누르면 이름과 비밀번호 칸이 나옵니다. 로그인한 뒤에 전시를 볼 수 있습니다.</p>
+      <p class="family-hint quiet">로그인을 누르면 오른쪽에 이름과 비밀번호 칸이 나옵니다. 넣은 뒤 다시 로그인을 누르세요.</p>
       <div id="family-people"></div>
     </div>
 
@@ -447,20 +473,46 @@
         var fields = document.getElementById("family-fields");
         if (!fields) return;
         if (!fields.querySelector("input")) {
-          fields.innerHTML = '<input id="family-name" name="ownex-name" maxlength="64" placeholder="이름 또는 이메일" autocomplete="off" enterkeyhint="next" />' +
-            '<input id="family-pin" name="ownex-pin" type="password" maxlength="32" placeholder="비밀번호" autocomplete="off" enterkeyhint="go" />';
+          fields.innerHTML = '<input id="family-name" name="ownex-name" maxlength="64" placeholder="이름 또는 이메일" autocomplete="username" enterkeyhint="next" />' +
+            '<input id="family-pin" name="ownex-pin" type="password" maxlength="32" placeholder="비밀번호" autocomplete="current-password" enterkeyhint="go" />';
         }
         if (form) {
           form.classList.add("login-open");
           form.classList.remove("login-closed");
         }
         var nameOpen = document.getElementById("family-name");
-        if (nameOpen) try { nameOpen.focus(); } catch (err) {}
+        var pinOpen = document.getElementById("family-pin");
+        function goEnter(event) {
+          if (!event || event.key !== "Enter") return;
+          event.preventDefault();
+          window.ownexEnter();
+        }
+        if (nameOpen) {
+          nameOpen.onkeydown = goEnter;
+          try { nameOpen.focus(); } catch (err) {}
+        }
+        if (pinOpen) pinOpen.onkeydown = goEnter;
       }
       window.ownexOpenFields = openFields;
+      function tryFinish(name, pin) {
+        if (!name) {
+          say("이름 또는 이메일을 넣은 뒤 로그인을 누르세요.");
+          var nameEl = document.getElementById("family-name");
+          if (nameEl) try { nameEl.focus(); } catch (err) {}
+          return false;
+        }
+        if (pin.length < 4) {
+          say("비밀번호는 4자 이상입니다.");
+          var pinEl = document.getElementById("family-pin");
+          if (pinEl) try { pinEl.focus(); } catch (err) {}
+          return false;
+        }
+        finish(name, pin);
+        return true;
+      }
       window.ownexEnter = function () {
         if (Date.now() < busy) return false;
-        busy = Date.now() + 350;
+        busy = Date.now() + 250;
         say("");
         var form = document.getElementById("family-form");
         if (!form || !form.classList.contains("login-open")) {
@@ -468,14 +520,13 @@
           return false;
         }
         var first = readFields();
-        if (!first.name || first.pin.length < 4) {
-          setTimeout(function () {
-            var second = readFields();
-            finish(second.name || first.name, second.pin || first.pin);
-          }, 80);
-          return false;
-        }
-        finish(first.name, first.pin);
+        if (tryFinish(first.name, first.pin)) return false;
+        setTimeout(function () {
+          var second = readFields();
+          if (second.name !== first.name || second.pin !== first.pin) {
+            tryFinish(second.name, second.pin);
+          }
+        }, 120);
         return false;
       };
       function restore() {
@@ -519,7 +570,7 @@
       }
     })();
   </script>
-  <script src="data.js?v=fix15"></script>
-  <script src="app.js?v=fix15"></script>
+  <script src="data.js?v=fix16"></script>
+  <script src="app.js?v=fix16"></script>
 </body>
 </html>
