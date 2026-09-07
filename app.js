@@ -81,7 +81,9 @@
 
   if (gcalIcon && data.google && data.google.open_url) gcalIcon.href = data.google.open_url;
 
-  fillYears();
+  try {
+    fillYears();
+  } catch (err) {}
   document.querySelectorAll(".field").forEach((btn) => {
     btn.addEventListener("click", () => {
       if (btn.disabled) return;
@@ -98,7 +100,7 @@
     if (pickLock || !yearEl || !monthEl) return;
     const y = String(yearEl.value || "");
     const m = String(monthEl.value || "");
-    if (!fromUser && y === state.year && m === state.month) return;
+    if (y === state.year && m === state.month) return;
     state.year = y;
     state.month = m;
     if (y && y !== "all") {
@@ -116,18 +118,22 @@
     syncPicks(true);
     return false;
   };
-  if (yearEl) {
-    yearEl.addEventListener("change", function () { syncPicks(true); });
-    yearEl.addEventListener("blur", function () { syncPicks(true); });
-  }
+  if (yearEl) yearEl.addEventListener("change", function () { syncPicks(true); });
   if (yearAll) yearAll.addEventListener("click", () => {
     if (yearEl) yearEl.value = "all";
     syncPicks(true);
   });
-  if (monthEl) {
-    monthEl.addEventListener("change", function () { syncPicks(true); });
-    monthEl.addEventListener("blur", function () { syncPicks(true); });
-  }
+  if (monthEl) monthEl.addEventListener("change", function () { syncPicks(true); });
+  document.addEventListener("click", function (event) {
+    const nameBtn = event.target.closest("#month-list .name");
+    if (!nameBtn) return;
+    const row =
+      showById(nameBtn.getAttribute("data-id") || "") ||
+      monthRows()[Number(nameBtn.getAttribute("data-index"))];
+    if (!row) return;
+    event.preventDefault();
+    openShow(row);
+  });
 
   function applySeason() {
     const month = new Date().getMonth() + 1;
@@ -662,29 +668,48 @@
     return score >= 4 ? best : null;
   }
 
+  function showArtwork(row) {
+    if (!row || !artwork) return;
+    state.selected = row;
+    state.space = "";
+    if (frontRow) {
+      frontRow.hidden = true;
+      frontRow.setAttribute("hidden", "");
+    }
+    if (ownCal) ownCal.hidden = true;
+    if (monthList) monthList.hidden = true;
+    if (reviewPage) reviewPage.hidden = true;
+    artwork.hidden = false;
+    artwork.removeAttribute("hidden");
+    document.body.classList.add("open");
+    document.body.classList.remove("reviews");
+    try {
+      renderArtwork();
+    } catch (err) {}
+    try {
+      artwork.scrollIntoView({ behavior: "smooth", block: "start" });
+    } catch (err) {}
+  }
+
   function openShow(row) {
     if (!row) return;
     const year = (row.start_date || "").slice(0, 4);
     const month = (row.start_date || "").slice(5, 7);
+    pickLock = true;
     state.year = year || state.year || "all";
     state.month = month || state.month;
     state.selected = row;
     state.space = "";
-    pickLock = true;
     if (yearEl && state.year) yearEl.value = state.year;
     if (monthEl && state.month) monthEl.value = state.month;
     try {
       draw();
     } catch (err) {}
-    pickLock = false;
-    if (artwork) {
-      artwork.hidden = false;
-      artwork.removeAttribute("hidden");
-      try {
-        renderArtwork();
-      } catch (err) {}
-      artwork.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
+    showArtwork(row);
+    setTimeout(function () {
+      pickLock = false;
+      if (state.selected === row) showArtwork(row);
+    }, 500);
   }
 
   function events() {
@@ -962,8 +987,12 @@
       }
     }
     if (showMonth) {
-      renderOwnCalendar();
-      renderNames();
+      try {
+        renderOwnCalendar();
+      } catch (err) {}
+      try {
+        renderNames();
+      } catch (err) {}
     }
     if (state.selected) {
       try {
@@ -1353,7 +1382,7 @@
                   const art = src
                     ? `<img class="name-art" src="${escapeHtml(src)}" alt="">`
                     : `<span class="name-art"></span>`;
-                  return `<button type="button" class="name ${src ? "has-art" : ""}" data-index="${i}">
+                  return `<button type="button" class="name ${src ? "has-art" : ""}" data-index="${i}" data-id="${escapeHtml(itemId(row))}" onclick="ownexOpenId(this.getAttribute('data-id'))">
               ${art}
               <span><strong>${escapeHtml(row.title)}</strong><small>${escapeHtml(row.venue || "")} · ${escapeHtml([row.start_date, row.end_date].filter(Boolean).join(" ~ "))}${endedTag(row)}</small></span>
             </button>`;
@@ -1375,8 +1404,9 @@
       });
     });
     monthList.querySelectorAll(".name").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const row = rows[Number(btn.getAttribute("data-index"))];
+      btn.addEventListener("click", (event) => {
+        event.preventDefault();
+        const row = showById(btn.getAttribute("data-id") || "") || rows[Number(btn.getAttribute("data-index"))];
         if (row) openShow(row);
       });
     });
@@ -1570,10 +1600,17 @@
   window.ownexOpenReviews = openReviews;
   window.ownexMoreReviews = showMoreReviews;
   window.ownexHome = closeReviews;
+  window.ownexOpenId = function (id) {
+    const show = showById(id) || matchShow(id);
+    if (show) openShow(show);
+    return false;
+  };
   window.ownexOpenByTitle = function (title) {
+    const want = String(title || "").trim();
     const show =
-      (data.exhibitions || []).find((row) => itemId(row) === String(title || "")) ||
-      matchShow(title);
+      showById(want) ||
+      (data.exhibitions || []).find((row) => row && String(row.title || "").trim() === want) ||
+      matchShow(want);
     if (show) openShow(show);
   };
 

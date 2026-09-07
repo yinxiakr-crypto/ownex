@@ -1409,7 +1409,6 @@ body.open .review-line:hover { color: #b85a48; }
 
   .month-head h2 { font-size: 1.6rem; }
 
-  .front-row,
   #front-row:not([hidden]) {
     display: flex !important;
     flex-direction: column !important;
