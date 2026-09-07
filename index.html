@@ -26,7 +26,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Great+Vibes&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=fix5" />
+  <link rel="stylesheet" href="styles.css?v=fix6" />
   <style>
     body { margin: 0; min-height: 100vh; background: #351e28; color: #f6efe6; font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
     #front-row:not([hidden]) {
@@ -104,7 +104,7 @@
     <div class="picks-row">
       <div class="year-pick">
         <span>연도</span>
-        <select id="year">
+        <select id="year" onchange="ownexUsePicks()">
           <option value="">연도를 고르세요</option>
           <option value="all">전체</option>
           <option value="2026">2026</option>
@@ -116,7 +116,7 @@
       <button type="button" id="glance-home" class="year-all" hidden>처음</button>
       <div class="year-pick" id="month-wrap">
         <span>월</span>
-        <select id="month">
+        <select id="month" onchange="ownexUsePicks()">
           <option value="">월을 고르세요</option>
           <option value="01">1월</option>
           <option value="02">2월</option>
@@ -371,14 +371,14 @@
         else window.ownexReviews();
         return false;
       };
+      window.ownexUsePicks = function () {
+        if (window.ownexApplyPicks) window.ownexApplyPicks();
+        return false;
+      };
       window.ownexYearAll = function () {
         var year = document.getElementById("year");
-        var month = document.getElementById("month");
-        if (year) {
-          year.value = "all";
-          try { year.dispatchEvent(new Event("change")); } catch (err) {}
-        }
-        if (month) month.value = "";
+        if (year) year.value = "all";
+        if (window.ownexUsePicks) window.ownexUsePicks();
         return false;
       };
       window.ownexOpenId = window.ownexOpenId || function () { return false; };
@@ -459,7 +459,7 @@
       }
     })();
   </script>
-  <script src="data.js?v=fix5"></script>
-  <script src="app.js?v=fix5"></script>
+  <script src="data.js?v=fix6"></script>
+  <script src="app.js?v=fix6"></script>
 </body>
 </html>

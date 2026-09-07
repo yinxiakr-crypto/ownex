@@ -82,7 +82,7 @@
   if (gcalIcon && data.google && data.google.open_url) gcalIcon.href = data.google.open_url;
 
   try {
-    fillYears();
+    if (yearEl && yearEl.options.length < 3) fillYears();
   } catch (err) {}
   document.querySelectorAll(".field").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -95,38 +95,48 @@
       draw();
     });
   });
-  if (yearEl) yearEl.addEventListener("change", () => {
-    state.year = yearEl.value;
-    if (state.year && state.year !== "all") {
-      state.stickerYear = state.year;
+  function pickYear() {
+    return yearEl ? String(yearEl.value || "") : "";
+  }
+  function pickMonth() {
+    return monthEl ? String(monthEl.value || "") : "";
+  }
+  function usePicks(clearShow) {
+    const y = pickYear();
+    const m = pickMonth();
+    const changed = y !== state.year || m !== state.month;
+    state.year = y;
+    state.month = m;
+    if (y && y !== "all") {
+      state.stickerYear = y;
       state.stickerPage = 0;
     }
-    state.month = "";
-    state.selected = null;
-    state.space = "";
-    if (monthEl) monthEl.value = "";
+    if (clearShow && changed) {
+      state.selected = null;
+      state.space = "";
+      state.initial = "";
+    }
     draw();
-  });
+  }
+  if (yearEl) yearEl.addEventListener("change", function () { usePicks(true); });
   if (yearAll) yearAll.addEventListener("click", () => {
-    state.year = "all";
     if (yearEl) yearEl.value = "all";
-    state.month = "";
-    state.selected = null;
-    state.space = "";
-    if (monthEl) monthEl.value = "";
-    draw();
+    usePicks(true);
   });
-  if (monthEl) monthEl.addEventListener("change", () => {
-    state.month = monthEl.value;
-    state.selected = null;
-    state.initial = "";
-    state.space = "";
-    draw();
-  });
+  if (monthEl) monthEl.addEventListener("change", function () { usePicks(true); });
   window.ownexYearAll = function () {
-    if (yearAll) yearAll.click();
+    if (yearEl) yearEl.value = "all";
+    usePicks(true);
     return false;
   };
+  window.ownexApplyPicks = function () {
+    usePicks(true);
+    return false;
+  };
+  window.ownexUsePicks = window.ownexApplyPicks;
+  window.addEventListener("pageshow", function () { usePicks(false); });
+  setTimeout(function () { usePicks(false); }, 0);
+  setTimeout(function () { usePicks(false); }, 250);
 
   function applySeason() {
     const month = new Date().getMonth() + 1;
@@ -922,8 +932,10 @@
 
   function draw() {
     paintGlance();
+    if (yearEl && yearEl.value && yearEl.value !== state.year) state.year = String(yearEl.value || "");
+    if (monthEl && monthEl.value && monthEl.value !== state.month) state.month = String(monthEl.value || "");
     const reviewOnly = state.space === "reviews";
-    const browsing = Boolean(state.year && state.month);
+    const browsing = Boolean((state.year || pickYear()) && (state.month || pickMonth()));
     const showFeel = !reviewOnly && !state.selected && (state.space === "feel" || !browsing);
     document.body.classList.toggle("reviews", reviewOnly);
     document.body.classList.toggle("open", !reviewOnly && browsing && state.space !== "feel");
