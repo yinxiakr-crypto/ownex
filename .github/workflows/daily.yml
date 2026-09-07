@@ -1,0 +1,44 @@
+name: Ownex morning
+
+on:
+  schedule:
+    - cron: "0 23 * * *"
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: daily
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: pip install -r requirements.txt
+      - name: Restore secrets
+        env:
+          GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          GOOGLE_TOKEN_JSON: ${{ secrets.GOOGLE_TOKEN_JSON }}
+          GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
+        run: |
+          mkdir -p data
+          umask 077
+          {
+            echo "GMAIL_ADDRESS=${GMAIL_ADDRESS}"
+            echo "GMAIL_APP_PASSWORD=${GMAIL_APP_PASSWORD}"
+          } > .env
+          printf '%s' "$GOOGLE_TOKEN_JSON" > data/google_token.json
+          printf '%s' "$GOOGLE_CREDENTIALS_JSON" > data/google_credentials.json
+      - name: Send mail and calendar
+        env:
+          OWNEX_SKIP_BROWSER: "1"
+          OWNEX_SKIP_WEB: "1"
+          OWNEX_CLOUD: "1"
+          CI: "true"
+        run: python run.py
