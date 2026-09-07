@@ -771,7 +771,7 @@
 
   function googleMonthSrc(year, month) {
     const base = (data.google && data.google.embed_src) || "";
-    if (!base) return "";
+    if (!base || !month) return "";
     const useYear = year === "all" ? String(new Date().getFullYear()) : year;
     const start = useYear + month + "01";
     const next = new Date(Number(useYear), Number(month), 1);
@@ -791,14 +791,28 @@
     }).join("");
   }
 
+  function inYear(row, year) {
+    if (!year || year === "all") return true;
+    const start = row.start_date || row.collected_date || "";
+    const end = row.end_date || start;
+    const from = start.slice(0, 4);
+    const to = (end || start).slice(0, 4);
+    return from <= year && to >= year;
+  }
+
   function monthRows() {
-    return events().filter((row) => overlapsMonth(row, state.year, state.month));
+    const year = state.year || pickYear();
+    const month = state.month || pickMonth();
+    return events().filter((row) => {
+      if (month) return overlapsMonth(row, year, month);
+      return inYear(row, year);
+    });
   }
 
   function paintGlance() {
     const home = document.getElementById("glance-home");
     if (home) {
-      const onHome = !state.selected && state.space !== "reviews" && !(state.year && state.month);
+      const onHome = !state.selected && state.space !== "reviews" && !state.year;
       home.hidden = onHome;
     }
   }
@@ -935,7 +949,7 @@
     if (yearEl && yearEl.value && yearEl.value !== state.year) state.year = String(yearEl.value || "");
     if (monthEl && monthEl.value && monthEl.value !== state.month) state.month = String(monthEl.value || "");
     const reviewOnly = state.space === "reviews";
-    const browsing = Boolean((state.year || pickYear()) && (state.month || pickMonth()));
+    const browsing = Boolean(state.year || pickYear());
     const showFeel = !reviewOnly && !state.selected && (state.space === "feel" || !browsing);
     document.body.classList.toggle("reviews", reviewOnly);
     document.body.classList.toggle("open", !reviewOnly && browsing && state.space !== "feel");
@@ -964,7 +978,7 @@
       }
     }
     if (reviewPage) reviewPage.hidden = !reviewOnly;
-    if (ownCal) ownCal.hidden = !showMonth;
+    if (ownCal) ownCal.hidden = !showMonth || !state.month;
     if (monthList) monthList.hidden = !showMonth;
     if (artwork) {
       const hideArt = reviewOnly || !state.selected;
@@ -1279,7 +1293,7 @@
       "</div></div>" +
       '<p class="praise-total"><span class="praise-num">' +
       allVisits().length +
-      "</span><span class="praise-total-label">다녀온 전시</span></p>" +
+      '</span><span class="praise-total-label">다녀온 전시</span></p>' +
       '<p class="praise-score">' +
       praiseScoreText(count, allTime, page, pages) +
       "</p>" +
@@ -1368,7 +1382,7 @@
     if (state.initial) rows = rows.filter((row) => choseong(row.title) === state.initial);
     monthList.innerHTML = `
       <div class="month-head">
-        <h2>${state.year === "all" ? "전체" : state.year} ${MONTHS[Number(state.month) - 1]}</h2>
+        <h2>${state.year === "all" ? "전체" : state.year}${state.month ? " " + (MONTHS[Number(state.month) - 1] || "") : ""}</h2>
         <button type="button" class="back" data-back="cal">월 다시 고르기</button>
       </div>
       <div class="chips">
