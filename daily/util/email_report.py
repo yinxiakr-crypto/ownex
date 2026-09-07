@@ -623,7 +623,7 @@ def _html_body(rows: list[dict], calendar_from: date | None, has_card: bool) -> 
     return f"""
     <div style="font-family:'Malgun Gothic',sans-serif;max-width:640px;margin:0 auto;color:#222;">
       <h1 style="font-size:22px;">오늘의 전시</h1>
-      <p>{date.today().isoformat()}에 고른 전시입니다. 이 메일 한 통에 최소 10개를 적었고, 구글 달력에는 그중 오늘 볼 수 있는 5개만 올립니다. 가능하면 작가 대표작이나 전시 홍보 작품을 넣어, 전시의 느낌이 보이도록 했습니다.</p>
+      <p>OWNEX를 통해 만난 작품을 통해 다른 세상과 만나 보세요.</p>
       {glance}
       {card}
       {''.join(blocks)}
@@ -687,7 +687,7 @@ def send_exhibition_email(rows: list[dict], cfg, calendar_from: date | None = No
         message["Subject"] = f"오늘의 전시 {date.today().isoformat()}"
         alt = MIMEMultipart("alternative")
         home = _home_url()
-        alt.attach(MIMEText(f"오늘의 전시 {date.today().isoformat()}\n오넥스 열기: {home}\n", "plain", "utf-8"))
+        alt.attach(MIMEText(f"오늘의 전시 {date.today().isoformat()}\nOWNEX를 통해 만난 작품을 통해 다른 세상과 만나 보세요.\n오넥스 열기: {home}\n", "plain", "utf-8"))
         alt.attach(MIMEText(_html_body(rows, calendar_from, True), "html", "utf-8"))
         LOGGER.info(f"[메일] 홈 주소는 {home} 입니다.")
         message.attach(alt)
