@@ -31,7 +31,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Great+Vibes&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=fix28" />
+  <link rel="stylesheet" href="styles.css?v=fix29" />
   <style>
     body { margin: 0; min-height: 100vh; background: #351e28; color: #f6efe6; font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
     #front-row:not([hidden]) {
@@ -174,7 +174,6 @@
       <div class="year-pick">
         <select id="year" aria-label="연도">
           <option value="">연도를 고르세요</option>
-          <option value="all">전체</option>
           <option value="2026">2026</option>
           <option value="2027">2027</option>
           <option value="2028">2028</option>
@@ -184,6 +183,7 @@
       <div class="year-pick" id="month-wrap">
         <select id="month" aria-label="월">
           <option value="">월을 고르세요</option>
+          <option value="all">전체</option>
           <option value="01">1월</option>
           <option value="02">2월</option>
           <option value="03">3월</option>
@@ -640,7 +640,7 @@
       }
     })();
   </script>
-  <script src="data.js?v=fix28"></script>
-  <script src="app.js?v=fix28"></script>
+  <script src="data.js?v=fix29"></script>
+  <script src="app.js?v=fix29"></script>
 </body>
 </html>

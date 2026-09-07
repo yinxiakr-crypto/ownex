@@ -1263,7 +1263,8 @@ body.reviews .hero {
 }
 
 .review-all-wrap,
-.review-foot {
+.review-foot,
+.names-foot {
   display: flex;
   justify-content: center;
   align-items: center;

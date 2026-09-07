@@ -39,8 +39,10 @@
     stickerPage: 0,
     frontExtra: 0,
     reviewWrite: false,
+    namePage: 0,
   };
   const FRONT_REVIEWS = 3;
+  const NAME_PAGE = 8;
 
   function isPhoneLayout() {
     try {
@@ -68,7 +70,6 @@
   window.addEventListener("resize", syncPhoneClass);
 
   const yearEl = document.getElementById("year");
-  const yearAll = document.getElementById("year-all");
   const monthEl = document.getElementById("month");
   const monthWrap = document.getElementById("month-wrap");
   const monthList = document.getElementById("month-list");
@@ -133,6 +134,7 @@
     state.year = "";
     state.month = "";
     state.selected = null;
+    state.namePage = 0;
     if (window.ownexNeedLogin) window.ownexNeedLogin();
     draw();
     return false;
@@ -153,6 +155,7 @@
       state.stickerYear = y;
       state.stickerPage = 0;
     }
+    if (changed) state.namePage = 0;
     if (clearShow && changed) {
       state.selected = null;
       state.space = "";
@@ -166,18 +169,12 @@
     yearEl.addEventListener("mousedown", armPicks);
     yearEl.addEventListener("change", function () {
       if (!pickTouched) return;
-      if (yearEl.value !== "all" && monthEl) {
+      if (monthEl) {
         monthEl.value = "";
         state.month = "";
       }
       usePicks(true);
     });
-  }
-  function pickAllYears() {
-    armPicks();
-    if (yearEl) yearEl.value = "all";
-    usePicks(true);
-    return false;
   }
   if (monthEl) {
     monthEl.addEventListener("pointerdown", armPicks);
@@ -191,7 +188,6 @@
       usePicks(true);
     });
   }
-  window.ownexYearAll = pickAllYears;
   window.ownexApplyPicks = function () {
     armPicks();
     usePicks(true);
@@ -812,7 +808,7 @@
     if (!row) return;
     const year = (row.start_date || "").slice(0, 4);
     const month = (row.start_date || "").slice(5, 7);
-    state.year = year || state.year || "all";
+    state.year = year || state.year;
     state.month = month || state.month;
     state.selected = row;
     state.space = "";
@@ -891,25 +887,23 @@
     const start = row.start_date || row.collected_date || "";
     const end = row.end_date || start;
     if (!start || !month) return false;
+    if (month === "all") {
+      if (!year) return false;
+      const fromY = start.slice(0, 4);
+      const toY = (end || start).slice(0, 4);
+      return fromY <= year && toY >= year;
+    }
     const from = start.slice(0, 7);
     const to = (end || start).slice(0, 7);
-    if (!year || year === "all") {
-      const first = Number(from.slice(0, 4));
-      const last = Number(to.slice(0, 4));
-      for (let y = first; y <= last; y += 1) {
-        const key = y + "-" + month;
-        if (from <= key && to >= key) return true;
-      }
-      return false;
-    }
+    if (!year) return false;
     const key = year + "-" + month;
     return from <= key && to >= key;
   }
 
   function googleMonthSrc(year, month) {
     const base = (data.google && data.google.embed_src) || "";
-    if (!base || !month) return "";
-    const useYear = year === "all" ? String(new Date().getFullYear()) : year;
+    if (!base || !month || month === "all") return "";
+    const useYear = year || String(new Date().getFullYear());
     const start = useYear + month + "01";
     const next = new Date(Number(useYear), Number(month), 1);
     const end = String(next.getFullYear()) + String(next.getMonth() + 1).padStart(2, "0") + "01";
@@ -920,19 +914,23 @@
     if (!yearEl || !monthEl) return;
     const years = yearChoices();
     yearEl.innerHTML =
-      '<option value="">연도를 고르세요</option><option value="all">전체</option>' +
+      '<option value="">연도를 고르세요</option>' +
       years.map((y) => `<option value="${y}">${y}</option>`).join("");
-    monthEl.innerHTML = '<option value="">월을 고르세요</option>' + MONTHS.map((name, i) => {
-      const value = String(i + 1).padStart(2, "0");
-      return `<option value="${value}">${name}</option>`;
-    }).join("");
+    monthEl.innerHTML =
+      '<option value="">월을 고르세요</option><option value="all">전체</option>' +
+      MONTHS.map((name, i) => {
+        const value = String(i + 1).padStart(2, "0");
+        return `<option value="${value}">${name}</option>`;
+      }).join("");
   }
 
   function monthRows() {
     const year = state.year || pickYear();
     const month = state.month || pickMonth();
     if (!year || !month) return [];
-    return events().filter((row) => overlapsMonth(row, year, month));
+    return events()
+      .filter((row) => overlapsMonth(row, year, month))
+      .sort((a, b) => String(a.start_date || "").localeCompare(String(b.start_date || "")) || String(a.title || "").localeCompare(String(b.title || "")));
   }
 
   function paintGlance() {
@@ -1038,6 +1036,7 @@
     state.year = "";
     state.month = "";
     state.initial = "";
+    state.namePage = 0;
     if (yearEl) yearEl.value = "";
     if (monthEl) monthEl.value = "";
     if (location.hash === "#reviews") {
@@ -1054,12 +1053,20 @@
     document.addEventListener("click", (event) => {
       const all = event.target.closest("[data-reviews='all']");
       const more = event.target.closest("[data-reviews='more']");
+      const moreNames = event.target.closest("[data-names='more']");
+      const prevNames = event.target.closest("[data-names='prev']");
       if (all) {
         event.preventDefault();
         openReviews();
       } else if (more) {
         event.preventDefault();
         showMoreReviews();
+      } else if (moreNames) {
+        event.preventDefault();
+        showMoreNames();
+      } else if (prevNames) {
+        event.preventDefault();
+        showPrevNames();
       }
     });
   }
@@ -1131,7 +1138,7 @@
     }
     showPraiseBox(showFeel && inNow);
     if (reviewPage) reviewPage.hidden = !reviewOnly;
-    if (ownCal) ownCal.hidden = !showMonth || !state.month;
+    if (ownCal) ownCal.hidden = !showMonth || !state.month || state.month === "all";
     if (monthList) monthList.hidden = !showMonth;
     if (artwork) {
       const hideArt = reviewOnly || !state.selected;
@@ -1567,13 +1574,65 @@
     }
   }
 
-  function renderNames() {
-    const initials = ["", "ㄱ", "ㄴ", "ㄷ", "ㄹ", "ㅁ", "ㅂ", "ㅅ", "ㅇ", "ㅈ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ"];
+  function nameRows() {
     let rows = monthRows();
     if (state.initial) rows = rows.filter((row) => choseong(row.title) === state.initial);
+    return rows;
+  }
+
+  function namePages(count) {
+    return Math.max(1, Math.ceil((Number(count) || 0) / NAME_PAGE) || 1);
+  }
+
+  function clampNamePage(count) {
+    const pages = namePages(count);
+    if (state.namePage > pages - 1) state.namePage = pages - 1;
+    if (state.namePage < 0) state.namePage = 0;
+    return Number(state.namePage) || 0;
+  }
+
+  function showMoreNames() {
+    const rows = nameRows();
+    const page = clampNamePage(rows.length);
+    if (page >= namePages(rows.length) - 1) return;
+    state.namePage = page + 1;
+    renderNames();
+    if (monthList) monthList.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function showPrevNames() {
+    const page = Number(state.namePage) || 0;
+    if (page <= 0) return;
+    state.namePage = page - 1;
+    renderNames();
+    if (monthList) monthList.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  window.ownexMoreNames = showMoreNames;
+  window.ownexPrevNames = showPrevNames;
+
+  function renderNames() {
+    const initials = ["", "ㄱ", "ㄴ", "ㄷ", "ㄹ", "ㅁ", "ㅂ", "ㅅ", "ㅇ", "ㅈ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ"];
+    const rows = nameRows();
+    const page = clampNamePage(rows.length);
+    const pages = namePages(rows.length);
+    const shown = rows.slice(page * NAME_PAGE, page * NAME_PAGE + NAME_PAGE);
+    const monthLabel = state.month === "all" ? " 전체" : state.month ? " " + (MONTHS[Number(state.month) - 1] || "") : "";
+    const emptyText = state.month === "all" ? "이 해에는 아직 기록이 없습니다." : "이 달에는 아직 기록이 없습니다.";
+    const nav =
+      rows.length > NAME_PAGE
+        ? '<div class="names-foot">' +
+          (page > 0
+            ? '<button type="button" class="review-more-btn" data-names="prev" onclick="ownexPrevNames()">이전</button>'
+            : "") +
+          (page < pages - 1
+            ? '<button type="button" class="review-more-btn" data-names="more" onclick="ownexMoreNames()">계속</button>'
+            : "") +
+          "</div>"
+        : "";
     monthList.innerHTML = `
       <div class="month-head">
-        <h2>${state.year === "all" ? "전체" : state.year}${state.month ? " " + (MONTHS[Number(state.month) - 1] || "") : ""}</h2>
+        <h2>${escapeHtml(String(state.year || ""))}${monthLabel}</h2>
         <button type="button" class="back" data-back="cal">월 다시 고르기</button>
       </div>
       <div class="chips">
@@ -1583,9 +1642,9 @@
       </div>
       <div class="names">
         ${
-          rows.length
-            ? rows
-                .map((row, i) => {
+          shown.length
+            ? shown
+                .map((row) => {
                   const src = coverOf(row);
                   const art = src
                     ? `<img class="name-art" src="${escapeHtml(src)}" alt="">`
@@ -1596,18 +1655,20 @@
             </button>`;
                 })
                 .join("")
-            : `<p class="quiet">이 달에는 아직 기록이 없습니다.</p>`
+            : `<p class="quiet">${emptyText}</p>`
         }
-      </div>`;
+      </div>` + nav;
     monthList.querySelector("[data-back]").addEventListener("click", () => {
       state.month = "";
       state.selected = null;
+      state.namePage = 0;
       monthEl.value = "";
       draw();
     });
     monthList.querySelectorAll("[data-initial]").forEach((btn) => {
       btn.addEventListener("click", () => {
         state.initial = btn.getAttribute("data-initial");
+        state.namePage = 0;
         renderNames();
       });
     });
