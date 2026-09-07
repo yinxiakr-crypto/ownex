@@ -26,7 +26,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Great+Vibes&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=fix17" />
+  <link rel="stylesheet" href="styles.css?v=fix18" />
   <style>
     body { margin: 0; min-height: 100vh; background: #351e28; color: #f6efe6; font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
     #front-row:not([hidden]) {
@@ -154,7 +154,7 @@
     <div class="picks-row">
       <div class="year-pick">
         <span>연도</span>
-        <select id="year" onchange="ownexUsePicks()">
+        <select id="year">
           <option value="">연도를 고르세요</option>
           <option value="all">전체</option>
           <option value="2026">2026</option>
@@ -166,7 +166,7 @@
       <button type="button" id="glance-home" class="year-all" hidden onclick="ownexGoFront()">처음</button>
       <div class="year-pick" id="month-wrap">
         <span>월</span>
-        <select id="month" onchange="ownexUsePicks()">
+        <select id="month">
           <option value="">월을 고르세요</option>
           <option value="01">1월</option>
           <option value="02">2월</option>
@@ -426,7 +426,6 @@
         try { return Boolean(localStorage.getItem("ownex-family-token")); } catch (err) { return false; }
       };
       window.ownexNeedLogin = function () {
-        var fields = document.getElementById("family-fields");
         var bar = document.getElementById("family-bar");
         var year = document.getElementById("year");
         var month = document.getElementById("month");
@@ -438,7 +437,7 @@
           bar.style.removeProperty("display");
           bar.style.removeProperty("visibility");
         }
-        if (window.ownexOpenFields) window.ownexOpenFields();
+        closeFields();
         say("로그인한 뒤에 전시를 볼 수 있습니다.");
         return false;
       };
@@ -591,7 +590,7 @@
       }
     })();
   </script>
-  <script src="data.js?v=fix17"></script>
-  <script src="app.js?v=fix17"></script>
+  <script src="data.js?v=fix18"></script>
+  <script src="app.js?v=fix18"></script>
 </body>
 </html>

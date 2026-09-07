@@ -136,8 +136,13 @@
     draw();
     return false;
   }
+  let pickTouched = false;
+  function armPicks() {
+    pickTouched = true;
+  }
   function usePicks(clearShow) {
     if (!isIn()) return needLogin();
+    if (!pickTouched) return;
     const y = pickYear();
     const m = pickMonth();
     const changed = y !== state.year || m !== state.month;
@@ -154,18 +159,40 @@
     }
     draw();
   }
-  if (yearEl) yearEl.addEventListener("change", function () {
-    if (monthEl) monthEl.value = "";
-    state.month = "";
-    usePicks(true);
-  });
+  if (yearEl) {
+    yearEl.addEventListener("pointerdown", armPicks);
+    yearEl.addEventListener("touchstart", armPicks, { passive: true });
+    yearEl.addEventListener("mousedown", armPicks);
+    yearEl.addEventListener("change", function () {
+      if (!pickTouched) {
+        yearEl.value = "";
+        if (monthEl) monthEl.value = "";
+        return;
+      }
+      if (monthEl) monthEl.value = "";
+      state.month = "";
+      usePicks(true);
+    });
+  }
   if (yearAll) yearAll.addEventListener("click", () => {
+    armPicks();
     if (yearEl) yearEl.value = "all";
     if (monthEl) monthEl.value = "";
     state.month = "";
     usePicks(true);
   });
-  if (monthEl) monthEl.addEventListener("change", function () { usePicks(true); });
+  if (monthEl) {
+    monthEl.addEventListener("pointerdown", armPicks);
+    monthEl.addEventListener("touchstart", armPicks, { passive: true });
+    monthEl.addEventListener("mousedown", armPicks);
+    monthEl.addEventListener("change", function () {
+      if (!pickTouched) {
+        monthEl.value = "";
+        return;
+      }
+      usePicks(true);
+    });
+  }
   window.ownexYearAll = function () {
     if (yearEl) yearEl.value = "all";
     if (monthEl) monthEl.value = "";
@@ -174,6 +201,7 @@
     return false;
   };
   window.ownexApplyPicks = function () {
+    armPicks();
     usePicks(true);
     return false;
   };
@@ -1038,10 +1066,17 @@
 
   function draw() {
     paintGlance();
-    if (yearEl && yearEl.value && yearEl.value !== state.year) state.year = String(yearEl.value || "");
-    if (monthEl && monthEl.value && monthEl.value !== state.month) state.month = String(monthEl.value || "");
+    if (!isIn()) {
+      if (yearEl) yearEl.value = "";
+      if (monthEl) monthEl.value = "";
+      state.year = "";
+      state.month = "";
+    } else {
+      if (yearEl && yearEl.value && yearEl.value !== state.year) state.year = String(yearEl.value || "");
+      if (monthEl && monthEl.value && monthEl.value !== state.month) state.month = String(monthEl.value || "");
+    }
     const reviewOnly = state.space === "reviews";
-    const browsing = Boolean((state.year || pickYear()) && (state.month || pickMonth()));
+    const browsing = Boolean(isIn() && (state.year || pickYear()) && (state.month || pickMonth()));
     const showFeel = !reviewOnly && !state.selected && (state.space === "feel" || !browsing);
     document.body.classList.toggle("reviews", reviewOnly);
     document.body.classList.toggle("open", !reviewOnly && browsing && state.space !== "feel");
