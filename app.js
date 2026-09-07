@@ -95,45 +95,38 @@
       draw();
     });
   });
-  let pickLock = false;
-  function syncPicks(fromUser) {
-    if (pickLock || !yearEl || !monthEl) return;
-    const y = String(yearEl.value || "");
-    const m = String(monthEl.value || "");
-    if (y === state.year && m === state.month) return;
-    state.year = y;
-    state.month = m;
-    if (y && y !== "all") {
-      state.stickerYear = y;
+  if (yearEl) yearEl.addEventListener("change", () => {
+    state.year = yearEl.value;
+    if (state.year && state.year !== "all") {
+      state.stickerYear = state.year;
       state.stickerPage = 0;
     }
-    if (fromUser) {
-      state.selected = null;
-      state.space = "";
-      state.initial = "";
-    }
+    state.month = "";
+    state.selected = null;
+    state.space = "";
+    if (monthEl) monthEl.value = "";
     draw();
-  }
-  window.ownexSyncPicks = function () {
-    syncPicks(true);
+  });
+  if (yearAll) yearAll.addEventListener("click", () => {
+    state.year = "all";
+    if (yearEl) yearEl.value = "all";
+    state.month = "";
+    state.selected = null;
+    state.space = "";
+    if (monthEl) monthEl.value = "";
+    draw();
+  });
+  if (monthEl) monthEl.addEventListener("change", () => {
+    state.month = monthEl.value;
+    state.selected = null;
+    state.initial = "";
+    state.space = "";
+    draw();
+  });
+  window.ownexYearAll = function () {
+    if (yearAll) yearAll.click();
     return false;
   };
-  if (yearEl) yearEl.addEventListener("change", function () { syncPicks(true); });
-  if (yearAll) yearAll.addEventListener("click", () => {
-    if (yearEl) yearEl.value = "all";
-    syncPicks(true);
-  });
-  if (monthEl) monthEl.addEventListener("change", function () { syncPicks(true); });
-  document.addEventListener("click", function (event) {
-    const nameBtn = event.target.closest("#month-list .name");
-    if (!nameBtn) return;
-    const row =
-      showById(nameBtn.getAttribute("data-id") || "") ||
-      monthRows()[Number(nameBtn.getAttribute("data-index"))];
-    if (!row) return;
-    event.preventDefault();
-    openShow(row);
-  });
 
   function applySeason() {
     const month = new Date().getMonth() + 1;
@@ -668,48 +661,21 @@
     return score >= 4 ? best : null;
   }
 
-  function showArtwork(row) {
-    if (!row || !artwork) return;
-    state.selected = row;
-    state.space = "";
-    if (frontRow) {
-      frontRow.hidden = true;
-      frontRow.setAttribute("hidden", "");
-    }
-    if (ownCal) ownCal.hidden = true;
-    if (monthList) monthList.hidden = true;
-    if (reviewPage) reviewPage.hidden = true;
-    artwork.hidden = false;
-    artwork.removeAttribute("hidden");
-    document.body.classList.add("open");
-    document.body.classList.remove("reviews");
-    try {
-      renderArtwork();
-    } catch (err) {}
-    try {
-      artwork.scrollIntoView({ behavior: "smooth", block: "start" });
-    } catch (err) {}
-  }
-
   function openShow(row) {
     if (!row) return;
     const year = (row.start_date || "").slice(0, 4);
     const month = (row.start_date || "").slice(5, 7);
-    pickLock = true;
     state.year = year || state.year || "all";
     state.month = month || state.month;
     state.selected = row;
     state.space = "";
+    state.artIndex = 0;
     if (yearEl && state.year) yearEl.value = state.year;
     if (monthEl && state.month) monthEl.value = state.month;
-    try {
-      draw();
-    } catch (err) {}
-    showArtwork(row);
-    setTimeout(function () {
-      pickLock = false;
-      if (state.selected === row) showArtwork(row);
-    }, 500);
+    draw();
+    if (artwork && !artwork.hidden) {
+      artwork.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   }
 
   function events() {
@@ -966,12 +932,37 @@
     const showMonth = !reviewOnly && browsing && !state.selected && state.space !== "feel";
     if (frontRow) {
       frontRow.hidden = !showFeel;
-      if (showFeel) frontRow.removeAttribute("hidden");
+      if (!showFeel) {
+        frontRow.style.setProperty("display", "none", "important");
+      } else {
+        frontRow.removeAttribute("hidden");
+        if (isPhoneLayout()) {
+          frontRow.style.setProperty("display", "flex", "important");
+          frontRow.style.flexDirection = "column";
+          frontRow.style.gridTemplateColumns = "none";
+          frontRow.style.gap = "1.1rem";
+          frontRow.style.alignItems = "stretch";
+        } else {
+          frontRow.style.setProperty("display", "grid", "important");
+          frontRow.style.flexDirection = "";
+          frontRow.style.gridTemplateColumns = "minmax(18rem, 40rem) minmax(16rem, 1fr)";
+          frontRow.style.gap = "1.5rem 2rem";
+          frontRow.style.alignItems = "start";
+        }
+      }
     }
     if (reviewPage) reviewPage.hidden = !reviewOnly;
     if (ownCal) ownCal.hidden = !showMonth;
     if (monthList) monthList.hidden = !showMonth;
-    artwork.hidden = reviewOnly || !state.selected;
+    if (artwork) {
+      const hideArt = reviewOnly || !state.selected;
+      artwork.hidden = hideArt;
+      if (hideArt) artwork.style.setProperty("display", "none", "important");
+      else {
+        artwork.removeAttribute("hidden");
+        artwork.style.setProperty("display", "block", "important");
+      }
+    }
     if (reviewOnly) {
       renderFeelings(reviewPage, "full");
       return;
@@ -1382,7 +1373,7 @@
                   const art = src
                     ? `<img class="name-art" src="${escapeHtml(src)}" alt="">`
                     : `<span class="name-art"></span>`;
-                  return `<button type="button" class="name ${src ? "has-art" : ""}" data-index="${i}" data-id="${escapeHtml(itemId(row))}" onclick="ownexOpenId(this.getAttribute('data-id'))">
+                  return `<button type="button" class="name ${src ? "has-art" : ""}" data-id="${encodeURIComponent(itemId(row))}">
               ${art}
               <span><strong>${escapeHtml(row.title)}</strong><small>${escapeHtml(row.venue || "")} · ${escapeHtml([row.start_date, row.end_date].filter(Boolean).join(" ~ "))}${endedTag(row)}</small></span>
             </button>`;
@@ -1404,10 +1395,20 @@
       });
     });
     monthList.querySelectorAll(".name").forEach((btn) => {
-      btn.addEventListener("click", (event) => {
-        event.preventDefault();
-        const row = showById(btn.getAttribute("data-id") || "") || rows[Number(btn.getAttribute("data-index"))];
-        if (row) openShow(row);
+      btn.addEventListener("click", () => {
+        let id = btn.getAttribute("data-id") || "";
+        try {
+          id = decodeURIComponent(id);
+        } catch (err) {}
+        state.selected =
+          events().find((row) => itemId(row) === id) ||
+          events().find((row) => encodeURIComponent(itemId(row)) === btn.getAttribute("data-id")) ||
+          null;
+        state.artIndex = 0;
+        draw();
+        if (state.selected && artwork && !artwork.hidden) {
+          artwork.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
       });
     });
   }
