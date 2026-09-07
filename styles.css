@@ -236,8 +236,10 @@ h1 {
 }
 
 .family-bar {
-  margin: -0.6rem 0 1.5rem;
+  margin: 0.2rem 0 1.4rem;
   max-width: 32rem;
+  position: relative;
+  z-index: 2;
 }
 
 body.open .family-bar,

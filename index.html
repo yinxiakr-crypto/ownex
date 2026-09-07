@@ -26,7 +26,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Great+Vibes&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=fix8" />
+  <link rel="stylesheet" href="styles.css?v=fix9" />
   <style>
     body { margin: 0; min-height: 100vh; background: #351e28; color: #f6efe6; font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
     #front-row:not([hidden]) {
@@ -41,6 +41,11 @@
     #review-page[hidden],
     #artwork[hidden] { display: none !important; }
     #artwork:not([hidden]) { display: block !important; }
+    h1 { margin: 0 0 0.7rem; }
+    .family-bar { margin: 0.2rem 0 1.4rem; position: relative; z-index: 2; }
+    body.open .family-bar,
+    body.reviews .family-bar,
+    .family-bar[hidden] { display: none !important; visibility: hidden !important; height: 0 !important; overflow: hidden !important; margin: 0 !important; }
     #feelings.feel { max-width: 40rem; width: 100%; }
     #review-page.review-page { max-width: 40rem; }
     #praise-board {
@@ -80,7 +85,7 @@
     <h1>오넥스</h1>
     <p class="lead">보고 듣고 가는 자리. 지금은 미술부터.</p>
 
-    <div class="family-bar">
+    <div class="family-bar" id="family-bar">
       <form id="family-form" action="#" method="post" onsubmit="ownexEnter(); return false;">
         <input id="family-name" name="name" maxlength="64" placeholder="이름 또는 이메일" autocomplete="username" enterkeyhint="next" />
         <input id="family-pin" name="pin" type="password" maxlength="32" placeholder="비밀번호" autocomplete="current-password" enterkeyhint="go" />
@@ -459,7 +464,7 @@
       }
     })();
   </script>
-  <script src="data.js?v=fix8"></script>
-  <script src="app.js?v=fix8"></script>
+  <script src="data.js?v=fix9"></script>
+  <script src="app.js?v=fix9"></script>
 </body>
 </html>

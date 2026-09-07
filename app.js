@@ -953,13 +953,18 @@
     document.body.classList.toggle("open", !reviewOnly && browsing && state.space !== "feel");
     if (monthWrap) monthWrap.hidden = false;
     if (yearAll) yearAll.classList.toggle("on", state.year === "all");
-    const familyBar = document.querySelector(".family-bar");
+    const familyBar = document.getElementById("family-bar") || document.querySelector(".family-bar");
     if (familyBar) {
-      familyBar.hidden = !showFeel;
-      if (!showFeel) familyBar.style.setProperty("display", "none", "important");
-      else {
+      const hideLogin = !showFeel || browsing || reviewOnly || Boolean(state.selected);
+      familyBar.hidden = hideLogin;
+      if (hideLogin) {
+        familyBar.setAttribute("hidden", "");
+        familyBar.style.setProperty("display", "none", "important");
+        familyBar.style.setProperty("visibility", "hidden", "important");
+      } else {
         familyBar.removeAttribute("hidden");
         familyBar.style.removeProperty("display");
+        familyBar.style.removeProperty("visibility");
       }
     }
     const showMonth = !reviewOnly && browsing && !state.selected && state.space !== "feel";
