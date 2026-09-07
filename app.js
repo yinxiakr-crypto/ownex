@@ -179,10 +179,6 @@
     usePicks(true);
     return false;
   }
-  if (yearAll) yearAll.addEventListener("click", function (event) {
-    event.preventDefault();
-    pickAllYears();
-  });
   if (monthEl) {
     monthEl.addEventListener("pointerdown", armPicks);
     monthEl.addEventListener("touchstart", armPicks, { passive: true });
@@ -1092,7 +1088,6 @@
     document.body.classList.toggle("reviews", reviewOnly);
     document.body.classList.toggle("open", !reviewOnly && browsing && state.space !== "feel");
     if (monthWrap) monthWrap.hidden = false;
-    if (yearAll) yearAll.classList.toggle("on", state.year === "all");
     const familyBar = document.getElementById("family-bar") || document.querySelector(".family-bar");
     const inNow = isIn();
     if (familyBar) {
