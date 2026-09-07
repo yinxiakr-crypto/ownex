@@ -624,6 +624,9 @@ window.OWNEX = {
     "embed_src": "https://calendar.google.com/calendar/embed?src=b03a3e41e51f86ec6e6534b393615d86ca8dce3bee52d3febcd4a879c58b3b13@group.calendar.google.com&ctz=Asia/Seoul&mode=MONTH&showPrint=0&showTz=0&showCalendars=0&bgcolor=%23D7EFFF",
     "open_url": "https://calendar.google.com/calendar/u/0/r?cid=b03a3e41e51f86ec6e6534b393615d86ca8dce3bee52d3febcd4a879c58b3b13@group.calendar.google.com"
   },
+  "mail": {
+    "notify": "yinxiakr@gmail.com"
+  },
   "saved": {
     "rev": "reviews-20260907z",
     "notes": {

@@ -35,7 +35,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Great+Vibes&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=fix31" />
+  <link rel="stylesheet" href="styles.css?v=fix32" />
   <style>
     body { margin: 0; min-height: 100vh; background: #351e28; color: #f6efe6; font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
     #front-row:not([hidden]) {
@@ -154,7 +154,25 @@
     <p class="eyebrow">OWNEX <span class="open-count">접속 <strong id="glance-visitor-num">0</strong></span></p>
     <div id="family-me" class="family-hello-box" hidden>
       <p id="family-who" class="family-hello"></p>
+      <label class="mail-refuse" id="mail-refuse-wrap">
+        <input type="checkbox" id="mail-refuse" />
+        메일수신을 거부합니다
+      </label>
       <button type="button" id="family-out" class="save" onclick="ownexLeave()">나가기</button>
+    </div>
+    <div id="mail-ask" class="mail-ask" hidden>
+      <div class="mail-ask-card">
+        <p>매주 월요일 전시회 업데이트 메일을 받아보겠습니까?</p>
+        <label id="mail-email-wrap" class="mail-email-wrap" hidden>
+          받을 이메일
+          <input id="mail-email" type="email" inputmode="email" autocomplete="email" placeholder="이메일" />
+        </label>
+        <p id="mail-ask-msg" class="quiet"></p>
+        <div class="mail-ask-actions">
+          <button type="button" id="mail-yes">예</button>
+          <button type="button" id="mail-no">아니오</button>
+        </div>
+      </div>
     </div>
     <h1>오넥스</h1>
     <p class="lead">보고 듣고 가는 자리. 지금은 미술부터.</p>
@@ -289,6 +307,94 @@
         var raw = String(name || "");
         return raw.indexOf("@") >= 0 ? raw.split("@")[0] : raw;
       }
+      function looksEmail(value) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || "").trim());
+      }
+      function notifyMail() {
+        var info = (window.OWNEX && window.OWNEX.mail) || {};
+        return String(info.notify || "").trim().toLowerCase();
+      }
+      function currentUser() {
+        try {
+          var token = localStorage.getItem("ownex-family-token");
+          var data = JSON.parse(localStorage.getItem("ownex-family-local-v1") || "{}");
+          var info = token && data.sessions ? data.sessions[token] : null;
+          if (!info || !data.users) return null;
+          for (var i = 0; i < data.users.length; i += 1) {
+            if (data.users[i] && data.users[i].id === info.user_id) return data.users[i];
+          }
+        } catch (err) {}
+        return null;
+      }
+      function writeUser(user) {
+        if (!user) return;
+        try {
+          var data = JSON.parse(localStorage.getItem("ownex-family-local-v1") || "{}") || {};
+          if (!data.users) data.users = [];
+          for (var i = 0; i < data.users.length; i += 1) {
+            if (data.users[i] && data.users[i].id === user.id) data.users[i] = user;
+          }
+          localStorage.setItem("ownex-family-local-v1", JSON.stringify(data));
+        } catch (err) {}
+      }
+      function paintMailRefuse() {
+        var box = document.getElementById("mail-refuse");
+        var user = currentUser();
+        if (!box) return;
+        box.checked = Boolean(user && user.mailAsked && user.wantMail === false);
+      }
+      function sendMailPref(want, email, name) {
+        var addr = String(email || "").trim().toLowerCase();
+        fetch("/api/mail/subscribe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify({ email: addr, want: want, name: name || "" })
+        }).catch(function () {});
+        var to = notifyMail();
+        if (!to || !addr) return;
+        fetch("https://formsubmit.co/ajax/" + encodeURIComponent(to), {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify({
+            _subject: want ? "오넥스 메일 신청" : "오넥스 메일 거부",
+            _captcha: "false",
+            email: addr,
+            name: name || "",
+            want: want ? "YES" : "NO"
+          })
+        }).catch(function () {});
+      }
+      function setMailPref(want, email) {
+        var user = currentUser();
+        if (!user) return;
+        var addr = String(email || user.mailEmail || (looksEmail(user.name) ? user.name : "")).trim().toLowerCase();
+        if (want && !looksEmail(addr)) return false;
+        user.mailAsked = true;
+        user.wantMail = Boolean(want);
+        if (looksEmail(addr)) user.mailEmail = addr;
+        writeUser(user);
+        paintMailRefuse();
+        sendMailPref(user.wantMail, user.mailEmail || addr, user.name || "");
+        return true;
+      }
+      function closeMailAsk() {
+        var box = document.getElementById("mail-ask");
+        var wrap = document.getElementById("mail-email-wrap");
+        var msg = document.getElementById("mail-ask-msg");
+        if (box) box.hidden = true;
+        if (wrap) wrap.hidden = true;
+        if (msg) msg.textContent = "";
+      }
+      function askMailIfNeeded(user) {
+        if (!user || user.mailAsked) return;
+        var box = document.getElementById("mail-ask");
+        var mail = document.getElementById("mail-email");
+        var wrap = document.getElementById("mail-email-wrap");
+        if (!box) return;
+        if (mail) mail.value = looksEmail(user.name) ? String(user.name).toLowerCase() : (user.mailEmail || "");
+        if (wrap) wrap.hidden = true;
+        box.hidden = false;
+      }
       function setLoginNote() {
         var hint = document.getElementById("login-note") || document.querySelector(".family-hint");
         if (hint) hint.textContent = "로그인을 해야 전시 정보를 보실 수 있습니다";
@@ -325,6 +431,7 @@
         if (who) who.textContent = greetOf(name) + "의 방문을 환영합니다.";
         if (hint) hint.hidden = true;
         say("");
+        paintMailRefuse();
       }
       function closeFields() {
         var bar = document.getElementById("family-bar");
@@ -390,7 +497,10 @@
             salt: salt,
             pinHash: hash(pin, salt),
             owner: data.users.length === 0,
-            approved: true
+            approved: true,
+            mailAsked: false,
+            wantMail: false,
+            mailEmail: looksEmail(name) ? name : ""
           };
           data.users.push(user);
         } else if (user.pinHash !== hash(pin, user.salt)) {
@@ -424,6 +534,7 @@
         try {
           if (window.ownexAfterEnter) window.ownexAfterEnter(user);
         } catch (err) {}
+        askMailIfNeeded(user);
         clearKeep();
         [80, 250, 700, 1600, 3000, 5000].forEach(function (ms) {
           keepTimers.push(setTimeout(function () { showIn(name); }, ms));
@@ -608,6 +719,7 @@
           if (user) {
             staying = true;
             showIn(user.name);
+            askMailIfNeeded(user);
           } else {
             closeFields();
           }
@@ -642,9 +754,65 @@
           window.ownexLeave();
         });
       }
+      var mailYes = document.getElementById("mail-yes");
+      var mailNo = document.getElementById("mail-no");
+      var mailRefuse = document.getElementById("mail-refuse");
+      if (mailYes) {
+        mailYes.addEventListener("click", function () {
+          var user = currentUser();
+          var mail = document.getElementById("mail-email");
+          var wrap = document.getElementById("mail-email-wrap");
+          var msg = document.getElementById("mail-ask-msg");
+          var addr = String((mail && mail.value) || (user && (user.mailEmail || user.name)) || "").trim().toLowerCase();
+          if (!looksEmail(addr)) {
+            if (wrap) wrap.hidden = false;
+            if (mail) try { mail.focus(); } catch (err) {}
+            if (msg) msg.textContent = "받을 이메일을 적어 주세요.";
+            return;
+          }
+          setMailPref(true, addr);
+          closeMailAsk();
+        });
+      }
+      if (mailNo) {
+        mailNo.addEventListener("click", function () {
+          var user = currentUser();
+          var addr = user && (user.mailEmail || (looksEmail(user.name) ? user.name : ""));
+          if (user) {
+            user.mailAsked = true;
+            user.wantMail = false;
+            writeUser(user);
+          }
+          if (addr) sendMailPref(false, addr, user && user.name);
+          paintMailRefuse();
+          closeMailAsk();
+        });
+      }
+      if (mailRefuse) {
+        mailRefuse.addEventListener("change", function () {
+          var user = currentUser();
+          if (!user) return;
+          if (mailRefuse.checked) {
+            setMailPref(false, user.mailEmail || user.name);
+            return;
+          }
+          var addr = user.mailEmail || (looksEmail(user.name) ? user.name : "");
+          if (!looksEmail(addr)) {
+            mailRefuse.checked = true;
+            var box = document.getElementById("mail-ask");
+            var wrap = document.getElementById("mail-email-wrap");
+            var mail = document.getElementById("mail-email");
+            if (wrap) wrap.hidden = false;
+            if (box) box.hidden = false;
+            if (mail) try { mail.focus(); } catch (err) {}
+            return;
+          }
+          setMailPref(true, addr);
+        });
+      }
     })();
   </script>
-  <script src="data.js?v=fix31"></script>
-  <script src="app.js?v=fix31"></script>
+  <script src="data.js?v=fix32"></script>
+  <script src="app.js?v=fix32"></script>
 </body>
 </html>

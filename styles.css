@@ -155,6 +155,95 @@ header, main, footer {
   font-size: 0.75rem;
 }
 
+.mail-refuse {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  color: var(--muted);
+  cursor: pointer;
+  user-select: none;
+}
+
+.mail-refuse input {
+  width: 1rem;
+  height: 1rem;
+}
+
+.mail-ask[hidden] {
+  display: none !important;
+}
+
+.mail-ask {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, #000 45%, transparent);
+  padding: 1.2rem;
+}
+
+.mail-ask-card {
+  width: min(22rem, 100%);
+  background: #fff;
+  color: #3a2430;
+  border-radius: 1.1rem;
+  padding: 1.2rem 1.15rem 1rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.mail-ask-card p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.mail-email-wrap {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+}
+
+.mail-email-wrap[hidden] {
+  display: none !important;
+}
+
+.mail-email-wrap input {
+  min-height: 2.4rem;
+  border: 1px solid #e3d0c8;
+  border-radius: 0.7rem;
+  padding: 0.4rem 0.7rem;
+  font: inherit;
+}
+
+.mail-ask-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.45rem;
+}
+
+.mail-ask-actions button {
+  min-height: 2.3rem;
+  padding: 0.3rem 0.9rem;
+  border: 0;
+  border-radius: 999px;
+  font: inherit;
+  cursor: pointer;
+}
+
+#mail-yes {
+  background: #e24a1b;
+  color: #fff;
+}
+
+#mail-no {
+  background: #f3e7e0;
+  color: #3a2430;
+}
+
 #family-form:not(.login-open) #family-fields,
 #family-form:not(.login-open) input,
 .family-bar:not(.login-open) input {
