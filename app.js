@@ -101,7 +101,26 @@
   function pickMonth() {
     return monthEl ? String(monthEl.value || "") : "";
   }
+  function isIn() {
+    if (familyMe && familyMe.id) return true;
+    try {
+      return Boolean(localStorage.getItem(TOKEN_STORE));
+    } catch (err) {
+      return false;
+    }
+  }
+  function needLogin() {
+    if (yearEl) yearEl.value = "";
+    if (monthEl) monthEl.value = "";
+    state.year = "";
+    state.month = "";
+    state.selected = null;
+    if (window.ownexNeedLogin) window.ownexNeedLogin();
+    draw();
+    return false;
+  }
   function usePicks(clearShow) {
+    if (!isIn()) return needLogin();
     const y = pickYear();
     const m = pickMonth();
     const changed = y !== state.year || m !== state.month;
@@ -680,6 +699,7 @@
   }
 
   function openShow(row) {
+    if (!isIn()) return needLogin();
     if (!row) return;
     const year = (row.start_date || "").slice(0, 4);
     const month = (row.start_date || "").slice(5, 7);
@@ -1339,6 +1359,7 @@
     });
     box.querySelectorAll("[data-show]").forEach((el) => {
       el.addEventListener("click", () => {
+        if (!isIn()) return needLogin();
         const show = showById(el.getAttribute("data-show") || "");
         if (show) openShow(show);
       });

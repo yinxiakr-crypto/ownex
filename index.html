@@ -26,7 +26,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Great+Vibes&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=fix9" />
+  <link rel="stylesheet" href="styles.css?v=fix10" />
   <style>
     body { margin: 0; min-height: 100vh; background: #351e28; color: #f6efe6; font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
     #front-row:not([hidden]) {
@@ -43,6 +43,12 @@
     #artwork:not([hidden]) { display: block !important; }
     h1 { margin: 0 0 0.7rem; }
     .family-bar { margin: 0.2rem 0 1.4rem; position: relative; z-index: 2; }
+    .family-hello-box { position: absolute; top: 1.5rem; right: max(1.2rem, 8vw); display: flex; flex-direction: column; align-items: flex-end; gap: 0.3rem; z-index: 5; max-width: 16rem; }
+    .family-hello-box[hidden] { display: none !important; }
+    .family-hello-box .family-hello { margin: 0; font-size: 0.78rem; font-weight: 500; text-align: right; line-height: 1.35; }
+    .family-hello-box .save { min-height: 1.85rem; min-width: auto; padding: 0.2rem 0.75rem; font-size: 0.75rem; }
+    #family-fields { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; }
+    #family-fields[hidden] { display: none !important; }
     body.open .family-bar,
     body.reviews .family-bar,
     .family-bar[hidden] { display: none !important; visibility: hidden !important; height: 0 !important; overflow: hidden !important; margin: 0 !important; }
@@ -82,21 +88,23 @@
   </div>
   <header class="hero">
     <p class="eyebrow">OWNEX <span class="open-count">접속 <strong id="glance-visitor-num">0</strong></span></p>
+    <div id="family-me" class="family-hello-box" hidden>
+      <p id="family-who" class="family-hello"></p>
+      <button type="button" id="family-out" class="save" onclick="ownexLeave()">나가기</button>
+    </div>
     <h1>오넥스</h1>
     <p class="lead">보고 듣고 가는 자리. 지금은 미술부터.</p>
 
     <div class="family-bar" id="family-bar">
       <form id="family-form" action="#" method="post" onsubmit="ownexEnter(); return false;">
-        <input id="family-name" name="name" maxlength="64" placeholder="이름 또는 이메일" autocomplete="username" enterkeyhint="next" />
-        <input id="family-pin" name="pin" type="password" maxlength="32" placeholder="비밀번호" autocomplete="current-password" enterkeyhint="go" />
-        <button type="submit" class="save" id="family-enter">들어가기</button>
+        <div id="family-fields" hidden>
+          <input id="family-name" name="name" maxlength="64" placeholder="이름 또는 이메일" autocomplete="username" enterkeyhint="next" />
+          <input id="family-pin" name="pin" type="password" maxlength="32" placeholder="비밀번호" autocomplete="current-password" enterkeyhint="go" />
+        </div>
+        <button type="submit" class="save" id="family-enter">로그인</button>
       </form>
-      <div id="family-me" hidden>
-        <p id="family-who" class="family-hello"></p>
-        <button type="button" id="family-out" class="save" onclick="ownexLeave()">나가기</button>
-      </div>
       <p id="family-msg" class="quiet"></p>
-      <p class="family-hint quiet">리뷰와 스티커는 바로 보입니다. 비밀번호는 4자 이상으로 넣고 들어가기를 누르세요.</p>
+      <p class="family-hint quiet">로그인을 누르면 이름과 비밀번호 칸이 나옵니다. 로그인한 뒤에 전시를 볼 수 있습니다.</p>
       <div id="family-people"></div>
     </div>
 
@@ -267,10 +275,12 @@
         var me = document.getElementById("family-me");
         var who = document.getElementById("family-who");
         var hint = document.querySelector(".family-hint");
+        var fields = document.getElementById("family-fields");
         if (form) {
           form.hidden = false;
           form.removeAttribute("hidden");
         }
+        if (fields) fields.hidden = true;
         if (me) me.hidden = true;
         if (who) who.textContent = "";
         if (hint) hint.hidden = false;
@@ -318,7 +328,7 @@
       }
       function finish(name, pin) {
         if (!name) {
-          say("이름 또는 이메일을 한 번 눌러 확인한 뒤 들어가기를 누르세요.");
+          say("이름 또는 이메일을 넣은 뒤 로그인을 누르세요.");
           return;
         }
         if (pin.length < 4) {
@@ -376,11 +386,38 @@
         else window.ownexReviews();
         return false;
       };
+      window.ownexIsIn = function () {
+        try { return Boolean(localStorage.getItem("ownex-family-token")); } catch (err) { return false; }
+      };
+      window.ownexNeedLogin = function () {
+        var fields = document.getElementById("family-fields");
+        var bar = document.getElementById("family-bar");
+        var year = document.getElementById("year");
+        var month = document.getElementById("month");
+        if (year) year.value = "";
+        if (month) month.value = "";
+        if (bar) {
+          bar.hidden = false;
+          bar.removeAttribute("hidden");
+          bar.style.removeProperty("display");
+          bar.style.removeProperty("visibility");
+        }
+        if (fields) {
+          fields.hidden = false;
+          fields.removeAttribute("hidden");
+        }
+        say("로그인한 뒤에 전시를 볼 수 있습니다.");
+        var nameEl = document.getElementById("family-name");
+        if (nameEl) try { nameEl.focus(); } catch (err) {}
+        return false;
+      };
       window.ownexUsePicks = function () {
+        if (!window.ownexIsIn()) return window.ownexNeedLogin();
         if (window.ownexApplyPicks) window.ownexApplyPicks();
         return false;
       };
       window.ownexYearAll = function () {
+        if (!window.ownexIsIn()) return window.ownexNeedLogin();
         var year = document.getElementById("year");
         if (year) year.value = "all";
         if (window.ownexUsePicks) window.ownexUsePicks();
@@ -388,6 +425,7 @@
       };
       window.ownexOpenId = window.ownexOpenId || function () { return false; };
       window.ownexGoReview = function (el) {
+        if (!window.ownexIsIn()) return window.ownexNeedLogin();
         var title = "";
         var showId = "";
         if (el) {
@@ -412,6 +450,14 @@
         if (Date.now() < busy) return false;
         busy = Date.now() + 350;
         say("");
+        var fields = document.getElementById("family-fields");
+        if (fields && fields.hidden) {
+          fields.hidden = false;
+          fields.removeAttribute("hidden");
+          var nameOpen = document.getElementById("family-name");
+          if (nameOpen) try { nameOpen.focus(); } catch (err) {}
+          return false;
+        }
         var first = readFields();
         if (!first.name || first.pin.length < 4) {
           setTimeout(function () {
@@ -464,7 +510,7 @@
       }
     })();
   </script>
-  <script src="data.js?v=fix9"></script>
-  <script src="app.js?v=fix9"></script>
+  <script src="data.js?v=fix10"></script>
+  <script src="app.js?v=fix10"></script>
 </body>
 </html>
