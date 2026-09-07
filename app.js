@@ -87,11 +87,11 @@
   document.querySelectorAll(".field").forEach((btn) => {
     btn.addEventListener("click", () => {
       if (btn.disabled) return;
-      state.field = btn.getAttribute("data-field");
+      const next = btn.getAttribute("data-field");
+      if (next === state.field) return;
+      state.field = next;
       document.querySelectorAll(".field").forEach((el) => el.classList.toggle("on", el === btn));
-      state.month = "";
       state.selected = null;
-      if (monthEl) monthEl.value = "";
       draw();
     });
   });
@@ -118,14 +118,22 @@
     }
     draw();
   }
-  if (yearEl) yearEl.addEventListener("change", function () { usePicks(true); });
+  if (yearEl) yearEl.addEventListener("change", function () {
+    if (monthEl) monthEl.value = "";
+    state.month = "";
+    usePicks(true);
+  });
   if (yearAll) yearAll.addEventListener("click", () => {
     if (yearEl) yearEl.value = "all";
+    if (monthEl) monthEl.value = "";
+    state.month = "";
     usePicks(true);
   });
   if (monthEl) monthEl.addEventListener("change", function () { usePicks(true); });
   window.ownexYearAll = function () {
     if (yearEl) yearEl.value = "all";
+    if (monthEl) monthEl.value = "";
+    state.month = "";
     usePicks(true);
     return false;
   };
@@ -791,28 +799,17 @@
     }).join("");
   }
 
-  function inYear(row, year) {
-    if (!year || year === "all") return true;
-    const start = row.start_date || row.collected_date || "";
-    const end = row.end_date || start;
-    const from = start.slice(0, 4);
-    const to = (end || start).slice(0, 4);
-    return from <= year && to >= year;
-  }
-
   function monthRows() {
     const year = state.year || pickYear();
     const month = state.month || pickMonth();
-    return events().filter((row) => {
-      if (month) return overlapsMonth(row, year, month);
-      return inYear(row, year);
-    });
+    if (!year || !month) return [];
+    return events().filter((row) => overlapsMonth(row, year, month));
   }
 
   function paintGlance() {
     const home = document.getElementById("glance-home");
     if (home) {
-      const onHome = !state.selected && state.space !== "reviews" && !state.year;
+      const onHome = !state.selected && state.space !== "reviews" && !(state.year && state.month);
       home.hidden = onHome;
     }
   }
@@ -921,6 +918,7 @@
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  window.ownexGoFront = goHomeApp;
   function bindGlance() {
     const home = document.getElementById("glance-home");
     if (home) home.addEventListener("click", goHomeApp);
@@ -949,12 +947,21 @@
     if (yearEl && yearEl.value && yearEl.value !== state.year) state.year = String(yearEl.value || "");
     if (monthEl && monthEl.value && monthEl.value !== state.month) state.month = String(monthEl.value || "");
     const reviewOnly = state.space === "reviews";
-    const browsing = Boolean(state.year || pickYear());
+    const browsing = Boolean((state.year || pickYear()) && (state.month || pickMonth()));
     const showFeel = !reviewOnly && !state.selected && (state.space === "feel" || !browsing);
     document.body.classList.toggle("reviews", reviewOnly);
     document.body.classList.toggle("open", !reviewOnly && browsing && state.space !== "feel");
     if (monthWrap) monthWrap.hidden = false;
     if (yearAll) yearAll.classList.toggle("on", state.year === "all");
+    const familyBar = document.querySelector(".family-bar");
+    if (familyBar) {
+      familyBar.hidden = !showFeel;
+      if (!showFeel) familyBar.style.setProperty("display", "none", "important");
+      else {
+        familyBar.removeAttribute("hidden");
+        familyBar.style.removeProperty("display");
+      }
+    }
     const showMonth = !reviewOnly && browsing && !state.selected && state.space !== "feel";
     if (frontRow) {
       frontRow.hidden = !showFeel;

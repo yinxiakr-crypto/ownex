@@ -26,7 +26,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Great+Vibes&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=fix7" />
+  <link rel="stylesheet" href="styles.css?v=fix8" />
   <style>
     body { margin: 0; min-height: 100vh; background: #351e28; color: #f6efe6; font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
     #front-row:not([hidden]) {
@@ -113,7 +113,7 @@
         </select>
       </div>
       <button type="button" id="year-all" class="year-all" onclick="ownexYearAll()">전체</button>
-      <button type="button" id="glance-home" class="year-all" hidden>처음</button>
+      <button type="button" id="glance-home" class="year-all" hidden onclick="ownexGoFront()">처음</button>
       <div class="year-pick" id="month-wrap">
         <span>월</span>
         <select id="month" onchange="ownexUsePicks()">
@@ -459,7 +459,7 @@
       }
     })();
   </script>
-  <script src="data.js?v=fix7"></script>
-  <script src="app.js?v=fix7"></script>
+  <script src="data.js?v=fix8"></script>
+  <script src="app.js?v=fix8"></script>
 </body>
 </html>
