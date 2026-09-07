@@ -33,6 +33,7 @@
     reviewId: "",
     stickerYear: String(Math.max(2026, new Date().getFullYear())),
     stickerPage: 0,
+    frontExtra: 0,
   };
   const FRONT_REVIEWS = 3;
 
@@ -46,8 +47,12 @@
     }
   }
 
-  function frontReviewCount() {
+  function frontReviewBase() {
     return isPhoneLayout() ? 2 : FRONT_REVIEWS;
+  }
+
+  function frontReviewCount() {
+    return frontReviewBase() + (Number(state.frontExtra) || 0);
   }
 
   function syncPhoneClass() {
@@ -61,6 +66,8 @@
   const yearAll = document.getElementById("year-all");
   const monthEl = document.getElementById("month");
   const monthWrap = document.getElementById("month-wrap");
+  const showEl = document.getElementById("show");
+  let pickShows = [];
   const monthList = document.getElementById("month-list");
   const ownCal = document.getElementById("own-cal");
   const artwork = document.getElementById("artwork");
@@ -84,7 +91,8 @@
       draw();
     });
   });
-  if (yearEl) yearEl.addEventListener("change", () => {
+  function onYearPick() {
+    if (!yearEl) return;
     state.year = yearEl.value;
     if (state.year && state.year !== "all") {
       state.stickerYear = state.year;
@@ -95,7 +103,11 @@
     state.space = "";
     if (monthEl) monthEl.value = "";
     draw();
-  });
+  }
+  if (yearEl) {
+    yearEl.addEventListener("change", onYearPick);
+    yearEl.addEventListener("input", onYearPick);
+  }
   if (yearAll) yearAll.addEventListener("click", () => {
     state.year = "all";
     if (yearEl) yearEl.value = "all";
@@ -105,13 +117,28 @@
     if (monthEl) monthEl.value = "";
     draw();
   });
-  if (monthEl) monthEl.addEventListener("change", () => {
+  function onMonthPick() {
+    if (!monthEl) return;
     state.month = monthEl.value;
     state.selected = null;
     state.initial = "";
     state.space = "";
     draw();
-  });
+  }
+  if (monthEl) {
+    monthEl.addEventListener("change", onMonthPick);
+    monthEl.addEventListener("input", onMonthPick);
+  }
+  function onShowPick() {
+    const raw = showEl && showEl.value;
+    if (raw === "" || raw == null) return;
+    const row = pickShows[Number(raw)];
+    if (row) openShow(row);
+  }
+  if (showEl) {
+    showEl.addEventListener("change", onShowPick);
+    showEl.addEventListener("input", onShowPick);
+  }
 
   function applySeason() {
     const month = new Date().getMonth() + 1;
@@ -162,6 +189,7 @@
       } catch (err) {}
     }
     fillNotes(readNotesStore(notesKey()));
+    mergeSaved();
   }
 
   function loadNotes() {
@@ -653,10 +681,12 @@
     state.month = month || state.month;
     state.selected = row;
     state.space = "";
-    yearEl.value = state.year;
-    if (state.month) monthEl.value = state.month;
+    if (yearEl && state.year) yearEl.value = state.year;
+    if (monthEl && state.month) monthEl.value = state.month;
     draw();
-    artwork.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (artwork && !artwork.hidden) {
+      artwork.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   }
 
   function events() {
@@ -763,6 +793,43 @@
 
   function monthRows() {
     return events().filter((row) => overlapsMonth(row, state.year, state.month));
+  }
+
+  function uniqueShows(rows) {
+    const seen = {};
+    return (rows || []).filter((row) => {
+      const id = itemId(row);
+      if (!id || seen[id]) return false;
+      seen[id] = true;
+      return true;
+    });
+  }
+
+  function showsForPicks() {
+    const rows = events().filter((row) => {
+      if (state.month) return overlapsMonth(row, state.year || "all", state.month);
+      if (state.year && state.year !== "all") {
+        const from = (row.start_date || "").slice(0, 4);
+        const to = (row.end_date || row.start_date || "").slice(0, 4);
+        return from <= state.year && to >= state.year;
+      }
+      return true;
+    });
+    return uniqueShows(rows).sort((a, b) => String(a.start_date || "").localeCompare(String(b.start_date || "")));
+  }
+
+  function fillShows() {
+    if (!showEl) return;
+    pickShows = showsForPicks();
+    const selectedId = state.selected ? itemId(state.selected) : "";
+    showEl.innerHTML =
+      '<option value="">전시회를 고르세요</option>' +
+      pickShows
+        .map((row, i) => {
+          const on = selectedId && itemId(row) === selectedId ? " selected" : "";
+          return '<option value="' + i + '"' + on + ">" + escapeHtml(row.title || "") + "</option>";
+        })
+        .join("");
   }
 
   function paintGlance() {
@@ -878,6 +945,17 @@
   function bindGlance() {
     const home = document.getElementById("glance-home");
     if (home) home.addEventListener("click", goHomeApp);
+    document.addEventListener("click", (event) => {
+      const all = event.target.closest("[data-reviews='all']");
+      const more = event.target.closest("[data-reviews='more']");
+      if (all) {
+        event.preventDefault();
+        openReviews();
+      } else if (more) {
+        event.preventDefault();
+        showMoreReviews();
+      }
+    });
   }
 
   function reviewDraftOpen() {
@@ -889,6 +967,7 @@
 
   function draw() {
     paintGlance();
+    fillShows();
     const reviewOnly = state.space === "reviews";
     const browsing = Boolean(state.year && state.month);
     const showFeel = !reviewOnly && !state.selected && (state.space === "feel" || !browsing);
@@ -940,6 +1019,16 @@
         }
       }
     }
+  }
+
+  function showMoreReviews() {
+    const shown = frontReviewCount();
+    if (shown >= feels.length) {
+      openReviews();
+      return;
+    }
+    state.frontExtra = (Number(state.frontExtra) || 0) + frontReviewBase();
+    draw();
   }
 
   function openReviews() {
@@ -999,7 +1088,10 @@
       </div>`;
     }).join("");
     const moreOutside = preview
-      ? '<div class="review-all-wrap"><button type="button" class="review-all-btn" data-reviews="all">전체 보기</button></div>'
+      ? '<div class="review-foot">' +
+        '<button type="button" class="review-more-btn" data-reviews="more">계속</button>' +
+        '<button type="button" class="review-all-btn" data-reviews="all">전체보기</button>' +
+        "</div>"
       : "";
     const empty = [1, 2, 3].map(function (no) {
       return '<div class="review-item empty-row"><div class="review-last-row"><div class="review-line"><span class="review-no">' +
@@ -1064,9 +1156,6 @@
         const item = feels.find((row) => row.id === btn.getAttribute("data-id"));
         if (item) sendToNotes(item);
       });
-    });
-    box.querySelectorAll("[data-reviews='all']").forEach((btn) => {
-      btn.addEventListener("click", openReviews);
     });
     const homeBtn = box.querySelector("[data-reviews='home']");
     if (homeBtn) homeBtn.addEventListener("click", closeReviews);
@@ -1264,12 +1353,12 @@
         ${
           rows.length
             ? rows
-                .map((row) => {
+                .map((row, i) => {
                   const src = coverOf(row);
                   const art = src
                     ? `<img class="name-art" src="${escapeHtml(src)}" alt="">`
                     : `<span class="name-art"></span>`;
-                  return `<button type="button" class="name ${src ? "has-art" : ""}" data-id="${encodeURIComponent(itemId(row))}">
+                  return `<button type="button" class="name ${src ? "has-art" : ""}" data-index="${i}">
               ${art}
               <span><strong>${escapeHtml(row.title)}</strong><small>${escapeHtml(row.venue || "")} · ${escapeHtml([row.start_date, row.end_date].filter(Boolean).join(" ~ "))}${endedTag(row)}</small></span>
             </button>`;
@@ -1292,19 +1381,8 @@
     });
     monthList.querySelectorAll(".name").forEach((btn) => {
       btn.addEventListener("click", () => {
-        let id = btn.getAttribute("data-id") || "";
-        try {
-          id = decodeURIComponent(id);
-        } catch (err) {}
-        state.selected =
-          events().find((row) => itemId(row) === id) ||
-          events().find((row) => encodeURIComponent(itemId(row)) === btn.getAttribute("data-id")) ||
-          null;
-        state.artIndex = 0;
-        draw();
-        if (state.selected && artwork && !artwork.hidden) {
-          artwork.scrollIntoView({ behavior: "smooth", block: "start" });
-        }
+        const row = rows[Number(btn.getAttribute("data-index"))];
+        if (row) openShow(row);
       });
     });
   }

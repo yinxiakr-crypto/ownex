@@ -434,6 +434,14 @@ body.open .gcal-icon {
   letter-spacing: 0.08em;
 }
 
+#show-wrap {
+  flex: 1 1 12rem;
+}
+
+#show-wrap select {
+  min-width: 12rem;
+}
+
 .year-pick select {
   min-width: 10rem;
   min-height: 2.6rem;
@@ -1178,10 +1186,27 @@ body.reviews .hero {
   white-space: nowrap;
 }
 
-.review-all-wrap {
+.review-all-wrap,
+.review-foot {
   display: flex;
   justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
   margin: 0.85rem 0 0.1rem;
+}
+
+.review-more-btn {
+  flex: 0 0 auto;
+  border: 1px solid color-mix(in srgb, #fff 55%, var(--accent));
+  border-radius: 999px;
+  background: color-mix(in srgb, #fff 12%, transparent);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.78rem;
+  padding: 0.4rem 0.85rem;
+  min-height: 2.2rem;
+  cursor: pointer;
+  white-space: nowrap;
 }
 
 body.open .review-all-btn {
