@@ -795,7 +795,7 @@
     const el = document.getElementById("glance-visitor-num");
     if (!el) return;
     const n = Number(total);
-    if (!Number.isFinite(n) || n < 0) return;
+    if (!Number.isFinite(n) || n < 1) return;
     el.textContent = String(n);
     try {
       localStorage.setItem("ownex-guest-total", String(n));
@@ -1029,7 +1029,7 @@
       const show = (data.exhibitions || []).find((row) => itemId(row) === item.showId) || matchShow(item.title);
       return `<div class="review-item ${open ? "on" : ""}">
         <div class="review-last-row">
-        <button type="button" class="review-line" data-id="${escapeHtml(item.id)}" data-title="${escapeHtml(item.title)}" data-show="${escapeHtml(item.showId || "")}">
+        <button type="button" class="review-line" data-id="${escapeHtml(item.id)}" data-title="${escapeHtml(item.title)}" data-show="${escapeHtml(item.showId || "")}" onclick="ownexGoReview(this)">
           <span class="review-no">${no}</span>
           <span class="review-date">${escapeHtml(item.at || "")}${item.by ? `<span class="review-by">${escapeHtml(item.by)}</span>` : ""}</span>
           <span class="review-name">${escapeHtml(item.title)}</span>
@@ -1131,6 +1131,12 @@
       btn.addEventListener("click", () => {
         const item = feels.find((row) => row.id === btn.getAttribute("data-id"));
         if (item) sendToNotes(item);
+      });
+    });
+    box.querySelectorAll("[data-reviews='all']").forEach((btn) => {
+      btn.addEventListener("click", function (event) {
+        event.preventDefault();
+        openReviews();
       });
     });
     const homeBtn = box.querySelector("[data-reviews='home']");
@@ -1639,6 +1645,12 @@
   window.ownexOpenReviews = openReviews;
   window.ownexMoreReviews = showMoreReviews;
   window.ownexHome = closeReviews;
+  window.ownexOpenByTitle = function (title) {
+    const show =
+      (data.exhibitions || []).find((row) => itemId(row) === String(title || "")) ||
+      matchShow(title);
+    if (show) openShow(show);
+  };
 
   function enterFamily() {
     if (window.ownexEnter) window.ownexEnter();

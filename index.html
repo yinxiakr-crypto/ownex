@@ -13,6 +13,12 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <script>
     (function () {
+      var looping = false;
+      try { looping = sessionStorage.getItem("ownex-reloading") === "1"; } catch (err) {}
+      if (looping) {
+        try { sessionStorage.removeItem("ownex-reloading"); } catch (err) {}
+        return;
+      }
       fetch("build.json?t=" + Date.now(), { cache: "no-store" })
         .then(function (res) { return res.json(); })
         .then(function (info) {
@@ -21,7 +27,9 @@
           try { seen = localStorage.getItem("ownex-build") || ""; } catch (err) {}
           if (!now || now === seen) return;
           try { localStorage.setItem("ownex-build", now); } catch (err) {}
-          location.reload();
+          try { sessionStorage.setItem("ownex-reloading", "1"); } catch (err) {}
+          var path = location.pathname || "/";
+          location.replace(path + "?b=" + encodeURIComponent(now));
         })
         .catch(function () {});
     })();
@@ -29,7 +37,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Great+Vibes&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=out1" />
+  <link rel="stylesheet" href="styles.css?v=fix1" />
   <style>
     body { margin: 0; min-height: 100vh; background: #351e28; color: #f6efe6; font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
     #front-row:not([hidden]) {
@@ -150,8 +158,8 @@
             <span class="review-name">제목</span>
             <span class="review-snip">소감</span>
           </div>
-          <div class="review-item"><div class="review-last-row"><div class="review-line"><span class="review-no">1</span><span class="review-date">2026-09-03</span><span class="review-name">큐비스트 감상</span><span class="review-snip">유럽의 거장 큐비스트들을 통해 한국의 나헤석, 김환기 작가 등 한국 근현대 미술가들이 오버랩되어 한국의 큐비즘의 태동을 만난 것 같았다.</span></div></div></div>
-          <div class="review-item"><div class="review-last-row"><div class="review-line"><span class="review-no">2</span><span class="review-date">2026-09-03</span><span class="review-name">김희천: 두더지들</span><span class="review-snip">바쁜 현대 사회를 살아 가면서 잠깐 빠져 나오게 해 주는 작품이었습니다.</span></div></div></div>
+          <div class="review-item"><div class="review-last-row"><button type="button" class="review-line" data-title="큐비스트 감상" onclick="ownexGoReview(this)"><span class="review-no">1</span><span class="review-date">2026-09-03</span><span class="review-name">큐비스트 감상</span><span class="review-snip">유럽의 거장 큐비스트들을 통해 한국의 나헤석, 김환기 작가 등 한국 근현대 미술가들이 오버랩되어 한국의 큐비즘의 태동을 만난 것 같았다.</span></button></div></div>
+          <div class="review-item"><div class="review-last-row"><button type="button" class="review-line" data-title="김희천: 두더지들" onclick="ownexGoReview(this)"><span class="review-no">2</span><span class="review-date">2026-09-03</span><span class="review-name">김희천: 두더지들</span><span class="review-snip">바쁜 현대 사회를 살아 가면서 잠깐 빠져 나오게 해 주는 작품이었습니다.</span></button></div></div>
         </div>
         <div class="review-foot">
           <button type="button" class="review-more-btn" data-reviews="more" onclick="ownexMore()">계속</button>
@@ -183,6 +191,37 @@
 
   <script>
     (function () {
+      var el = document.getElementById("glance-visitor-num");
+      function paintCount(n) {
+        var num = Number(n);
+        if (!isFinite(num) || num < 1) return;
+        if (el) el.textContent = String(num);
+        try { localStorage.setItem("ownex-guest-total", String(num)); } catch (err) {}
+      }
+      var counted = false;
+      try { counted = sessionStorage.getItem("ownex-open-hit") === "1"; } catch (err) {}
+      var n = 0;
+      try { n = Number(localStorage.getItem("ownex-guest-total") || 0) || 0; } catch (err) {}
+      if (!counted) {
+        n += 1;
+        try { sessionStorage.setItem("ownex-open-hit", "1"); } catch (err) {}
+      }
+      paintCount(n);
+      window.ownexAbacus = function (payload) {
+        var v = Number((payload && (payload.value || payload.total || payload.count)) || 0);
+        if (v > n) paintCount(v);
+      };
+      var kind = counted ? "get" : "hit";
+      var src = "https://abacus.jsn.cam/" + kind + "/ownex-yinxiakr/opens?callback=ownexAbacus&t=" + Date.now();
+      var tag = document.createElement("script");
+      tag.src = src;
+      tag.onerror = function () {
+        var tag2 = document.createElement("script");
+        tag2.src = "https://abacus.jasoncameron.dev/" + kind + "/ownex-yinxiakr/opens?callback=ownexAbacus&t=" + Date.now();
+        document.head.appendChild(tag2);
+      };
+      document.head.appendChild(tag);
+
       var busy = 0;
       var staying = false;
       var keepTimers = [];
@@ -326,6 +365,18 @@
         if (window.ownexMoreReviews) window.ownexMoreReviews();
         return false;
       };
+      window.ownexGoReview = function (el) {
+        var title = "";
+        if (el) {
+          title = el.getAttribute("data-title") || "";
+          if (!title) {
+            var name = el.querySelector ? el.querySelector(".review-name") : null;
+            title = name ? String(name.textContent || "").trim() : String(el.textContent || "").trim();
+          }
+        }
+        if (window.ownexOpenByTitle) window.ownexOpenByTitle(title);
+        return false;
+      };
       window.ownexEnter = function () {
         if (Date.now() < busy) return false;
         busy = Date.now() + 350;
@@ -382,7 +433,7 @@
       }
     })();
   </script>
-  <script src="data.js?v=out1"></script>
-  <script src="app.js?v=out1"></script>
+  <script src="data.js?v=fix1"></script>
+  <script src="app.js?v=fix1"></script>
 </body>
 </html>
