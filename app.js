@@ -141,8 +141,8 @@
     pickTouched = true;
   }
   function usePicks(clearShow) {
-    if (!isIn()) return needLogin();
     if (!pickTouched) return;
+    if (!isIn()) return needLogin();
     const y = pickYear();
     const m = pickMonth();
     const changed = y !== state.year || m !== state.month;
@@ -164,22 +164,23 @@
     yearEl.addEventListener("touchstart", armPicks, { passive: true });
     yearEl.addEventListener("mousedown", armPicks);
     yearEl.addEventListener("change", function () {
-      if (!pickTouched) {
-        yearEl.value = "";
-        if (monthEl) monthEl.value = "";
-        return;
+      if (!pickTouched) return;
+      if (yearEl.value !== "all" && monthEl) {
+        monthEl.value = "";
+        state.month = "";
       }
-      if (monthEl) monthEl.value = "";
-      state.month = "";
       usePicks(true);
     });
   }
-  if (yearAll) yearAll.addEventListener("click", () => {
+  function pickAllYears() {
     armPicks();
     if (yearEl) yearEl.value = "all";
-    if (monthEl) monthEl.value = "";
-    state.month = "";
     usePicks(true);
+    return false;
+  }
+  if (yearAll) yearAll.addEventListener("click", function (event) {
+    event.preventDefault();
+    pickAllYears();
   });
   if (monthEl) {
     monthEl.addEventListener("pointerdown", armPicks);
@@ -193,13 +194,7 @@
       usePicks(true);
     });
   }
-  window.ownexYearAll = function () {
-    if (yearEl) yearEl.value = "all";
-    if (monthEl) monthEl.value = "";
-    state.month = "";
-    usePicks(true);
-    return false;
-  };
+  window.ownexYearAll = pickAllYears;
   window.ownexApplyPicks = function () {
     armPicks();
     usePicks(true);

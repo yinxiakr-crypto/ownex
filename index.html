@@ -31,7 +31,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Great+Vibes&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=fix23" />
+  <link rel="stylesheet" href="styles.css?v=fix25" />
   <style>
     body { margin: 0; min-height: 100vh; background: #351e28; color: #f6efe6; font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
     #front-row:not([hidden]) {
@@ -166,7 +166,7 @@
           <option value="2028">2028</option>
         </select>
       </div>
-      <button type="button" id="year-all" class="year-all" onclick="ownexYearAll()">전체</button>
+      <button type="button" id="year-all" class="year-all">전체</button>
       <button type="button" id="glance-home" class="year-all" hidden onclick="ownexGoFront()">처음</button>
       <div class="year-pick" id="month-wrap">
         <select id="month" aria-label="월">
@@ -455,10 +455,12 @@
         return false;
       };
       window.ownexYearAll = function () {
-        if (!window.ownexIsIn()) return window.ownexNeedLogin();
-        var year = document.getElementById("year");
-        if (year) year.value = "all";
-        if (window.ownexUsePicks) window.ownexUsePicks();
+        if (window.ownexApplyPicks) {
+          var year = document.getElementById("year");
+          if (year) year.value = "all";
+          window.ownexApplyPicks();
+          return false;
+        }
         return false;
       };
       window.ownexOpenId = window.ownexOpenId || function () { return false; };
@@ -516,7 +518,7 @@
       window.ownexOpenFields = openFields;
       function tryFinish(name, pin) {
         if (!name) {
-          say("이름 또는 이메일을 넣은 뒤 Enter를 누르세요.");
+          say("이름 또는 이메일을 넣은 뒤 로그인을 누르세요.");
           var nameEl = document.getElementById("family-name");
           if (nameEl) try { nameEl.focus(); } catch (err) {}
           return false;
@@ -543,14 +545,19 @@
       }
       window.ownexEnter = function () {
         if (Date.now() < busy) return false;
-        busy = Date.now() + 200;
+        busy = Date.now() + 400;
         say("");
         var form = document.getElementById("family-form");
-        if (form && form.classList.contains("login-open")) {
+        if (!form || !form.classList.contains("login-open")) {
+          openFields();
+          return false;
+        }
+        var filled = readFields();
+        if (!filled.name && !filled.pin) {
           closeFields();
           return false;
         }
-        openFields();
+        submitLogin();
         return false;
       };
       function restore() {
@@ -603,7 +610,7 @@
       }
     })();
   </script>
-  <script src="data.js?v=fix23"></script>
-  <script src="app.js?v=fix23"></script>
+  <script src="data.js?v=fix25"></script>
+  <script src="app.js?v=fix25"></script>
 </body>
 </html>
