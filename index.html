@@ -26,7 +26,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Great+Vibes&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=fix10" />
+  <link rel="stylesheet" href="styles.css?v=fix11" />
   <style>
     body { margin: 0; min-height: 100vh; background: #351e28; color: #f6efe6; font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
     #front-row:not([hidden]) {
@@ -47,8 +47,18 @@
     .family-hello-box[hidden] { display: none !important; }
     .family-hello-box .family-hello { margin: 0; font-size: 0.78rem; font-weight: 500; text-align: right; line-height: 1.35; }
     .family-hello-box .save { min-height: 1.85rem; min-width: auto; padding: 0.2rem 0.75rem; font-size: 0.75rem; }
-    #family-fields { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; }
-    #family-fields[hidden] { display: none !important; }
+    #family-form:not(.login-open) #family-fields,
+    #family-form:not(.login-open) #family-name,
+    #family-form:not(.login-open) #family-pin {
+      display: none !important;
+      visibility: hidden !important;
+      position: absolute !important;
+      width: 0 !important;
+      height: 0 !important;
+      overflow: hidden !important;
+      opacity: 0 !important;
+    }
+    #family-form.login-open #family-fields { display: flex !important; flex-wrap: wrap; gap: 0.4rem; align-items: center; position: static; width: auto; height: auto; opacity: 1; visibility: visible; }
     body.open .family-bar,
     body.reviews .family-bar,
     .family-bar[hidden] { display: none !important; visibility: hidden !important; height: 0 !important; overflow: hidden !important; margin: 0 !important; }
@@ -96,12 +106,9 @@
     <p class="lead">보고 듣고 가는 자리. 지금은 미술부터.</p>
 
     <div class="family-bar" id="family-bar">
-      <form id="family-form" action="#" method="post" onsubmit="ownexEnter(); return false;">
-        <div id="family-fields" hidden>
-          <input id="family-name" name="name" maxlength="64" placeholder="이름 또는 이메일" autocomplete="username" enterkeyhint="next" />
-          <input id="family-pin" name="pin" type="password" maxlength="32" placeholder="비밀번호" autocomplete="current-password" enterkeyhint="go" />
-        </div>
-        <button type="submit" class="save" id="family-enter">로그인</button>
+      <form id="family-form" class="login-closed" action="#" method="post" onsubmit="ownexEnter(); return false;">
+        <div id="family-fields"></div>
+        <button type="button" class="save" id="family-enter">로그인</button>
       </form>
       <p id="family-msg" class="quiet"></p>
       <p class="family-hint quiet">로그인을 누르면 이름과 비밀번호 칸이 나옵니다. 로그인한 뒤에 전시를 볼 수 있습니다.</p>
@@ -279,8 +286,10 @@
         if (form) {
           form.hidden = false;
           form.removeAttribute("hidden");
+          form.classList.remove("login-open");
+          form.classList.add("login-closed");
         }
-        if (fields) fields.hidden = true;
+        if (fields) fields.innerHTML = "";
         if (me) me.hidden = true;
         if (who) who.textContent = "";
         if (hint) hint.hidden = false;
@@ -402,13 +411,8 @@
           bar.style.removeProperty("display");
           bar.style.removeProperty("visibility");
         }
-        if (fields) {
-          fields.hidden = false;
-          fields.removeAttribute("hidden");
-        }
+        if (window.ownexOpenFields) window.ownexOpenFields();
         say("로그인한 뒤에 전시를 볼 수 있습니다.");
-        var nameEl = document.getElementById("family-name");
-        if (nameEl) try { nameEl.focus(); } catch (err) {}
         return false;
       };
       window.ownexUsePicks = function () {
@@ -446,16 +450,29 @@
         }
         return false;
       };
+      function openFields() {
+        var form = document.getElementById("family-form");
+        var fields = document.getElementById("family-fields");
+        if (!fields) return;
+        if (!fields.querySelector("input")) {
+          fields.innerHTML = '<input id="family-name" name="ownex-name" maxlength="64" placeholder="이름 또는 이메일" autocomplete="off" enterkeyhint="next" />' +
+            '<input id="family-pin" name="ownex-pin" type="password" maxlength="32" placeholder="비밀번호" autocomplete="off" enterkeyhint="go" />';
+        }
+        if (form) {
+          form.classList.add("login-open");
+          form.classList.remove("login-closed");
+        }
+        var nameOpen = document.getElementById("family-name");
+        if (nameOpen) try { nameOpen.focus(); } catch (err) {}
+      }
+      window.ownexOpenFields = openFields;
       window.ownexEnter = function () {
         if (Date.now() < busy) return false;
         busy = Date.now() + 350;
         say("");
-        var fields = document.getElementById("family-fields");
-        if (fields && fields.hidden) {
-          fields.hidden = false;
-          fields.removeAttribute("hidden");
-          var nameOpen = document.getElementById("family-name");
-          if (nameOpen) try { nameOpen.focus(); } catch (err) {}
+        var form = document.getElementById("family-form");
+        if (!form || !form.classList.contains("login-open")) {
+          openFields();
           return false;
         }
         var first = readFields();
@@ -510,7 +527,7 @@
       }
     })();
   </script>
-  <script src="data.js?v=fix10"></script>
-  <script src="app.js?v=fix10"></script>
+  <script src="data.js?v=fix11"></script>
+  <script src="app.js?v=fix11"></script>
 </body>
 </html>
