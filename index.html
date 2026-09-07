@@ -29,7 +29,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Great+Vibes&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=nav2" />
+  <link rel="stylesheet" href="styles.css?v=out1" />
   <style>
     body { margin: 0; min-height: 100vh; background: #351e28; color: #f6efe6; font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
     #front-row:not([hidden]) {
@@ -86,7 +86,7 @@
       </form>
       <div id="family-me" hidden>
         <p id="family-who" class="family-hello"></p>
-        <button type="button" id="family-out" class="save">나가기</button>
+        <button type="button" id="family-out" class="save" onclick="ownexLeave()">나가기</button>
       </div>
       <p id="family-msg" class="quiet"></p>
       <p class="family-hint quiet">리뷰와 스티커는 바로 보입니다. 비밀번호는 4자 이상으로 넣고 들어가기를 누르세요.</p>
@@ -154,8 +154,8 @@
           <div class="review-item"><div class="review-last-row"><div class="review-line"><span class="review-no">2</span><span class="review-date">2026-09-03</span><span class="review-name">김희천: 두더지들</span><span class="review-snip">바쁜 현대 사회를 살아 가면서 잠깐 빠져 나오게 해 주는 작품이었습니다.</span></div></div></div>
         </div>
         <div class="review-foot">
-          <button type="button" class="review-more-btn" data-reviews="more">계속</button>
-          <button type="button" class="review-all-btn" data-reviews="all">전체보기</button>
+          <button type="button" class="review-more-btn" data-reviews="more" onclick="ownexMore()">계속</button>
+          <button type="button" class="review-all-btn" data-reviews="all" onclick="ownexReviews()">전체보기</button>
         </div>
       </section>
       <aside id="praise-board">
@@ -184,6 +184,8 @@
   <script>
     (function () {
       var busy = 0;
+      var staying = false;
+      var keepTimers = [];
       function hash(pin, salt) {
         var h = 2166136261;
         var s = String(salt) + String(pin);
@@ -204,7 +206,12 @@
         if (text) msg.classList.add("is-err");
         else msg.classList.remove("is-err");
       }
+      function clearKeep() {
+        keepTimers.forEach(function (id) { clearTimeout(id); });
+        keepTimers = [];
+      }
       function showIn(name) {
+        if (!staying) return;
         var form = document.getElementById("family-form");
         var me = document.getElementById("family-me");
         var who = document.getElementById("family-who");
@@ -213,6 +220,22 @@
         if (me) me.removeAttribute("hidden");
         if (who) who.textContent = greetOf(name) + "의 방문을 환영합니다.";
         if (hint) hint.hidden = true;
+        say("");
+      }
+      function showOut() {
+        staying = false;
+        clearKeep();
+        var form = document.getElementById("family-form");
+        var me = document.getElementById("family-me");
+        var who = document.getElementById("family-who");
+        var hint = document.querySelector(".family-hint");
+        if (form) {
+          form.hidden = false;
+          form.removeAttribute("hidden");
+        }
+        if (me) me.hidden = true;
+        if (who) who.textContent = "";
+        if (hint) hint.hidden = false;
         say("");
       }
       function readFields() {
@@ -271,14 +294,38 @@
           say("이 브라우저에 저장할 수 없습니다.");
           return;
         }
+        staying = true;
         showIn(name);
         try {
           if (window.ownexAfterEnter) window.ownexAfterEnter(user);
         } catch (err) {}
+        clearKeep();
         [80, 250, 700, 1600, 3000, 5000].forEach(function (ms) {
-          setTimeout(function () { showIn(name); }, ms);
+          keepTimers.push(setTimeout(function () { showIn(name); }, ms));
         });
       }
+      window.ownexLeave = function () {
+        showOut();
+        try {
+          var token = localStorage.getItem("ownex-family-token");
+          var data = JSON.parse(localStorage.getItem("ownex-family-local-v1") || "{}") || {};
+          if (data.sessions && token) delete data.sessions[token];
+          localStorage.setItem("ownex-family-local-v1", JSON.stringify(data));
+          localStorage.removeItem("ownex-family-token");
+        } catch (err) {}
+        try {
+          if (window.ownexAfterLeave) window.ownexAfterLeave();
+        } catch (err) {}
+        return false;
+      };
+      window.ownexReviews = function () {
+        if (window.ownexOpenReviews) window.ownexOpenReviews();
+        return false;
+      };
+      window.ownexMore = function () {
+        if (window.ownexMoreReviews) window.ownexMoreReviews();
+        return false;
+      };
       window.ownexEnter = function () {
         if (Date.now() < busy) return false;
         busy = Date.now() + 350;
@@ -305,12 +352,16 @@
               if (data.users[i] && data.users[i].id === info.user_id) user = data.users[i];
             }
           }
-          if (user) showIn(user.name);
+          if (user) {
+            staying = true;
+            showIn(user.name);
+          }
         } catch (err) {}
       }
       restore();
       var form = document.getElementById("family-form");
       var btn = document.getElementById("family-enter");
+      var out = document.getElementById("family-out");
       if (form) {
         form.addEventListener("submit", function (event) {
           event.preventDefault();
@@ -323,9 +374,15 @@
           window.ownexEnter();
         });
       }
+      if (out) {
+        out.addEventListener("click", function (event) {
+          event.preventDefault();
+          window.ownexLeave();
+        });
+      }
     })();
   </script>
-  <script src="data.js?v=nav2"></script>
-  <script src="app.js?v=nav2"></script>
+  <script src="data.js?v=out1"></script>
+  <script src="app.js?v=out1"></script>
 </body>
 </html>

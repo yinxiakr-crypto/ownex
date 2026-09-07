@@ -806,19 +806,17 @@
     return new Date().toISOString().slice(0, 10);
   }
 
-  function alreadyCountedToday() {
+  function alreadyCountedOpen() {
     try {
-      if (sessionStorage.getItem("ownex-open-hit") === "1") return true;
-      return localStorage.getItem("ownex-guest-day") === guestDay();
+      return sessionStorage.getItem("ownex-open-hit") === "1";
     } catch (err) {
       return false;
     }
   }
 
-  function markCountedToday() {
+  function markCountedOpen() {
     try {
       sessionStorage.setItem("ownex-open-hit", "1");
-      localStorage.setItem("ownex-guest-day", guestDay());
     } catch (err) {}
   }
 
@@ -868,11 +866,15 @@
 
   function countSiteGuests() {
     const cached = readCachedGuests();
-    paintGuests(cached);
-    const doHit = !alreadyCountedToday();
+    const doHit = !alreadyCountedOpen();
+    let local = cached;
+    if (doHit) {
+      local = cached + 1;
+      markCountedOpen();
+    }
+    paintGuests(local);
     return Promise.all([bumpLocalGuests(doHit), bumpSharedGuests(doHit)]).then((pair) => {
-      const total = Math.max(pair[1] || 0, pair[0] || 0, cached || 0);
-      if (doHit) markCountedToday();
+      const total = Math.max(pair[1] || 0, pair[0] || 0, local || 0);
       paintGuests(total);
       return total;
     });
@@ -984,9 +986,23 @@
   function openReviews() {
     state.space = "reviews";
     state.selected = null;
-    if (location.hash !== "#reviews") location.hash = "reviews";
-    draw();
-    if (reviewPage) reviewPage.scrollIntoView({ behavior: "smooth", block: "start" });
+    try {
+      draw();
+    } catch (err) {}
+    if (frontRow) frontRow.hidden = true;
+    if (reviewPage) {
+      reviewPage.hidden = false;
+      reviewPage.removeAttribute("hidden");
+      try {
+        renderFeelings(reviewPage, "full");
+      } catch (err) {}
+      reviewPage.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+    if (location.hash !== "#reviews") {
+      try {
+        location.hash = "reviews";
+      } catch (err) {}
+    }
   }
 
   function closeReviews() {
@@ -1013,7 +1029,7 @@
       const show = (data.exhibitions || []).find((row) => itemId(row) === item.showId) || matchShow(item.title);
       return `<div class="review-item ${open ? "on" : ""}">
         <div class="review-last-row">
-        <button type="button" class="review-line" data-id="${escapeHtml(item.id)}">
+        <button type="button" class="review-line" data-id="${escapeHtml(item.id)}" data-title="${escapeHtml(item.title)}" data-show="${escapeHtml(item.showId || "")}">
           <span class="review-no">${no}</span>
           <span class="review-date">${escapeHtml(item.at || "")}${item.by ? `<span class="review-by">${escapeHtml(item.by)}</span>` : ""}</span>
           <span class="review-name">${escapeHtml(item.title)}</span>
@@ -1039,8 +1055,8 @@
     }).join("");
     const moreOutside = preview
       ? '<div class="review-foot">' +
-        '<button type="button" class="review-more-btn" data-reviews="more">계속</button>' +
-        '<button type="button" class="review-all-btn" data-reviews="all">전체보기</button>' +
+        '<button type="button" class="review-more-btn" data-reviews="more" onclick="ownexMore()">계속</button>' +
+        '<button type="button" class="review-all-btn" data-reviews="all" onclick="ownexReviews()">전체보기</button>' +
         "</div>"
       : "";
     const empty = [1, 2, 3].map(function (no) {
@@ -1050,7 +1066,7 @@
     }).join("");
     const head = preview
       ? `<div class="feel-head"><h2>Review</h2></div>`
-      : `<div class="feel-head"><h2>Review</h2><button type="button" class="back" data-reviews="home">앞페이지</button></div>`;
+      : `<div class="feel-head"><h2>Review</h2><button type="button" class="back" data-reviews="home" onclick="ownexHome()">앞페이지</button></div>`;
     const writeForm = preview
       ? ""
       : `<form class="feel-form" id="feel-form">
@@ -1087,6 +1103,16 @@
     }
     box.querySelectorAll(".review-line").forEach((btn) => {
       btn.addEventListener("click", () => {
+        if (btn.closest(".empty-row")) return;
+        const showId = btn.getAttribute("data-show") || "";
+        const title = btn.getAttribute("data-title") || "";
+        const show =
+          (showId && (data.exhibitions || []).find((row) => itemId(row) === showId)) ||
+          matchShow(title);
+        if (show) {
+          openShow(show);
+          return;
+        }
         const id = btn.getAttribute("data-id");
         state.reviewId = state.reviewId === id ? "" : id;
         renderFeelings(box, mode);
@@ -1576,13 +1602,9 @@
     }
     if (enterBtn) enterBtn.addEventListener("click", enterFamily);
     if (out) {
-      out.addEventListener("click", () => {
-        api("/api/family/logout", {}).finally(() => {
-          setFamilyToken("");
-          switchNotesToUser(null);
-          draw();
-          paintFamilyBar();
-        });
+      out.addEventListener("click", (event) => {
+        event.preventDefault();
+        if (window.ownexLeave) window.ownexLeave();
       });
     }
     document.addEventListener("click", (event) => {
@@ -1602,6 +1624,21 @@
     } catch (err) {}
     paintFamilyBar();
   };
+
+  window.ownexAfterLeave = function () {
+    setFamilyToken("");
+    try {
+      switchNotesToUser(null);
+    } catch (err) {}
+    try {
+      draw();
+    } catch (err) {}
+    paintFamilyBar();
+  };
+
+  window.ownexOpenReviews = openReviews;
+  window.ownexMoreReviews = showMoreReviews;
+  window.ownexHome = closeReviews;
 
   function enterFamily() {
     if (window.ownexEnter) window.ownexEnter();
