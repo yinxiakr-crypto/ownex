@@ -193,64 +193,68 @@ header, main, footer {
 
 .mail-freq-now {
   margin: 0;
-  padding: 0;
+  padding: 0.1rem 0;
   border: 0;
   background: none;
-  color: inherit;
+  color: color-mix(in srgb, var(--muted) 72%, transparent);
   font: inherit;
-  font-size: 0.72rem;
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
   line-height: 1.35;
-  text-align: left;
+  text-align: right;
+  align-self: flex-end;
   cursor: pointer;
+}
+
+.mail-freq-now::after {
+  content: " ▾";
+  font-size: 0.5rem;
+  opacity: 0.7;
 }
 
 .mail-freq-menu {
   display: none;
   position: absolute;
-  top: calc(100% + 0.2rem);
+  top: calc(100% + 0.15rem);
   right: 0;
-  min-width: 5.8rem;
-  padding: 0.25rem;
-  background: #2a171e;
-  border: 1px solid #6a4a52;
-  border-radius: 0.55rem;
+  min-width: 4.8rem;
+  padding: 0.2rem;
+  background: color-mix(in srgb, #2a171e 96%, transparent);
+  border: 1px solid color-mix(in srgb, #eadfd6 16%, transparent);
+  border-radius: 0.7rem;
   z-index: 12;
-  box-shadow: 0 0.4rem 1rem rgba(0, 0, 0, 0.28);
 }
 
 .mail-pick:hover .mail-freq-menu,
-.mail-pick.is-open .mail-freq-menu,
-.mail-pick.is-receiving .mail-freq-menu {
+.mail-pick.is-open .mail-freq-menu {
   display: grid;
-  gap: 0.15rem;
-}
-
-.mail-pick.is-receiving .mail-freq-menu {
-  position: static;
-  min-width: 0;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  box-shadow: none;
+  gap: 0.08rem;
 }
 
 .mail-freq-menu button {
   display: block;
   width: 100%;
   margin: 0;
-  padding: 0.4rem 0.55rem;
+  padding: 0.35rem 0.55rem;
   border: 0;
-  border-radius: 0.4rem;
+  border-radius: 0.5rem;
   background: transparent;
-  color: #f6efe6;
+  color: color-mix(in srgb, #f6efe6 78%, transparent);
   font: inherit;
-  font-size: 0.72rem;
-  text-align: left;
+  font-size: 0.64rem;
+  letter-spacing: 0.04em;
+  text-align: center;
   cursor: pointer;
 }
 
-.mail-freq-menu button.is-on,
+.mail-freq-menu button.is-on {
+  color: #f6efe6;
+  background: color-mix(in srgb, #f6efe6 10%, transparent);
+}
+
 .mail-freq-menu button:hover {
-  background: #e24a1b;
   color: #fff;
+  background: color-mix(in srgb, #f6efe6 16%, transparent);
 }
 
 #mail-ask-msg {
@@ -286,16 +290,21 @@ header, main, footer {
 body.open .mail-opt,
 body.open .mail-refuse,
 body.open .mail-freq-now {
-  color: #3a2430;
+  color: color-mix(in srgb, #3a2430 50%, transparent);
 }
 
 body.open .mail-freq-menu {
   background: #fff;
-  border-color: #e3d0c8;
+  border-color: #eadfd6;
 }
 
 body.open .mail-freq-menu button {
+  color: #7a5c62;
+}
+
+body.open .mail-freq-menu button.is-on {
   color: #3a2430;
+  background: #f6efe6;
 }
 
 body.open .mail-email-wrap input {
@@ -1818,7 +1827,8 @@ body.open .review-who { color: #8a6b72; }
   #family-me #mail-ask-msg,
   #family-me .mail-email-wrap,
   #family-me .mail-freq-now {
-    font-size: 0.61rem;
+    font-size: 0.58rem;
+    min-height: 1.7rem;
     line-height: 1.35;
   }
 

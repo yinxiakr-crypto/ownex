@@ -35,7 +35,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Great+Vibes&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=fix45" />
+  <link rel="stylesheet" href="styles.css?v=fix46" />
   <style>
     body { margin: 0; min-height: 100vh; background: #351e28; color: #f6efe6; font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
     #front-row:not([hidden]) {
@@ -63,15 +63,17 @@
     .mail-opt, .mail-refuse { display: flex; align-items: flex-start; gap: 0.35rem; font-size: 0.72rem; color: #eadfd6; cursor: pointer; user-select: none; text-align: left; line-height: 1.35; }
     .mail-opt[hidden], .mail-refuse[hidden], #mail-want-wrap[hidden], #mail-refuse-wrap[hidden], #mail-freq-now[hidden] { display: none !important; }
     .mail-pick { position: relative; }
-    .mail-freq-now { margin: 0; padding: 0; border: 0; background: none; color: #eadfd6; font: inherit; font-size: 0.72rem; text-align: left; cursor: pointer; }
-    .mail-freq-menu { display: none; position: absolute; top: calc(100% + 0.2rem); right: 0; min-width: 5.6rem; padding: 0.25rem; background: #2a171e; border: 1px solid #6a4a52; border-radius: 0.55rem; z-index: 12; box-shadow: 0 0.4rem 1rem rgba(0,0,0,0.28); }
-    .mail-pick:hover .mail-freq-menu, .mail-pick.is-open .mail-freq-menu, .mail-pick.is-receiving .mail-freq-menu { display: grid; gap: 0.15rem; }
-    .mail-pick.is-receiving .mail-freq-menu { position: static; min-width: 0; grid-template-columns: repeat(3, minmax(0, 1fr)); box-shadow: none; }
-    .mail-freq-menu button { display: block; width: 100%; margin: 0; padding: 0.4rem 0.55rem; border: 0; border-radius: 0.4rem; background: transparent; color: #f6efe6; font: inherit; font-size: 0.72rem; text-align: left; cursor: pointer; }
-    .mail-freq-menu button.is-on, .mail-freq-menu button:hover { background: #e24a1b; color: #fff; }
-    body.open .mail-freq-now { color: #3a2430; }
-    body.open .mail-freq-menu { background: #fff; border-color: #e3d0c8; }
-    body.open .mail-freq-menu button { color: #3a2430; }
+    .mail-freq-now { margin: 0; padding: 0.1rem 0; border: 0; background: none; color: rgba(234,223,214,0.58); font: inherit; font-size: 0.62rem; letter-spacing: 0.06em; text-align: right; align-self: flex-end; cursor: pointer; }
+    .mail-freq-now::after { content: " ▾"; font-size: 0.5rem; opacity: 0.7; }
+    .mail-freq-menu { display: none; position: absolute; top: calc(100% + 0.15rem); right: 0; min-width: 4.8rem; padding: 0.2rem; background: rgba(42,23,30,0.96); border: 1px solid rgba(234,223,214,0.16); border-radius: 0.7rem; z-index: 12; }
+    .mail-pick:hover .mail-freq-menu, .mail-pick.is-open .mail-freq-menu { display: grid; gap: 0.08rem; }
+    .mail-freq-menu button { display: block; width: 100%; margin: 0; padding: 0.35rem 0.55rem; border: 0; border-radius: 0.5rem; background: transparent; color: rgba(246,239,230,0.78); font: inherit; font-size: 0.64rem; letter-spacing: 0.04em; text-align: center; cursor: pointer; }
+    .mail-freq-menu button.is-on { color: #f6efe6; background: rgba(246,239,230,0.1); }
+    .mail-freq-menu button:hover { color: #fff; background: rgba(246,239,230,0.16); }
+    body.open .mail-freq-now { color: rgba(58,36,48,0.5); }
+    body.open .mail-freq-menu { background: #fff; border-color: #eadfd6; }
+    body.open .mail-freq-menu button { color: #7a5c62; }
+    body.open .mail-freq-menu button.is-on { color: #3a2430; background: #f6efe6; }
     .mail-opt input, .mail-refuse input { width: 0.9rem; height: 0.9rem; margin: 0.12rem 0 0; flex: none; }
     .mail-email-wrap { display: grid; gap: 0.2rem; font-size: 0.68rem; text-align: left; }
     .mail-email-wrap[hidden], #mail-ask-msg:empty { display: none !important; }
@@ -175,7 +177,7 @@
           <input type="checkbox" id="mail-want" />
           메일 수신을 원함
         </label>
-        <button type="button" class="mail-freq-now" id="mail-freq-now" hidden>수신: 매일</button>
+        <button type="button" class="mail-freq-now" id="mail-freq-now" hidden>매일</button>
         <div class="mail-freq-menu" id="mail-freq-menu">
           <button type="button" data-freq="daily">매일</button>
           <button type="button" data-freq="weekly">매주</button>
@@ -571,8 +573,9 @@
           wantWrap.style.setProperty("display", receiving ? "none" : "flex", "important");
         }
         if (freqNow) {
-          freqNow.hidden = true;
-          freqNow.style.setProperty("display", "none", "important");
+          freqNow.hidden = !receiving;
+          freqNow.style.setProperty("display", receiving ? "block" : "none", "important");
+          freqNow.textContent = freqLabel(freq);
         }
         var menu = document.getElementById("mail-freq-menu");
         if (menu) {
@@ -1076,7 +1079,7 @@
       }
     })();
   </script>
-  <script src="data.js?v=fix45"></script>
-  <script src="app.js?v=fix45"></script>
+  <script src="data.js?v=fix46"></script>
+  <script src="app.js?v=fix46"></script>
 </body>
 </html>
