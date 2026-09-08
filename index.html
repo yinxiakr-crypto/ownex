@@ -35,7 +35,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Great+Vibes&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=fix48" />
+  <link rel="stylesheet" href="styles.css?v=fix49" />
   <style>
     body { margin: 0; min-height: 100vh; background: #351e28; color: #f6efe6; font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
     #front-row:not([hidden]) {
@@ -458,8 +458,39 @@
           step();
         });
       }
+      var lastMailPushAt = 0;
+      function writeShareLocal(user) {
+        var id = mailShareId(user);
+        if (!id) return;
+        try {
+          var bag = JSON.parse(localStorage.getItem("ownex-mail-share-v1") || "{}") || {};
+          bag[id] = {
+            want: Boolean(user && user.wantMail),
+            freq: userFreq(user),
+            at: Date.now()
+          };
+          localStorage.setItem("ownex-mail-share-v1", JSON.stringify(bag));
+        } catch (err) {}
+      }
+      function readShareLocal(user) {
+        var id = mailShareId(user);
+        if (!id) return null;
+        try {
+          var bag = JSON.parse(localStorage.getItem("ownex-mail-share-v1") || "{}") || {};
+          var item = bag[id];
+          if (!item) return null;
+          return { want: Boolean(item.want), freq: normFreq(item.freq) };
+        } catch (err) {
+          return null;
+        }
+      }
       function pullMailShare(user, done) {
         if (!user) {
+          if (done) done(null);
+          return;
+        }
+        if (Date.now() - lastMailPushAt < 4000) {
+          paintMailRefuse();
           if (done) done(null);
           return;
         }
@@ -469,7 +500,7 @@
         function finish() {
           left -= 1;
           if (left > 0) return;
-          var shared = fromCount || fromFile;
+          var shared = fromCount || fromFile || readShareLocal(user);
           if (shared) {
             var nextWant = shared.want;
             var nextFreq = shared.freq ? normFreq(shared.freq) : userFreq(user);
@@ -637,6 +668,8 @@
         user.mailRefused = Boolean(refuse) && !user.wantMail;
         if (looksEmail(addr)) user.mailEmail = addr;
         writeUser(user);
+        writeShareLocal(user);
+        lastMailPushAt = Date.now();
         paintMailRefuse();
         closeMailMenu();
         pushMailShare(user, user.wantMail, user.mailFreq);
@@ -987,6 +1020,14 @@
         if (!window.ownexIsIn()) closeFields();
         else pullMailShare(currentUser());
       });
+      document.addEventListener("visibilitychange", function () {
+        if (document.hidden) return;
+        if (window.ownexIsIn()) pullMailShare(currentUser());
+      });
+      setInterval(function () {
+        if (document.hidden) return;
+        if (window.ownexIsIn()) pullMailShare(currentUser());
+      }, 15000);
       var form = document.getElementById("family-form");
       var btn = document.getElementById("family-enter");
       var out = document.getElementById("family-out");
@@ -1083,7 +1124,7 @@
       }
     })();
   </script>
-  <script src="data.js?v=fix48"></script>
-  <script src="app.js?v=fix48"></script>
+  <script src="data.js?v=fix49"></script>
+  <script src="app.js?v=fix49"></script>
 </body>
 </html>
