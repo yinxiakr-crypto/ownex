@@ -35,7 +35,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Great+Vibes&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=fix43" />
+  <link rel="stylesheet" href="styles.css?v=fix44" />
   <style>
     body { margin: 0; min-height: 100vh; background: #351e28; color: #f6efe6; font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
     #front-row:not([hidden]) {
@@ -61,7 +61,16 @@
     .family-hello-box .family-hello { margin: 0; font-size: 0.78rem; font-weight: 500; text-align: right; line-height: 1.35; }
     .family-hello-box .save { align-self: flex-end; min-height: 1.85rem; min-width: auto; padding: 0.2rem 0.75rem; font-size: 0.75rem; }
     .mail-opt, .mail-refuse { display: flex; align-items: flex-start; gap: 0.35rem; font-size: 0.72rem; color: #eadfd6; cursor: pointer; user-select: none; text-align: left; line-height: 1.35; }
-    .mail-opt[hidden], .mail-refuse[hidden], #mail-want-wrap[hidden], #mail-refuse-wrap[hidden] { display: none !important; }
+    .mail-opt[hidden], .mail-refuse[hidden], #mail-want-wrap[hidden], #mail-refuse-wrap[hidden], #mail-freq-now[hidden] { display: none !important; }
+    .mail-pick { position: relative; }
+    .mail-freq-now { margin: 0; padding: 0; border: 0; background: none; color: #eadfd6; font: inherit; font-size: 0.72rem; text-align: left; cursor: pointer; }
+    .mail-freq-menu { display: none; position: absolute; top: calc(100% + 0.2rem); right: 0; min-width: 5.6rem; padding: 0.25rem; background: #2a171e; border: 1px solid #6a4a52; border-radius: 0.55rem; z-index: 12; box-shadow: 0 0.4rem 1rem rgba(0,0,0,0.28); }
+    .mail-pick:hover .mail-freq-menu, .mail-pick.is-open .mail-freq-menu { display: grid; gap: 0.15rem; }
+    .mail-freq-menu button { display: block; width: 100%; margin: 0; padding: 0.4rem 0.55rem; border: 0; border-radius: 0.4rem; background: transparent; color: #f6efe6; font: inherit; font-size: 0.72rem; text-align: left; cursor: pointer; }
+    .mail-freq-menu button.is-on, .mail-freq-menu button:hover { background: #e24a1b; color: #fff; }
+    body.open .mail-freq-now { color: #3a2430; }
+    body.open .mail-freq-menu { background: #fff; border-color: #e3d0c8; }
+    body.open .mail-freq-menu button { color: #3a2430; }
     .mail-opt input, .mail-refuse input { width: 0.9rem; height: 0.9rem; margin: 0.12rem 0 0; flex: none; }
     .mail-email-wrap { display: grid; gap: 0.2rem; font-size: 0.68rem; text-align: left; }
     .mail-email-wrap[hidden], #mail-ask-msg:empty { display: none !important; }
@@ -160,10 +169,18 @@
     <p class="eyebrow">OWNEX <span class="open-count">접속 <strong id="glance-visitor-num">0</strong></span></p>
     <div id="family-me" class="family-hello-box" hidden>
       <p id="family-who" class="family-hello"></p>
-      <label class="mail-opt" id="mail-want-wrap">
-        <input type="checkbox" id="mail-want" />
-        메일 수신을 원함
-      </label>
+      <div class="mail-pick" id="mail-pick">
+        <label class="mail-opt" id="mail-want-wrap">
+          <input type="checkbox" id="mail-want" />
+          메일 수신을 원함
+        </label>
+        <button type="button" class="mail-freq-now" id="mail-freq-now" hidden>수신: 매일</button>
+        <div class="mail-freq-menu" id="mail-freq-menu">
+          <button type="button" data-freq="daily">매일</button>
+          <button type="button" data-freq="weekly">매주</button>
+          <button type="button" data-freq="monthly">매월</button>
+        </div>
+      </div>
       <label id="mail-email-wrap" class="mail-email-wrap" hidden>
         받을 이메일
         <input id="mail-email" type="email" inputmode="email" autocomplete="email" placeholder="이메일" />
@@ -387,20 +404,45 @@
           }
         }, 3200);
       }
-      function wantFromShareValue(value) {
-        if (!value) return null;
-        return value % 2 === 1;
+      function normFreq(value) {
+        var text = String(value || "").trim().toLowerCase();
+        if (text === "weekly" || text === "매주") return "weekly";
+        if (text === "monthly" || text === "매월") return "monthly";
+        return "daily";
       }
-      function pushMailShare(user, want) {
+      function freqLabel(freq) {
+        return freq === "weekly" ? "매주" : freq === "monthly" ? "매월" : "매일";
+      }
+      function userFreq(user) {
+        return normFreq(user && user.mailFreq);
+      }
+      function decodeMailShare(value) {
+        if (!value) return null;
+        var m = value % 4;
+        if (m === 0) return { want: false, freq: "" };
+        return { want: true, freq: m === 2 ? "weekly" : m === 3 ? "monthly" : "daily" };
+      }
+      function hitsToMailShare(value, want, freq) {
+        var target = !want ? 0 : (freq === "weekly" ? 2 : freq === "monthly" ? 3 : 1);
+        var cur = Number(value || 0) || 0;
+        if (cur > 0 && cur % 4 === target) return 0;
+        var n = 0;
+        var v = cur;
+        while (n < 8) {
+          v += 1;
+          n += 1;
+          var m = v % 4;
+          if (!want && m === 0) return n;
+          if (want && m === target) return n;
+        }
+        return n;
+      }
+      function pushMailShare(user, want, freq) {
         var id = mailShareId(user);
         if (!id) return;
         var key = "pref-" + id;
         abacusCall("get", key, function (value) {
-          var need = 0;
-          if (want) {
-            if (value === 0 || value % 2 === 0) need = 1;
-          } else if (value === 0) need = 2;
-          else if (value % 2 === 1) need = 1;
+          var need = hitsToMailShare(value, want, normFreq(freq || userFreq(user)));
           function step() {
             if (need <= 0) return;
             need -= 1;
@@ -420,13 +462,17 @@
         function finish() {
           left -= 1;
           if (left > 0) return;
-          var shared = fromCount;
-          if (shared === null) shared = fromFile;
-          if (shared !== null && Boolean(user.wantMail) !== shared) {
-            user.wantMail = shared;
-            user.mailAsked = true;
-            if (shared && looksEmail(mailAddrOf(user))) user.mailEmail = mailAddrOf(user);
-            writeUser(user);
+          var shared = fromCount || fromFile;
+          if (shared) {
+            var nextWant = shared.want;
+            var nextFreq = shared.freq ? normFreq(shared.freq) : userFreq(user);
+            if (Boolean(user.wantMail) !== Boolean(nextWant) || (nextWant && userFreq(user) !== nextFreq)) {
+              user.wantMail = Boolean(nextWant);
+              user.mailAsked = true;
+              if (nextWant) user.mailFreq = nextFreq;
+              if (nextWant && looksEmail(mailAddrOf(user))) user.mailEmail = mailAddrOf(user);
+              writeUser(user);
+            }
           }
           paintMailRefuse();
           if (done) done(shared);
@@ -434,7 +480,7 @@
         var id = mailShareId(user);
         if (id) {
           abacusCall("get", "pref-" + id, function (value) {
-            fromCount = wantFromShareValue(value);
+            fromCount = decodeMailShare(value);
             finish();
           });
         } else {
@@ -451,7 +497,7 @@
               var email = String(item.email || "").trim().toLowerCase();
               var name = String(item.name || "").trim().toLowerCase();
               if (keys.indexOf(email) >= 0 || keys.indexOf(name) >= 0 || keys.indexOf(email.split("@")[0]) >= 0) {
-                fromFile = Boolean(item.want);
+                fromFile = { want: Boolean(item.want), freq: normFreq(item.freq) };
                 break;
               }
             }
@@ -460,6 +506,35 @@
           .catch(function () { finish(); });
       }
       var collectingMail = false;
+      var pendingFreq = "daily";
+      function closeMailMenu() {
+        var box = document.getElementById("mail-pick");
+        if (box) box.classList.remove("is-open");
+      }
+      function openMailMenu() {
+        var box = document.getElementById("mail-pick");
+        if (box) box.classList.add("is-open");
+      }
+      function chooseMailFreq(freq) {
+        var user = currentUser();
+        if (!user) return;
+        pendingFreq = normFreq(freq);
+        var addr = mailAddrOf(user);
+        if (!looksEmail(addr)) {
+          collectingMail = true;
+          var want = document.getElementById("mail-want");
+          if (want) want.checked = true;
+          paintMailRefuse();
+          var wrap = document.getElementById("mail-email-wrap");
+          var mail = document.getElementById("mail-email");
+          var msg = document.getElementById("mail-ask-msg");
+          if (wrap) wrap.hidden = false;
+          if (mail) try { mail.focus(); } catch (err) {}
+          if (msg) msg.textContent = "받을 이메일을 적어 주세요.";
+          return;
+        }
+        setMailPref(true, addr, false, pendingFreq);
+      }
       function mailAddrOf(user) {
         if (!user) return "";
         if (looksEmail(user.mailEmail)) return String(user.mailEmail).trim().toLowerCase();
@@ -481,10 +556,24 @@
         var receiving = Boolean(user && user.wantMail);
         var wantWrap = document.getElementById("mail-want-wrap");
         var refuseWrap = document.getElementById("mail-refuse-wrap");
+        var freqNow = document.getElementById("mail-freq-now");
+        var freq = userFreq(user);
         var hasMail = Boolean(user && looksEmail(mailAddrOf(user)));
         if (wantWrap) {
           wantWrap.hidden = receiving;
           wantWrap.style.setProperty("display", receiving ? "none" : "flex", "important");
+        }
+        if (freqNow) {
+          freqNow.hidden = !receiving;
+          freqNow.style.setProperty("display", receiving ? "block" : "none", "important");
+          freqNow.textContent = "수신: " + freqLabel(freq);
+        }
+        var menu = document.getElementById("mail-freq-menu");
+        if (menu) {
+          var buttons = menu.querySelectorAll("[data-freq]");
+          for (var i = 0; i < buttons.length; i += 1) {
+            buttons[i].classList.toggle("is-on", receiving && buttons[i].getAttribute("data-freq") === freq);
+          }
         }
         if (refuseWrap) {
           refuseWrap.hidden = !receiving;
@@ -498,12 +587,13 @@
         if (wrap) wrap.hidden = receiving || !collectingMail;
         if (msg && (receiving || !collectingMail)) msg.textContent = "";
       }
-      function sendMailPref(want, email, name) {
+      function sendMailPref(want, email, name, freq) {
         var addr = String(email || "").trim().toLowerCase();
+        var cycle = normFreq(freq);
         fetch("/api/mail/subscribe", {
           method: "POST",
           headers: { "Content-Type": "application/json", Accept: "application/json" },
-          body: JSON.stringify({ email: addr, want: want, name: name || "" })
+          body: JSON.stringify({ email: addr, want: want, name: name || "", freq: cycle })
         }).catch(function () {});
         var to = notifyMail();
         if (!to || !addr) return;
@@ -515,24 +605,29 @@
             _captcha: "false",
             email: addr,
             name: name || "",
-            want: want ? "YES" : "NO"
+            want: want ? "YES" : "NO",
+            freq: cycle,
+            주기: freqLabel(cycle)
           })
         }).catch(function () {});
       }
-      function setMailPref(want, email, refuse) {
+      function setMailPref(want, email, refuse, freq) {
         var user = currentUser();
         if (!user) return;
         var addr = String(email || mailAddrOf(user) || "").trim().toLowerCase();
         if (want && !looksEmail(addr)) return false;
         collectingMail = false;
+        pendingFreq = want ? normFreq(freq || userFreq(user)) : userFreq(user);
         user.mailAsked = true;
         user.wantMail = Boolean(want);
+        user.mailFreq = pendingFreq;
         user.mailRefused = Boolean(refuse) && !user.wantMail;
         if (looksEmail(addr)) user.mailEmail = addr;
         writeUser(user);
         paintMailRefuse();
-        pushMailShare(user, user.wantMail);
-        sendMailPref(user.wantMail, user.mailEmail || addr, user.name || "");
+        closeMailMenu();
+        pushMailShare(user, user.wantMail, user.mailFreq);
+        sendMailPref(user.wantMail, user.mailEmail || addr, user.name || "", user.mailFreq);
         return true;
       }
       function askMailIfNeeded(user) {
@@ -644,6 +739,7 @@
             approved: true,
             mailAsked: false,
             wantMail: false,
+            mailFreq: "daily",
             mailEmail: looksEmail(name) ? name : ""
           };
           data.users.push(user);
@@ -902,73 +998,79 @@
       var mailWant = document.getElementById("mail-want");
       var mailRefuse = document.getElementById("mail-refuse");
       var mailInput = document.getElementById("mail-email");
+      var mailPick = document.getElementById("mail-pick");
+      var mailMenu = document.getElementById("mail-freq-menu");
+      var mailFreqNow = document.getElementById("mail-freq-now");
       function applyWantMail() {
-        var user = currentUser();
-        var wrap = document.getElementById("mail-email-wrap");
-        var mail = document.getElementById("mail-email");
-        var msg = document.getElementById("mail-ask-msg");
-        var addr = mailAddrOf(user);
-        if (!looksEmail(addr)) {
-          collectingMail = true;
-          if (mailWant) mailWant.checked = true;
-          if (mailRefuse) mailRefuse.checked = false;
-          if (wrap) wrap.hidden = false;
-          if (mail) try { mail.focus(); } catch (err) {}
-          if (msg) msg.textContent = "받을 이메일을 적어 주세요.";
-          return;
-        }
-        if (mailRefuse) mailRefuse.checked = false;
-        setMailPref(true, addr);
+        chooseMailFreq(pendingFreq || "daily");
       }
       if (mailWant) {
-        mailWant.addEventListener("change", function () {
-          var user = currentUser();
-          if (!user) return;
-          if (!mailWant.checked) {
-            setMailPref(false, mailAddrOf(user), false);
-            return;
-          }
-          applyWantMail();
+        mailWant.addEventListener("click", function (event) {
+          event.preventDefault();
+          openMailMenu();
+        });
+        mailWant.addEventListener("change", function (event) {
+          event.preventDefault();
+          mailWant.checked = false;
+          openMailMenu();
         });
       }
+      if (mailFreqNow) {
+        mailFreqNow.addEventListener("click", function (event) {
+          event.preventDefault();
+          event.stopPropagation();
+          var box = document.getElementById("mail-pick");
+          if (box && box.classList.contains("is-open")) closeMailMenu();
+          else openMailMenu();
+        });
+      }
+      if (mailPick) {
+        mailPick.addEventListener("click", function (event) {
+          if (event.target && event.target.closest && event.target.closest("#mail-freq-menu")) return;
+          if (event.target && event.target.closest && event.target.closest("#mail-freq-now")) return;
+          if (event.target && event.target.closest && event.target.closest("#mail-want-wrap")) openMailMenu();
+        });
+      }
+      if (mailMenu) {
+        mailMenu.addEventListener("click", function (event) {
+          var btn = event.target && event.target.closest ? event.target.closest("[data-freq]") : null;
+          if (!btn) return;
+          event.preventDefault();
+          chooseMailFreq(btn.getAttribute("data-freq"));
+        });
+      }
+      document.addEventListener("click", function (event) {
+        var box = document.getElementById("mail-pick");
+        if (!box || !box.classList.contains("is-open")) return;
+        if (box.contains(event.target)) return;
+        closeMailMenu();
+      });
       if (mailRefuse) {
         mailRefuse.addEventListener("change", function () {
           var user = currentUser();
           if (!user) return;
           if (mailRefuse.checked) {
             if (mailWant) mailWant.checked = false;
-            setMailPref(false, mailAddrOf(user) || user.name, true);
+            setMailPref(false, mailAddrOf(user) || user.name, true, userFreq(user));
             return;
           }
-          var addr = mailAddrOf(user);
-          if (!looksEmail(addr)) {
-            mailRefuse.checked = false;
-            if (mailWant) mailWant.checked = false;
-            user.mailAsked = true;
-            user.wantMail = false;
-            user.mailRefused = false;
-            writeUser(user);
-            paintMailRefuse();
-            return;
-          }
-          if (mailWant) mailWant.checked = true;
-          setMailPref(true, addr, false);
+          openMailMenu();
         });
       }
       if (mailInput) {
         mailInput.addEventListener("change", function () {
-          if (mailWant && mailWant.checked) applyWantMail();
+          if (collectingMail || (mailWant && mailWant.checked)) applyWantMail();
         });
         mailInput.addEventListener("keydown", function (event) {
           if (event.key === "Enter") {
             event.preventDefault();
-            if (mailWant && mailWant.checked) applyWantMail();
+            if (collectingMail || (mailWant && mailWant.checked)) applyWantMail();
           }
         });
       }
     })();
   </script>
-  <script src="data.js?v=fix43"></script>
-  <script src="app.js?v=fix43"></script>
+  <script src="data.js?v=fix44"></script>
+  <script src="app.js?v=fix44"></script>
 </body>
 </html>

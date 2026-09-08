@@ -36,23 +36,7 @@ def email_allowed_by_schedule(cfg, today: date) -> tuple[bool, str]:
     mail = cfg["email"] if cfg.has_section("email") else None
     if mail and mail.get("enabled", "true").lower() != "true":
         return False, "메일 보내기가 꺼져 있습니다."
-    daily_from = from_iso((mail.get("daily_from", "") if mail else "") or "2026-09-07")
-    daily_until = from_iso((mail.get("daily_until", "") if mail else "") or "2026-09-13")
-    weekly_weekday = 0
-    if mail:
-        raw_weekday = (mail.get("weekly_weekday", "") or "").strip()
-        if raw_weekday:
-            try:
-                weekly_weekday = int(raw_weekday)
-            except ValueError:
-                weekly_weekday = 0
-    if daily_from and daily_until and daily_from <= today <= daily_until:
-        return True, f"{daily_from.month}월 {daily_from.day}일부터 {daily_until.month}월 {daily_until.day}일까지 매일 한 통"
-    if daily_until and today > daily_until and today.weekday() == weekly_weekday:
-        return True, "9월 14일부터는 월요일 오전에 한 통"
-    if daily_until and today > daily_until:
-        return False, "9월 14일부터는 월요일에만 메일을 보냅니다. 달력은 매일 올립니다."
-    return False, "지금은 메일 보내는 날이 아닙니다."
+    return True, "받는 사람이 고른 주기(매일·매주·매월)에 맞춰 보냅니다."
 
 
 def should_send_email(cfg, today: date) -> tuple[bool, str]:

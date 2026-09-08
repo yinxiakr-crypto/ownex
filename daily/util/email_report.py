@@ -670,13 +670,16 @@ def send_exhibition_email(rows: list[dict], cfg, calendar_from: date | None = No
         LOGGER.info("[메일] 지메일 앱 비밀번호가 없어 건너뜁니다.")
         return False
     try:
-        to_address = (mail_cfg.get("to", "") if mail_cfg else "").strip() or smtp_user or logged_in_email()
-        if not to_address:
-            LOGGER.info("[메일] 받을 지메일 주소를 찾지 못해 건너뜁니다.")
+        owner = (mail_cfg.get("to", "") if mail_cfg else "").strip() or smtp_user or logged_in_email()
+        today = date.today()
+        recipients = wanted_emails(owner, today)
+        if not recipients:
+            LOGGER.info("[메일] 오늘 받을 사람이 없어 건너뜁니다.")
             return False
+        to_address = recipients[0]
+        extra = recipients[1:]
         posters = collect_posters(rows)
         card = make_schedule_card(rows, calendar_from)
-        extra = [addr for addr in wanted_emails(to_address) if addr.lower() != to_address.lower()]
         message = MIMEMultipart("related")
         message["To"] = to_address
         if extra:

@@ -203,11 +203,16 @@ class OwnexHandler(SimpleHTTPRequestHandler):
                 return
             if path == "/api/mail/subscribe":
                 body = self._read_json()
-                item = upsert_subscriber(body.get("email", ""), bool(body.get("want")), body.get("name", "") or "")
+                item = upsert_subscriber(
+                    body.get("email", ""),
+                    bool(body.get("want")),
+                    body.get("name", "") or "",
+                    body.get("freq", "") or "",
+                )
                 if not item:
                     self._json({"error": "받을 이메일을 확인해 주세요."}, 400)
                     return
-                self._json({"ok": True, "email": item.get("email"), "want": item.get("want")})
+                self._json({"ok": True, "email": item.get("email"), "want": item.get("want"), "freq": item.get("freq")})
                 return
             if path == "/api/family/approve":
                 user = self._user()

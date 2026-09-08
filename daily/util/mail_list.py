@@ -97,7 +97,25 @@ def clean_email(value: str) -> str:
     return text
 
 
-def upsert_subscriber(email: str, want: bool, name: str = "") -> dict | None:
+def normalize_freq(value: str) -> str:
+    text = str(value or "").strip().lower()
+    if text in {"weekly", "week", "매주", "주"}:
+        return "weekly"
+    if text in {"monthly", "month", "매월", "월"}:
+        return "monthly"
+    return "daily"
+
+
+def freq_due(freq: str, today: date) -> bool:
+    kind = normalize_freq(freq)
+    if kind == "weekly":
+        return today.weekday() == 0
+    if kind == "monthly":
+        return today.day == 1
+    return True
+
+
+def upsert_subscriber(email: str, want: bool, name: str = "", freq: str = "") -> dict | None:
     addr = clean_email(email)
     if not addr:
         return None
@@ -108,10 +126,12 @@ def upsert_subscriber(email: str, want: bool, name: str = "") -> dict | None:
             found = item
             break
     if not found:
-        found = {"email": addr, "name": "", "want": True, "at": ""}
+        found = {"email": addr, "name": "", "want": True, "freq": "daily", "at": ""}
         data["subscribers"].append(found)
     found["email"] = addr
     found["want"] = bool(want)
+    if freq or not found.get("freq"):
+        found["freq"] = normalize_freq(freq or found.get("freq") or "daily")
     if name:
         found["name"] = str(name).strip()
     found["at"] = date.today().isoformat()
@@ -119,15 +139,21 @@ def upsert_subscriber(email: str, want: bool, name: str = "") -> dict | None:
     return found
 
 
-def wanted_emails(owner: str = "") -> list[str]:
+def wanted_emails(owner: str = "", today: date | None = None) -> list[str]:
     owner_addr = clean_email(owner)
+    data = load_mail_list().get("subscribers") or []
+    owner_item = next((item for item in data if clean_email(item.get("email") or "") == owner_addr), None)
     out = []
     seen = set()
-    if owner_addr:
-        out.append(owner_addr)
-        seen.add(owner_addr)
-    for item in load_mail_list().get("subscribers") or []:
+    if owner_addr and (owner_item is None or owner_item.get("want", True)):
+        owner_freq = normalize_freq((owner_item or {}).get("freq") or "daily")
+        if today is None or freq_due(owner_freq, today):
+            out.append(owner_addr)
+            seen.add(owner_addr)
+    for item in data:
         if not item.get("want"):
+            continue
+        if today is not None and not freq_due(item.get("freq") or "daily", today):
             continue
         addr = clean_email(item.get("email") or "")
         if not addr or addr in seen:
@@ -202,6 +228,10 @@ def ingest_mail_requests() -> int:
                     want = False
                 if re.search(r"신청|WANT[_\s=:]*YES|\byes\b", blob, re.I):
                     want = True
+                freq = ""
+                freq_line = re.search(r"(?:freq|주기)[:\s]+(daily|weekly|monthly|매일|매주|매월)", blob, re.I)
+                if freq_line:
+                    freq = freq_line.group(1)
                 addr = ""
                 mail_line = re.search(r"email[:\s]+([^\s<]+@[^\s>]+)", blob, re.I)
                 if mail_line:
@@ -209,7 +239,7 @@ def ingest_mail_requests() -> int:
                 if not addr:
                     addr = clean_email(blob)
                 if addr and addr != clean_email(user):
-                    upsert_subscriber(addr, want)
+                    upsert_subscriber(addr, want, freq=freq)
                     added += 1
                 seen.add(mid)
             store = load_mail_list()
