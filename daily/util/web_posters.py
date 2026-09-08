@@ -67,22 +67,11 @@ def make_poster(row: dict, art_bytes: bytes | None = None) -> bytes:
     period = " ~ ".join(part for part in [row.get("start_date") or "", row.get("end_date") or ""] if part)
     art = _open_art(art_bytes) if art_bytes else None
     if art:
-        bar = 120
-        max_w, max_h = 1100, 1400
-        ratio = min(max_w / art.width, (max_h - bar) / art.height)
+        max_w, max_h = 1400, 1600
+        ratio = min(max_w / art.width, max_h / art.height)
         art_w = max(1, int(art.width * ratio))
         art_h = max(1, int(art.height * ratio))
-        canvas = Image.new("RGB", (art_w, art_h + bar), "#2a1620")
-        canvas.paste(art.resize((art_w, art_h), Image.Resampling.LANCZOS), (0, 0))
-        draw = ImageDraw.Draw(canvas)
-        draw.rectangle((0, art_h, art_w, art_h + bar), fill="#2a1620")
-        title_font = _font(26, bold=True)
-        meta_font = _font(18)
-        y = art_h + 18
-        for line in _wrap(draw, title, title_font, art_w - 48, 2):
-            draw.text((24, y), line, font=title_font, fill="#f6efe6")
-            y += 32
-        draw.text((24, min(y + 2, art_h + bar - 28)), "  ·  ".join(part for part in [venue, period] if part), font=meta_font, fill="#f3c4b5")
+        canvas = art.resize((art_w, art_h), Image.Resampling.LANCZOS)
     else:
         width, height = 720, 960
         colors = palette()
