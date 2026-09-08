@@ -951,11 +951,21 @@
     }
   }
 
+  function readableShow(row) {
+    if (!row) return false;
+    const title = String(row.title || "");
+    const venue = String(row.venue || "");
+    if (!title.trim()) return false;
+    if (title.indexOf("\uFFFD") >= 0 || venue.indexOf("\uFFFD") >= 0) return false;
+    return true;
+  }
+
   function events() {
     const byId = {};
     (data.exhibitions || []).forEach((row) => {
       const next = Object.assign({ kind: row.kind || "exhibition" }, row);
       if (next.kind !== state.field) return;
+      if (!readableShow(next)) return;
       const id = itemId(next);
       const have = byId[id];
       if (!have || (next.poster && !have.poster)) byId[id] = next;
@@ -1788,11 +1798,9 @@
           shown.length
             ? shown
                 .map((row) => {
-                  const src = coverOf(row);
-                  const art = src
-                    ? `<img class="name-art" src="${escapeHtml(src)}" alt="">`
-                    : `<span class="name-art"></span>`;
-                  return `<button type="button" class="name ${src ? "has-art" : ""}" data-id="${encodeURIComponent(itemId(row))}">
+                  const srcs = artSources(row);
+                  const art = artTag(srcs, "name-art", "");
+                  return `<button type="button" class="name ${srcs.length ? "has-art" : ""}" data-id="${encodeURIComponent(itemId(row))}">
               ${art}
               <span><strong>${escapeHtml(row.title)}</strong><small>${escapeHtml(row.venue || "")} · ${escapeHtml([row.start_date, row.end_date].filter(Boolean).join(" ~ "))}${endedTag(row)}</small></span>
             </button>`;
@@ -1834,13 +1842,43 @@
     });
   }
 
+  function artSources(row) {
+    const out = [];
+    if (row && row.poster) out.push(row.poster);
+    if (row && row.image_url && out.indexOf(row.image_url) < 0) out.push(row.image_url);
+    return out;
+  }
+
   function coverOf(row) {
-    return row.poster || "";
+    return artSources(row)[0] || "";
   }
 
   function imagesOf(row) {
-    return row.poster ? [row.poster] : [];
+    return artSources(row);
   }
+
+  function artTag(srcs, className, alt) {
+    if (!srcs.length) return `<span class="${className}"></span>`;
+    return (
+      `<img class="${className}" src="${escapeHtml(srcs[0])}" alt="${escapeHtml(alt || "")}" ` +
+      `data-alts="${escapeHtml(srcs.slice(1).join("||"))}" onerror="ownexArtFallback(this)">`
+    );
+  }
+
+  window.ownexArtFallback = function (img) {
+    if (!img) return;
+    const rest = String(img.getAttribute("data-alts") || "")
+      .split("||")
+      .filter(Boolean);
+    if (rest.length) {
+      img.setAttribute("data-alts", rest.slice(1).join("||"));
+      img.src = rest[0];
+      return;
+    }
+    const hold = document.createElement("span");
+    hold.className = img.className;
+    img.replaceWith(hold);
+  };
 
   function searchUrl(kind, row) {
     const q = encodeURIComponent((row.title || "") + " " + (state.field === "exhibition" ? "전시" : "공연") + " " + (row.venue || ""));
@@ -1899,9 +1937,9 @@
     const id = itemId(row);
     const visited = isVisited(row);
     const imgs = imagesOf(row);
-    const current = imgs[state.artIndex] || "";
-    const poster = current
-      ? `<img class="poster" src="${escapeHtml(current)}" alt="${escapeHtml(row.title || "")}">`
+    const rotated = imgs.slice(state.artIndex).concat(imgs.slice(0, state.artIndex));
+    const poster = rotated.length
+      ? artTag(rotated, "poster", row.title || "")
       : `<div class="poster typed"><p>${escapeHtml(row.title || "")}</p></div>`;
     const draft = (artwork.querySelector("#art-review-body") || {}).value || "";
     const mine = reviewsForShow(id, row.title || "");
