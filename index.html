@@ -35,7 +35,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Great+Vibes&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=fix47" />
+  <link rel="stylesheet" href="styles.css?v=fix48" />
   <style>
     body { margin: 0; min-height: 100vh; background: #351e28; color: #f6efe6; font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
     #front-row:not([hidden]) {
@@ -56,10 +56,10 @@
     #artwork:not([hidden]) { display: block !important; }
     h1 { margin: 0 0 0.7rem; }
     .family-bar { margin: 0.2rem 0 1.4rem; position: relative; z-index: 2; }
-    .family-hello-box { position: absolute; top: 1.5rem; right: max(1.2rem, 8vw); display: flex; flex-direction: column; align-items: stretch; gap: 0.3rem; z-index: 6; max-width: 14.5rem; }
+    .family-hello-box { position: absolute; top: 1.5rem; right: max(1.2rem, 8vw); display: flex; flex-direction: column; align-items: stretch; gap: 0.3rem; z-index: 6; max-width: min(22rem, calc(100vw - 2.4rem)); }
     .family-hello-box[hidden] { display: none !important; }
-    .family-hello-box .family-hello { margin: 0; font-size: 0.78rem; font-weight: 500; text-align: right; line-height: 1.35; }
-    .family-hello-row { display: flex; align-items: center; justify-content: flex-end; gap: 0.4rem; }
+    .family-hello-box .family-hello { margin: 0; font-size: 0.78rem; font-weight: 500; text-align: right; line-height: 1.35; white-space: nowrap; }
+    .family-hello-row { display: flex; align-items: center; justify-content: flex-end; flex-wrap: nowrap; gap: 0.4rem; white-space: nowrap; }
     .family-hello-box .family-out { flex: none; min-height: 1.35rem; min-width: auto; padding: 0.1rem 0.5rem; border: 1px solid rgba(234,223,214,0.28); border-radius: 999px; background: rgba(255,255,255,0.08); color: #eadfd6; font-size: 0.62rem; font-weight: 500; letter-spacing: 0.02em; cursor: pointer; }
     body.open .family-hello-box .family-out { color: #3a2430; border-color: #e3d0c8; background: #fff; }
     .mail-opt, .mail-refuse { display: flex; align-items: flex-start; gap: 0.35rem; font-size: 0.72rem; color: #eadfd6; cursor: pointer; user-select: none; text-align: left; line-height: 1.35; }
@@ -1083,7 +1083,7 @@
       }
     })();
   </script>
-  <script src="data.js?v=fix47"></script>
-  <script src="app.js?v=fix47"></script>
+  <script src="data.js?v=fix48"></script>
+  <script src="app.js?v=fix48"></script>
 </body>
 </html>

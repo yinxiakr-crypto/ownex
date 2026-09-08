@@ -133,7 +133,7 @@ header, main, footer {
   align-items: stretch;
   gap: 0.3rem;
   z-index: 6;
-  max-width: 14.5rem;
+  max-width: min(22rem, calc(100vw - 2.4rem));
   overflow: visible;
 }
 
@@ -147,13 +147,16 @@ header, main, footer {
   font-weight: 500;
   line-height: 1.35;
   text-align: right;
+  white-space: nowrap;
 }
 
 .family-hello-row {
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  flex-wrap: nowrap;
   gap: 0.4rem;
+  white-space: nowrap;
 }
 
 .family-hello-box .family-out {
@@ -1834,13 +1837,14 @@ body.open .review-who { color: #8a6b72; }
   .review-open { padding: 0 0.75rem 0.8rem; }
 
   #family-me {
-    max-width: 12.2rem;
+    max-width: min(22rem, calc(100vw - 2.4rem));
   }
 
   #family-me #family-who,
   #family-me .family-hello {
-    font-size: 0.85rem;
+    font-size: 0.78rem;
     line-height: 1.35;
+    white-space: nowrap;
   }
 
   #family-me .family-out {
