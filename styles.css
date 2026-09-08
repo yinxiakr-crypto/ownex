@@ -219,9 +219,17 @@ header, main, footer {
 }
 
 .mail-pick:hover .mail-freq-menu,
-.mail-pick.is-open .mail-freq-menu {
+.mail-pick.is-open .mail-freq-menu,
+.mail-pick.is-receiving .mail-freq-menu {
   display: grid;
   gap: 0.15rem;
+}
+
+.mail-pick.is-receiving .mail-freq-menu {
+  position: static;
+  min-width: 0;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  box-shadow: none;
 }
 
 .mail-freq-menu button {
