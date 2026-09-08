@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import date
 
+from util.clock import today_seoul
 from util.logger import get_logger
 from util.sources_common import make_item
 
@@ -219,7 +220,7 @@ def featured_pages_for(title: str) -> list[str]:
 
 def collect_featured(cfg) -> list[dict]:
     LOGGER.info("[수집] 화제 전시 보강")
-    today = date.today()
+    today = today_seoul()
     items = []
     skipped = 0
     for show in FEATURED_SHOWS:
