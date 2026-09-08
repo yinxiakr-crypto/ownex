@@ -1724,4 +1724,28 @@ body.open .review-who { color: #8a6b72; }
   }
 
   .review-open { padding: 0 0.75rem 0.8rem; }
+
+  #family-me {
+    max-width: 12.2rem;
+  }
+
+  #family-me #family-who,
+  #family-me .family-hello {
+    font-size: 0.85rem;
+    line-height: 1.35;
+  }
+
+  #family-me .mail-opt,
+  #family-me .mail-refuse,
+  #family-me #mail-ask-msg,
+  #family-me .mail-email-wrap {
+    font-size: 0.61rem;
+    line-height: 1.35;
+  }
+
+  #family-me .mail-opt input,
+  #family-me .mail-refuse input {
+    width: 0.76rem;
+    height: 0.76rem;
+  }
 }
