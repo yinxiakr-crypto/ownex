@@ -35,7 +35,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Great+Vibes&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=fix42" />
+  <link rel="stylesheet" href="styles.css?v=fix43" />
   <style>
     body { margin: 0; min-height: 100vh; background: #351e28; color: #f6efe6; font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
     #front-row:not([hidden]) {
@@ -338,6 +338,127 @@
           localStorage.setItem("ownex-family-local-v1", JSON.stringify(data));
         } catch (err) {}
       }
+      function mailShareId(user) {
+        var raw = String((user && (user.mailEmail || user.name)) || "").trim().toLowerCase();
+        var id = raw.indexOf("@") >= 0 ? raw.split("@")[0] : raw;
+        if (id === "은하" || id === "yinxiakr" || raw === "yinxiakr@gmail.com") return "yinxiakr";
+        return id;
+      }
+      function mailIdList(user) {
+        var out = [];
+        function add(value) {
+          var text = String(value || "").trim().toLowerCase();
+          if (!text || out.indexOf(text) >= 0) return;
+          out.push(text);
+          if (text.indexOf("@") >= 0) add(text.split("@")[0]);
+        }
+        add(user && user.mailEmail);
+        add(user && user.name);
+        add(mailShareId(user));
+        if (mailShareId(user) === "yinxiakr") {
+          add("은하");
+          add(notifyMail());
+        }
+        return out;
+      }
+      function abacusCall(kind, key, cb) {
+        var done = false;
+        var name = "ownexMail_" + kind + "_" + String(Date.now()) + Math.floor(Math.random() * 9999);
+        window[name] = function (payload) {
+          if (done) return;
+          done = true;
+          try { delete window[name]; } catch (err) {}
+          if (cb) cb(Number((payload && payload.value) || 0) || 0);
+        };
+        function add(host) {
+          var tag = document.createElement("script");
+          tag.src = host + kind + "/ownex-mail/" + encodeURIComponent(key) + "?callback=" + name + "&t=" + Date.now();
+          tag.onerror = function () {};
+          document.head.appendChild(tag);
+        }
+        add("https://abacus.jsn.cam/");
+        setTimeout(function () {
+          if (!done) add("https://abacus.jasoncameron.dev/");
+        }, 900);
+        setTimeout(function () {
+          if (!done) {
+            done = true;
+            if (cb) cb(0);
+          }
+        }, 3200);
+      }
+      function wantFromShareValue(value) {
+        if (!value) return null;
+        return value % 2 === 1;
+      }
+      function pushMailShare(user, want) {
+        var id = mailShareId(user);
+        if (!id) return;
+        var key = "pref-" + id;
+        abacusCall("get", key, function (value) {
+          var need = 0;
+          if (want) {
+            if (value === 0 || value % 2 === 0) need = 1;
+          } else if (value === 0) need = 2;
+          else if (value % 2 === 1) need = 1;
+          function step() {
+            if (need <= 0) return;
+            need -= 1;
+            abacusCall("hit", key, step);
+          }
+          step();
+        });
+      }
+      function pullMailShare(user, done) {
+        if (!user) {
+          if (done) done(null);
+          return;
+        }
+        var left = 2;
+        var fromCount = null;
+        var fromFile = null;
+        function finish() {
+          left -= 1;
+          if (left > 0) return;
+          var shared = fromCount;
+          if (shared === null) shared = fromFile;
+          if (shared !== null && Boolean(user.wantMail) !== shared) {
+            user.wantMail = shared;
+            user.mailAsked = true;
+            if (shared && looksEmail(mailAddrOf(user))) user.mailEmail = mailAddrOf(user);
+            writeUser(user);
+          }
+          paintMailRefuse();
+          if (done) done(shared);
+        }
+        var id = mailShareId(user);
+        if (id) {
+          abacusCall("get", "pref-" + id, function (value) {
+            fromCount = wantFromShareValue(value);
+            finish();
+          });
+        } else {
+          finish();
+        }
+        fetch("mail-subscribers.json?t=" + Date.now(), { cache: "no-store" })
+          .then(function (res) { return res.ok ? res.json() : {}; })
+          .then(function (payload) {
+            var list = (payload && payload.subscribers) || [];
+            var keys = mailIdList(user);
+            for (var i = 0; i < list.length; i += 1) {
+              var item = list[i];
+              if (!item) continue;
+              var email = String(item.email || "").trim().toLowerCase();
+              var name = String(item.name || "").trim().toLowerCase();
+              if (keys.indexOf(email) >= 0 || keys.indexOf(name) >= 0 || keys.indexOf(email.split("@")[0]) >= 0) {
+                fromFile = Boolean(item.want);
+                break;
+              }
+            }
+            finish();
+          })
+          .catch(function () { finish(); });
+      }
       var collectingMail = false;
       function mailAddrOf(user) {
         if (!user) return "";
@@ -410,11 +531,13 @@
         if (looksEmail(addr)) user.mailEmail = addr;
         writeUser(user);
         paintMailRefuse();
+        pushMailShare(user, user.wantMail);
         sendMailPref(user.wantMail, user.mailEmail || addr, user.name || "");
         return true;
       }
       function askMailIfNeeded(user) {
         paintMailRefuse();
+        pullMailShare(user);
       }
       function setLoginNote() {
         var hint = document.getElementById("login-note") || document.querySelector(".family-hint");
@@ -753,6 +876,7 @@
       restore();
       window.addEventListener("pageshow", function () {
         if (!window.ownexIsIn()) closeFields();
+        else pullMailShare(currentUser());
       });
       var form = document.getElementById("family-form");
       var btn = document.getElementById("family-enter");
@@ -844,7 +968,7 @@
       }
     })();
   </script>
-  <script src="data.js?v=fix42"></script>
-  <script src="app.js?v=fix42"></script>
+  <script src="data.js?v=fix43"></script>
+  <script src="app.js?v=fix43"></script>
 </body>
 </html>
