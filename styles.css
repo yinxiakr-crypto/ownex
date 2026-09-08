@@ -149,12 +149,33 @@ header, main, footer {
   text-align: right;
 }
 
-.family-hello-box .save {
-  align-self: flex-end;
-  min-height: 1.85rem;
+.family-hello-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.4rem;
+}
+
+.family-hello-box .family-out {
+  flex: none;
+  min-height: 1.35rem;
   min-width: auto;
-  padding: 0.2rem 0.75rem;
-  font-size: 0.75rem;
+  padding: 0.1rem 0.5rem;
+  border: 1px solid color-mix(in srgb, #eadfd6 28%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, #fff 8%, transparent);
+  color: #eadfd6;
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+body.open .family-hello-box .family-out {
+  color: #3a2430;
+  border-color: #e3d0c8;
+  background: #fff;
 }
 
 .mail-opt,
@@ -1820,6 +1841,12 @@ body.open .review-who { color: #8a6b72; }
   #family-me .family-hello {
     font-size: 0.85rem;
     line-height: 1.35;
+  }
+
+  #family-me .family-out {
+    min-height: 1.4rem;
+    font-size: 0.62rem;
+    padding: 0.12rem 0.48rem;
   }
 
   #family-me .mail-opt,

@@ -35,7 +35,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Great+Vibes&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=fix46" />
+  <link rel="stylesheet" href="styles.css?v=fix47" />
   <style>
     body { margin: 0; min-height: 100vh; background: #351e28; color: #f6efe6; font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
     #front-row:not([hidden]) {
@@ -59,7 +59,9 @@
     .family-hello-box { position: absolute; top: 1.5rem; right: max(1.2rem, 8vw); display: flex; flex-direction: column; align-items: stretch; gap: 0.3rem; z-index: 6; max-width: 14.5rem; }
     .family-hello-box[hidden] { display: none !important; }
     .family-hello-box .family-hello { margin: 0; font-size: 0.78rem; font-weight: 500; text-align: right; line-height: 1.35; }
-    .family-hello-box .save { align-self: flex-end; min-height: 1.85rem; min-width: auto; padding: 0.2rem 0.75rem; font-size: 0.75rem; }
+    .family-hello-row { display: flex; align-items: center; justify-content: flex-end; gap: 0.4rem; }
+    .family-hello-box .family-out { flex: none; min-height: 1.35rem; min-width: auto; padding: 0.1rem 0.5rem; border: 1px solid rgba(234,223,214,0.28); border-radius: 999px; background: rgba(255,255,255,0.08); color: #eadfd6; font-size: 0.62rem; font-weight: 500; letter-spacing: 0.02em; cursor: pointer; }
+    body.open .family-hello-box .family-out { color: #3a2430; border-color: #e3d0c8; background: #fff; }
     .mail-opt, .mail-refuse { display: flex; align-items: flex-start; gap: 0.35rem; font-size: 0.72rem; color: #eadfd6; cursor: pointer; user-select: none; text-align: left; line-height: 1.35; }
     .mail-opt[hidden], .mail-refuse[hidden], #mail-want-wrap[hidden], #mail-refuse-wrap[hidden], #mail-freq-now[hidden] { display: none !important; }
     .mail-pick { position: relative; }
@@ -171,7 +173,10 @@
   <header class="hero">
     <p class="eyebrow">OWNEX <span class="open-count">접속 <strong id="glance-visitor-num">0</strong></span></p>
     <div id="family-me" class="family-hello-box" hidden>
-      <p id="family-who" class="family-hello"></p>
+      <div class="family-hello-row">
+        <p id="family-who" class="family-hello"></p>
+        <button type="button" id="family-out" class="family-out" onclick="ownexLeave()">나가기</button>
+      </div>
       <div class="mail-pick" id="mail-pick">
         <label class="mail-opt" id="mail-want-wrap">
           <input type="checkbox" id="mail-want" />
@@ -193,7 +198,6 @@
         <input type="checkbox" id="mail-refuse" />
         메일 수신을 거부합니다
       </label>
-      <button type="button" id="family-out" class="save" onclick="ownexLeave()">나가기</button>
     </div>
     <h1>오넥스</h1>
     <p class="lead">보고 듣고 가는 자리. 지금은 미술부터.</p>
@@ -1079,7 +1083,7 @@
       }
     })();
   </script>
-  <script src="data.js?v=fix46"></script>
-  <script src="app.js?v=fix46"></script>
+  <script src="data.js?v=fix47"></script>
+  <script src="app.js?v=fix47"></script>
 </body>
 </html>
