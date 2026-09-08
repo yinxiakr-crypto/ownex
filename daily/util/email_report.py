@@ -22,7 +22,7 @@ from PIL import Image, ImageDraw, ImageFont
 from util.config_loader import load_env_file
 from util.google_calendar import can_send_gmail, gmail_service, logged_in_email
 from util.logger import get_logger
-from util.mail_list import wanted_emails
+from util.mail_list import mail_heading, wanted_email_groups
 from util.normalize import clip_calendar_span, from_iso
 
 LOGGER = get_logger()
@@ -69,7 +69,7 @@ def _period(row: dict, calendar_from: date | None) -> str:
     return start.isoformat()
 
 
-def make_schedule_card(rows: list[dict], calendar_from: date | None) -> bytes:
+def make_schedule_card(rows: list[dict], calendar_from: date | None, heading: str = "오늘의 전시") -> bytes:
     width = 900
     height = max(1280, 220 + len(rows) * 118)
     image = Image.new("RGB", (width, height), "#1f1a16")
@@ -79,7 +79,7 @@ def make_schedule_card(rows: list[dict], calendar_from: date | None) -> bytes:
     meta_font = _font(22)
     small_font = _font(18)
     draw.rectangle((40, 40, width - 40, height - 40), fill="#f4ead8")
-    draw.text((70, 70), "오늘의 전시", font=title_font, fill="#5c2e0a")
+    draw.text((70, 70), heading, font=title_font, fill="#5c2e0a")
     draw.text((70, 130), date.today().isoformat(), font=small_font, fill="#7a5a3a")
     y = 180
     for index, row in enumerate(rows, start=1):
@@ -572,7 +572,7 @@ def _activity_counts() -> tuple[int, int]:
     return visits, reviews
 
 
-def _html_body(rows: list[dict], calendar_from: date | None, has_card: bool) -> str:
+def _html_body(rows: list[dict], calendar_from: date | None, has_card: bool, heading: str = "오늘의 전시") -> str:
     blocks = []
     for index, row in enumerate(rows, start=1):
         url = row.get("reservation_url") or ""
@@ -619,7 +619,7 @@ def _html_body(rows: list[dict], calendar_from: date | None, has_card: bool) -> 
     """
     return f"""
     <div style="font-family:'Malgun Gothic',sans-serif;max-width:640px;margin:0 auto;color:#222;">
-      <h1 style="font-size:22px;">오늘의 전시</h1>
+      <h1 style="font-size:22px;">{heading}</h1>
       <p>나만의 전시를 통해 다른 세상과 만나보세요.</p>
       {glance}
       {card}
@@ -672,39 +672,43 @@ def send_exhibition_email(rows: list[dict], cfg, calendar_from: date | None = No
     try:
         owner = (mail_cfg.get("to", "") if mail_cfg else "").strip() or smtp_user or logged_in_email()
         today = date.today()
-        recipients = wanted_emails(owner, today)
-        if not recipients:
+        groups = wanted_email_groups(owner, today)
+        if not groups:
             LOGGER.info("[메일] 오늘 받을 사람이 없어 건너뜁니다.")
             return False
-        to_address = recipients[0]
-        extra = recipients[1:]
         posters = collect_posters(rows)
-        card = make_schedule_card(rows, calendar_from)
-        message = MIMEMultipart("related")
-        message["To"] = to_address
-        if extra:
-            message["Bcc"] = ", ".join(extra)
-        message["Subject"] = f"오늘의 전시 {date.today().isoformat()}"
-        alt = MIMEMultipart("alternative")
         home = _home_url()
-        alt.attach(MIMEText(f"오늘의 전시 {date.today().isoformat()}\n나만의 전시를 통해 다른 세상과 만나보세요.\n", "plain", "utf-8"))
-        alt.attach(MIMEText(_html_body(rows, calendar_from, True), "html", "utf-8"))
         LOGGER.info(f"[메일] 홈 주소는 {home} 입니다.")
-        message.attach(alt)
-        card_part = MIMEImage(card, _subtype="jpeg")
-        card_part.add_header("Content-ID", "<schedulecard>")
-        card_part.add_header("Content-Disposition", "inline", filename="today-exhibitions.jpg")
-        message.attach(card_part)
-        for index, poster in enumerate(posters, start=1):
-            payload = poster or make_schedule_card([rows[index - 1]], calendar_from)
-            image_part = MIMEImage(payload, _subtype="jpeg")
-            image_part.add_header("Content-ID", f"<poster{index}>")
-            safe_name = re.sub(r"[^\w가-힣]+", "_", (rows[index - 1].get("title") or "poster")[:40]) or "poster"
-            image_part.add_header("Content-Disposition", "inline", filename=f"{safe_name}.png")
-            message.attach(image_part)
-        _send_built_message(message, to_address, extra)
-        LOGGER.info(f"[메일] 지메일로 목록 {len(rows)}개를 {1 + len(extra)}명에게 보냈습니다.")
-        return True
+        sent_any = False
+        for freq, recipients in groups.items():
+            heading = mail_heading(freq)
+            to_address = recipients[0]
+            extra = recipients[1:]
+            card = make_schedule_card(rows, calendar_from, heading)
+            message = MIMEMultipart("related")
+            message["To"] = to_address
+            if extra:
+                message["Bcc"] = ", ".join(extra)
+            message["Subject"] = f"{heading} {today.isoformat()}"
+            alt = MIMEMultipart("alternative")
+            alt.attach(MIMEText(f"{heading} {today.isoformat()}\n나만의 전시를 통해 다른 세상과 만나보세요.\n", "plain", "utf-8"))
+            alt.attach(MIMEText(_html_body(rows, calendar_from, True, heading), "html", "utf-8"))
+            message.attach(alt)
+            card_part = MIMEImage(card, _subtype="jpeg")
+            card_part.add_header("Content-ID", "<schedulecard>")
+            card_part.add_header("Content-Disposition", "inline", filename="today-exhibitions.jpg")
+            message.attach(card_part)
+            for index, poster in enumerate(posters, start=1):
+                payload = poster or make_schedule_card([rows[index - 1]], calendar_from, heading)
+                image_part = MIMEImage(payload, _subtype="jpeg")
+                image_part.add_header("Content-ID", f"<poster{index}>")
+                safe_name = re.sub(r"[^\w가-힣]+", "_", (rows[index - 1].get("title") or "poster")[:40]) or "poster"
+                image_part.add_header("Content-Disposition", "inline", filename=f"{safe_name}.png")
+                message.attach(image_part)
+            _send_built_message(message, to_address, extra)
+            LOGGER.info(f"[메일] {heading} 목록 {len(rows)}개를 {len(recipients)}명에게 보냈습니다.")
+            sent_any = True
+        return sent_any
     except Exception as exc:
         LOGGER.info(f"[메일] 보내기 실패: {exc}")
         return False

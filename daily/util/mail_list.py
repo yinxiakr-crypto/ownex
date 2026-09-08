@@ -106,6 +106,17 @@ def normalize_freq(value: str) -> str:
     return "daily"
 
 
+MAIL_HEADINGS = {
+    "daily": "오늘의 전시",
+    "weekly": "이주의 전시",
+    "monthly": "이달의 전시",
+}
+
+
+def mail_heading(freq: str) -> str:
+    return MAIL_HEADINGS.get(normalize_freq(freq), "오늘의 전시")
+
+
 def freq_due(freq: str, today: date) -> bool:
     kind = normalize_freq(freq)
     if kind == "weekly":
@@ -139,28 +150,40 @@ def upsert_subscriber(email: str, want: bool, name: str = "", freq: str = "") ->
     return found
 
 
-def wanted_emails(owner: str = "", today: date | None = None) -> list[str]:
+def _wanted_items(owner: str = "", today: date | None = None) -> list[tuple[str, str]]:
     owner_addr = clean_email(owner)
     data = load_mail_list().get("subscribers") or []
     owner_item = next((item for item in data if clean_email(item.get("email") or "") == owner_addr), None)
-    out = []
+    out: list[tuple[str, str]] = []
     seen = set()
     if owner_addr and (owner_item is None or owner_item.get("want", True)):
         owner_freq = normalize_freq((owner_item or {}).get("freq") or "daily")
         if today is None or freq_due(owner_freq, today):
-            out.append(owner_addr)
+            out.append((owner_addr, owner_freq))
             seen.add(owner_addr)
     for item in data:
         if not item.get("want"):
             continue
-        if today is not None and not freq_due(item.get("freq") or "daily", today):
+        freq = normalize_freq(item.get("freq") or "daily")
+        if today is not None and not freq_due(freq, today):
             continue
         addr = clean_email(item.get("email") or "")
         if not addr or addr in seen:
             continue
         seen.add(addr)
-        out.append(addr)
+        out.append((addr, freq))
     return out
+
+
+def wanted_emails(owner: str = "", today: date | None = None) -> list[str]:
+    return [addr for addr, _freq in _wanted_items(owner, today)]
+
+
+def wanted_email_groups(owner: str = "", today: date | None = None) -> dict[str, list[str]]:
+    groups: dict[str, list[str]] = {"daily": [], "weekly": [], "monthly": []}
+    for addr, freq in _wanted_items(owner, today):
+        groups[normalize_freq(freq)].append(addr)
+    return {key: value for key, value in groups.items() if value}
 
 
 def _decode_header(value: str) -> str:
