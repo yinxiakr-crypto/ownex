@@ -22,18 +22,34 @@ from PIL import Image, ImageDraw, ImageFont
 from util.config_loader import load_env_file
 from util.google_calendar import can_send_gmail, gmail_service, logged_in_email
 from util.logger import get_logger
+from util.clock import today_seoul
 from util.mail_list import mail_heading, wanted_email_groups
 from util.normalize import clip_calendar_span, from_iso
 
 LOGGER = get_logger()
-FONT_REGULAR = Path(r"C:\Windows\Fonts\malgun.ttf")
-FONT_BOLD = Path(r"C:\Windows\Fonts\malgunbd.ttf")
+FONT_REGULAR = [
+    Path(r"C:\Windows\Fonts\malgun.ttf"),
+    Path("/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc"),
+    Path("/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc"),
+    Path("/usr/share/fonts/truetype/noto/NotoSansKR-Regular.otf"),
+]
+FONT_BOLD = [
+    Path(r"C:\Windows\Fonts\malgunbd.ttf"),
+    Path("/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc"),
+    Path("/usr/share/fonts/truetype/noto/NotoSansCJK-Bold.ttc"),
+    Path("/usr/share/fonts/truetype/noto/NotoSansKR-Bold.otf"),
+]
 
 
 def _font(size: int, bold: bool = False) -> ImageFont.FreeTypeFont:
-    path = FONT_BOLD if bold and FONT_BOLD.exists() else FONT_REGULAR
-    if path.exists():
-        return ImageFont.truetype(str(path), size)
+    paths = FONT_BOLD + FONT_REGULAR if bold else FONT_REGULAR + FONT_BOLD
+    for path in paths:
+        if not path.exists():
+            continue
+        try:
+            return ImageFont.truetype(str(path), size)
+        except Exception:
+            continue
     return ImageFont.load_default()
 
 
@@ -80,7 +96,7 @@ def make_schedule_card(rows: list[dict], calendar_from: date | None, heading: st
     small_font = _font(18)
     draw.rectangle((40, 40, width - 40, height - 40), fill="#f4ead8")
     draw.text((70, 70), heading, font=title_font, fill="#5c2e0a")
-    draw.text((70, 130), date.today().isoformat(), font=small_font, fill="#7a5a3a")
+    draw.text((70, 130), today_seoul().isoformat(), font=small_font, fill="#7a5a3a")
     y = 180
     for index, row in enumerate(rows, start=1):
         draw.rectangle((70, y, width - 70, y + 4), fill="#c9a36a")
@@ -99,8 +115,7 @@ def make_schedule_card(rows: list[dict], calendar_from: date | None, heading: st
             break
     draw.text((70, height - 90), "매일 아침 자동으로 보낸 일정입니다.", font=small_font, fill="#7a5a3a")
     buffer = io.BytesIO()
-    image.thumbnail((900, 1600))
-    image.save(buffer, format="JPEG", quality=80)
+    image.save(buffer, format="JPEG", quality=85)
     return buffer.getvalue()
 
 
@@ -543,10 +558,36 @@ def _home_url() -> str:
     return PUBLIC_HOME
 
 
-def _activity_counts() -> tuple[int, int]:
-    family = ROOT / "data" / "family"
-    reviews = 0
+def _count_saved(saved: dict) -> tuple[int, int]:
+    notes = saved.get("notes") if isinstance(saved, dict) else {}
+    feels = saved.get("feels") if isinstance(saved, dict) else []
     visits = 0
+    if isinstance(notes, dict):
+        visits = sum(
+            1
+            for note in notes.values()
+            if isinstance(note, dict) and (note.get("visited") is True or note.get("visited") == "true")
+        )
+    reviews = len(feels) if isinstance(feels, list) else 0
+    return visits, reviews
+
+
+def _saved_from_data_js(path: Path) -> dict:
+    if not path.exists():
+        return {}
+    try:
+        text = path.read_text(encoding="utf-8")
+        payload = json.loads(re.sub(r"^window\.OWNEX\s*=\s*", "", text.strip()).rstrip(";"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    saved = payload.get("saved") if isinstance(payload, dict) else {}
+    return saved if isinstance(saved, dict) else {}
+
+
+def _activity_counts() -> tuple[int, int]:
+    visits = 0
+    reviews = 0
+    family = ROOT / "data" / "family"
     feels_path = family / "feels.json"
     if feels_path.exists():
         try:
@@ -554,10 +595,10 @@ def _activity_counts() -> tuple[int, int]:
         except (OSError, json.JSONDecodeError):
             payload = []
         if isinstance(payload, list):
-            reviews = len(payload)
+            reviews = max(reviews, len(payload))
     if family.exists():
         for path in family.glob("*.json"):
-            if path.name in {"users.json", "feels.json"}:
+            if path.name in {"users.json", "feels.json", "mail_subscribers.json"}:
                 continue
             try:
                 payload = json.loads(path.read_text(encoding="utf-8"))
@@ -567,8 +608,16 @@ def _activity_counts() -> tuple[int, int]:
             if not isinstance(notes, dict):
                 continue
             count = sum(1 for note in notes.values() if isinstance(note, dict) and note.get("visited"))
-            if count > visits:
-                visits = count
+            visits = max(visits, count)
+    for path in (
+        ROOT / "data.js",
+        ROOT.parent / "data.js",
+        ROOT / "web" / "data.js",
+        ROOT.parent.parent / "web" / "data.js",
+    ):
+        more_visits, more_reviews = _count_saved(_saved_from_data_js(path))
+        visits = max(visits, more_visits)
+        reviews = max(reviews, more_reviews)
     return visits, reviews
 
 
@@ -581,11 +630,11 @@ def _html_body(rows: list[dict], calendar_from: date | None, has_card: bool, hea
         blocks.append(
             f"""
             <div style="margin:0 0 28px 0;padding:0 0 16px 0;border-bottom:1px solid #e6d5b8;">
-              <h2 style="margin:0 0 8px 0;font-size:18px;">{index}. {row.get('title') or ''}</h2>
-              <p style="margin:0 0 6px 0;color:#555;">{row.get('venue') or ''} {row.get('venue_address') or ''}</p>
-              <p style="margin:0 0 10px 0;color:#8a3b12;"><b>{_period(row, calendar_from)}</b></p>
-              <p style="margin:0 0 6px 0;color:#666;font-size:13px;">고른 이유: {row.get('score_reason') or ''}</p>
-              <p style="margin:0 0 10px 0;">{row.get('summary') or ''}</p>
+              <h2 style="margin:0 0 8px 0;font-size:20px;line-height:1.4;">{index}. {row.get('title') or ''}</h2>
+              <p style="margin:0 0 6px 0;color:#555;font-size:16px;">{row.get('venue') or ''} {row.get('venue_address') or ''}</p>
+              <p style="margin:0 0 10px 0;color:#8a3b12;font-size:16px;"><b>{_period(row, calendar_from)}</b></p>
+              <p style="margin:0 0 6px 0;color:#666;font-size:15px;">고른 이유: {row.get('score_reason') or ''}</p>
+              <p style="margin:0 0 10px 0;font-size:16px;line-height:1.5;">{row.get('summary') or ''}</p>
               {poster}
               {link}
             </div>
@@ -618,8 +667,8 @@ def _html_body(rows: list[dict], calendar_from: date | None, has_card: bool, hea
       </table>
     """
     return f"""
-    <div style="font-family:'Malgun Gothic',sans-serif;max-width:640px;margin:0 auto;color:#222;">
-      <h1 style="font-size:22px;">{heading}</h1>
+    <div style="font-family:'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif;max-width:640px;margin:0 auto;color:#222;">
+      <h1 style="font-size:24px;line-height:1.4;">{heading}</h1>
       <p>나만의 전시를 통해 다른 세상과 만나보세요.</p>
       {glance}
       {card}
@@ -671,7 +720,7 @@ def send_exhibition_email(rows: list[dict], cfg, calendar_from: date | None = No
         return False
     try:
         owner = (mail_cfg.get("to", "") if mail_cfg else "").strip() or smtp_user or logged_in_email()
-        today = date.today()
+        today = today_seoul()
         groups = wanted_email_groups(owner, today)
         if not groups:
             LOGGER.info("[메일] 오늘 받을 사람이 없어 건너뜁니다.")

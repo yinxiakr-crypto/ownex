@@ -18,6 +18,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Korean fonts
+        run: sudo apt-get update && sudo apt-get install -y fonts-noto-cjk
       - name: Install
         run: pip install -r requirements.txt
       - name: Restore secrets
@@ -37,6 +39,7 @@ jobs:
           printf '%s' "$GOOGLE_CREDENTIALS_JSON" > data/google_credentials.json
       - name: Send mail and calendar
         env:
+          TZ: Asia/Seoul
           OWNEX_SKIP_BROWSER: "1"
           OWNEX_SKIP_WEB: "1"
           OWNEX_CLOUD: "1"

@@ -5,6 +5,8 @@ import json
 import os
 import re
 from datetime import date
+
+from util.clock import today_seoul
 from email import message_from_bytes
 from email.header import decode_header
 from pathlib import Path
@@ -145,7 +147,7 @@ def upsert_subscriber(email: str, want: bool, name: str = "", freq: str = "") ->
         found["freq"] = normalize_freq(freq or found.get("freq") or "daily")
     if name:
         found["name"] = str(name).strip()
-    found["at"] = date.today().isoformat()
+    found["at"] = today_seoul().isoformat()
     save_mail_list(data)
     return found
 

@@ -20,6 +20,7 @@ from util.sources_naver import collect_naver
 from util.sources_sac import collect_sac
 from util.sources_sejong import collect_sejong
 from util.sources_seoul_venues import collect_seoul_venues
+from util.clock import today_seoul
 from util.state import resolve_range, should_send_email, write_last_email, write_last_run
 from util.mail_list import ingest_mail_requests
 from util.export_web import write_web_data
@@ -45,7 +46,7 @@ def _in_window(item: dict, start, end, today: date) -> bool:
 
 
 def run_pipeline(today: date | None = None) -> list[dict]:
-    today = today or date.today()
+    today = today or today_seoul()
     LOGGER.info("===== 전시 수집 시작 =====")
     cfg = load_config()
     start, end = resolve_range(cfg, today)

@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import sys
 from datetime import date
+
+from util.clock import today_seoul
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
@@ -36,7 +38,7 @@ def main() -> int:
             print(f"   링크: {row['reservation_url']}")
         print("")
     print("표 파일: data/exhibitions.csv (올해 매일 누적)")
-    print(f"연도 보관: data/exhibitions_{date.today().year}.csv")
+    print(f"연도 보관: data/exhibitions_{today_seoul().year}.csv")
     print("달력 파일: data/exhibitions.ics")
     print("구글 캘린더: 위 목록 중 아직 안 끝난 상위 5개만 Ownex에 올립니다. 끝난 전시는 지웁니다.")
     print("지메일: 위 목록 전체를 보냅니다.")
