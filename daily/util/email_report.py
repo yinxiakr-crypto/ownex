@@ -599,7 +599,7 @@ def _html_body(rows: list[dict], calendar_from: date | None, has_card: bool) -> 
     visits, reviews = _activity_counts()
     home = _home_url()
     glance = f"""
-      <table role="presentation" cellpadding="0" cellspacing="0" style="margin:16px 0 8px 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" style="margin:16px 0 20px 0;">
         <tr>
           <td style="padding:10px 16px;background:#351e28;color:#f6efe6;border-radius:12px;text-align:center;">
             <div style="font-size:22px;font-weight:700;">{visits}</div>
@@ -616,14 +616,11 @@ def _html_body(rows: list[dict], calendar_from: date | None, has_card: bool) -> 
           </td>
         </tr>
       </table>
-      <p style="margin:0 0 20px 0;font-size:13px;">
-        <a href="{home}" target="_blank" style="color:#8a3b12;word-break:break-all;">{home}</a>
-      </p>
     """
     return f"""
     <div style="font-family:'Malgun Gothic',sans-serif;max-width:640px;margin:0 auto;color:#222;">
       <h1 style="font-size:22px;">오늘의 전시</h1>
-      <p>OWNEX를 통해 만난 작품을 통해 다른 세상과 만나 보세요.</p>
+      <p>나만의 전시를 통해 다른 세상과 만나보세요.</p>
       {glance}
       {card}
       {''.join(blocks)}
@@ -687,7 +684,7 @@ def send_exhibition_email(rows: list[dict], cfg, calendar_from: date | None = No
         message["Subject"] = f"오늘의 전시 {date.today().isoformat()}"
         alt = MIMEMultipart("alternative")
         home = _home_url()
-        alt.attach(MIMEText(f"오늘의 전시 {date.today().isoformat()}\nOWNEX를 통해 만난 작품을 통해 다른 세상과 만나 보세요.\n오넥스 열기: {home}\n", "plain", "utf-8"))
+        alt.attach(MIMEText(f"오늘의 전시 {date.today().isoformat()}\n나만의 전시를 통해 다른 세상과 만나보세요.\n", "plain", "utf-8"))
         alt.attach(MIMEText(_html_body(rows, calendar_from, True), "html", "utf-8"))
         LOGGER.info(f"[메일] 홈 주소는 {home} 입니다.")
         message.attach(alt)
