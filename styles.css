@@ -828,8 +828,9 @@ body.open .gcal-icon {
 .name-art {
   display: block;
   width: 100%;
-  height: 16.5rem;
-  object-fit: contain;
+  height: 22rem;
+  object-fit: cover;
+  object-position: center;
   background: #351e28;
 }
 
@@ -1726,7 +1727,7 @@ body.open .review-who { color: #8a6b72; }
 
   .names { grid-template-columns: 1fr; }
 
-  .name-art { height: 12.5rem; }
+  .name-art { height: 18.5rem; }
 
   .artwork { grid-template-columns: 1fr; grid-template-rows: none; }
 
