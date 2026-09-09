@@ -299,7 +299,11 @@
     return readNotesStore(STORE);
   }
 
-  const SHARE_URL = "shared-state.json";
+  const SHARE_LOCAL = "shared-state.json";
+  const SHARE_HINT = "https://keyvalue.immanuel.co/api/KeyVal";
+  const SHARE_APP = "ownex26a";
+  const SHARE_HINT_KEY = "boarduri";
+  let shareRemote = "";
   let shareAt = "";
   let shareQuiet = false;
 
@@ -309,6 +313,56 @@
     } catch (err) {
       return false;
     }
+  }
+
+  function parseShareUri(raw) {
+    const uri = String(raw || "").replace(/^"|"$/g, "").trim();
+    return /jsonstorage\.net\/v1\/json\//i.test(uri) ? uri : "";
+  }
+
+  function readShareHint() {
+    if (shareRemote) return Promise.resolve(shareRemote);
+    return fetch(SHARE_HINT + "/GetValue/" + SHARE_APP + "/" + SHARE_HINT_KEY + "?" + Date.now(), {
+      cache: "no-store",
+    })
+      .then(function (res) { return res.text(); })
+      .then(function (text) {
+        shareRemote = parseShareUri(text);
+        return shareRemote;
+      })
+      .catch(function () { return shareRemote; });
+  }
+
+  function writeShareHint(uri) {
+    if (!parseShareUri(uri)) return Promise.resolve();
+    shareRemote = uri;
+    return fetch(
+      SHARE_HINT + "/UpdateValue/" + SHARE_APP + "/" + SHARE_HINT_KEY + "/" + encodeURIComponent(uri),
+      { method: "POST", cache: "no-store" }
+    ).catch(function () {});
+  }
+
+  function createShareRemote() {
+    return fetch("https://api.jsonstorage.net/v1/json", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify(sharePack()),
+    }).then(function (res) {
+      const loc = res.headers.get("Location") || "";
+      return res.json().catch(function () { return {}; }).then(function (body) {
+        const uri = parseShareUri(loc) || parseShareUri(body && body.uri);
+        if (!uri) throw new Error("no share");
+        return writeShareHint(uri).then(function () { return uri; });
+      });
+    });
+  }
+
+  function putShareBody(url, body) {
+    return fetch(url, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify(body),
+    });
   }
 
   function saveNotes() {
@@ -550,33 +604,64 @@
     return uniqueFeels(feels.filter((item) => !isAnonymousReview(item)));
   }
 
-  function pullShared() {
-    if (!SHARE_URL) return Promise.resolve(false);
-    return fetch(SHARE_URL + "?" + Date.now(), { cache: "no-store", headers: { Accept: "application/json" } })
+  function absorbRemote(remote) {
+    if (!remote || !Array.isArray(remote.feels)) return 0;
+    if (remote.at && shareAt && remote.at === shareAt) return 0;
+    shareQuiet = true;
+    const added = mergeFeelsList(remote.feels);
+    dropAnonymousFeels();
+    shareQuiet = false;
+    if (remote.at && (!shareAt || remote.at > shareAt)) shareAt = remote.at;
+    return added;
+  }
+
+  function pullOneShare(url) {
+    if (!url) return Promise.resolve(0);
+    return fetch(url + (url.indexOf("?") >= 0 ? "&" : "?") + Date.now(), {
+      cache: "no-store",
+      headers: { Accept: "application/json" },
+    })
       .then(function (res) { return res.json(); })
+      .then(function (remote) { return absorbRemote(remote); })
+      .catch(function () { return 0; });
+  }
+
+  function pullShared() {
+    const local = isStaticHost() ? Promise.resolve(0) : pullOneShare(SHARE_LOCAL);
+    return readShareHint()
       .then(function (remote) {
-        if (!remote || !Array.isArray(remote.feels)) return false;
-        if (remote.at && shareAt && remote.at === shareAt) return false;
-        shareQuiet = true;
-        const added = mergeFeelsList(remote.feels);
-        dropAnonymousFeels();
-        shareQuiet = false;
-        if (remote.at && (!shareAt || remote.at > shareAt)) shareAt = remote.at;
-        return added > 0;
+        return Promise.all([local, pullOneShare(remote)]);
+      })
+      .then(function (counts) {
+        return counts[0] + counts[1] > 0;
       })
       .catch(function () { return false; });
   }
 
   function pushShared() {
-    if (shareQuiet || isStaticHost()) return Promise.resolve();
-    if (!SHARE_URL) return Promise.resolve();
-    const body = sharePack();
-    shareAt = body.at;
-    return fetch(SHARE_URL, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify(body),
-    }).catch(function () {});
+    if (shareQuiet) return Promise.resolve();
+    return pullShared()
+      .then(function () {
+        const body = sharePack();
+        shareAt = body.at;
+        const jobs = [];
+        if (!isStaticHost()) jobs.push(putShareBody(SHARE_LOCAL, body).catch(function () {}));
+        const sendRemote = shareRemote
+          ? putShareBody(shareRemote, body)
+          : createShareRemote();
+        jobs.push(sendRemote.catch(function () {}));
+        return Promise.all(jobs);
+      })
+      .catch(function () {});
+  }
+
+  function refreshSharedBoard() {
+    return pullShared().then(function (changed) {
+      if (!changed) return;
+      paintGlance();
+      if (reviewDraftOpen() || state.selected) return;
+      draw();
+    });
   }
 
   function familyToken() {
@@ -1360,6 +1445,7 @@
     state.space = "reviews";
     state.selected = null;
     state.reviewWrite = false;
+    refreshSharedBoard();
     try {
       draw();
     } catch (err) {}
@@ -1849,7 +1935,7 @@
     });
   }
 
-  const ASSET_VER = "20260909o";
+  const ASSET_VER = "20260909p";
 
   function assetUrl(src) {
     const value = String(src || "");
@@ -2173,14 +2259,13 @@
       paintFamilyBar();
       pushShared();
     });
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden) return;
+    refreshSharedBoard();
+  });
   if (!isStaticHost()) {
     setInterval(function () {
-      pullShared().then(function (changed) {
-        if (!changed) return;
-        paintGlance();
-        if (reviewDraftOpen() || state.selected) return;
-        draw();
-      });
+      refreshSharedBoard();
     }, 3000);
   }
 
