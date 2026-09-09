@@ -1844,7 +1844,7 @@
     });
   }
 
-  const ASSET_VER = "20260909f";
+  const ASSET_VER = "20260909g";
 
   function assetUrl(src) {
     const value = String(src || "");
@@ -1858,7 +1858,7 @@
   }
 
   function isPortraitUrl(url) {
-    return /portrait|headshot|mandelmann|sol_lewitt\.jpg|baselitz_by|photograph_published|wild_men_of_paris/i.test(
+    return /portrait|headshot|mandelmann|sol_lewitt\.jpg|baselitz_by|photograph_published|wild_men_of_paris|working_in_front|_working_|taken_by_|20260630_071238/i.test(
       String(url || "")
     );
   }

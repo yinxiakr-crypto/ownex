@@ -11,6 +11,30 @@ CURATED_ARTWORKS = (
             "https://commons.wikimedia.org/wiki/Special:FilePath/Untitled_sculpture_by_Georg_Baselitz.jpg",
         ),
     },
+    {
+        "keys": ("솔 르윗", "Open Structure"),
+        "images": (
+            "https://cdn.bkn24.com/news/photo/202608/20818_25861_5058.jpg",
+        ),
+    },
+    {
+        "keys": ("유영국", "산은 내 안에"),
+        "images": (
+            "https://img.etoday.co.kr/pto_db/2026/08/20260826104110_2378468_1200_927.jpg",
+        ),
+    },
+    {
+        "keys": ("함양아", "정의되지 않은 파노라마"),
+        "images": (
+            "https://image.fnnews.com/resource/media/image/2026/08/10/202608101833210058_l.jpg",
+        ),
+    },
+    {
+        "keys": ("건축투어",),
+        "images": (
+            "https://www.ddp.or.kr/usr/upload/board_thumb/zboardphotogallery105/20260402034626796.jpg",
+        ),
+    },
 )
 
 # 그 전시의 공식 페이지와 대표 그림만 적습니다. 다른 전시 사진은 넣지 않습니다.

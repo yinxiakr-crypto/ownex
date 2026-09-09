@@ -133,6 +133,8 @@ PORTRAIT_HINTS = (
     "portrait", "headshot", "mandelmann", "photograph_published",
     "wild_men_of_paris", "sol_lewitt.jpg", "georg_baselitz_by",
     "photograph_of", "self-portrait",
+    "working_in_front", "_working_", "taken_by_",
+    "20260630_071238",
 )
 POSTER_HINTS = ("poster", "포스터", "og-image", "key-visual", "main-kv", "/kv-", "sns-")
 ART_HINTS = ("/upload/exhibition/", "/upload/notice/", "/imageShow/", "photogallery", "artwork", "work", "작품", "/common/exhibition/filedown")
@@ -155,7 +157,7 @@ ARTIST_QUERIES = (
     (("박서보", "Park Seo-Bo", "Park Seo Bo"),
      ("Ecriture", "Dansaekhwa")),
     (("유영국", "Yoo Youngkuk", "Yoo Young-kuk"),
-     ("유영국", "Yoo Youngkuk")),
+     ("산-Blue", "산-Red", "Yoo Youngkuk Mountain")),
     (("솔 르윗", "솔르윗", "LeWitt", "Lewitt"),
      ("Incomplete open cubes", "Four-Sided Pyramid", "Sol LeWitt wall drawing")),
     (("바젤리츠", "Baselitz"),
@@ -165,7 +167,7 @@ ARTIST_QUERIES = (
     (("김보희", "Kim Bohie", "Kim Bo-hie"),
      ("Kim Bohie painting", "김보희")),
     (("함양아",),
-     ("함양아", "Ham Yangah")),
+     ("Undefined Panorama", "정의되지 않은 파노라마 4.0")),
 )
 ARTWORK_FIRST = ("큐비스트", "큐비드", "피카소", "브라크", "세잔", "Picasso", "뱅크시", "BANKSY", "Banksy", "가우디", "Gaudi", "Gaudí")
 
