@@ -14,8 +14,9 @@ CURATED_ARTWORKS = (
     {
         "keys": ("솔 르윗", "Open Structure"),
         "images": (
-            "https://cdn.bkn24.com/news/photo/202608/20818_25861_5058.jpg",
+            "https://img7.yna.co.kr/etc/inner/KR/2026/09/07/AKR20260907158500005_04_i_P4.jpg",
         ),
+        "crop": (0.01, 0.20, 0.99, 0.825),
     },
     {
         "keys": ("유영국", "산은 내 안에"),
@@ -30,9 +31,21 @@ CURATED_ARTWORKS = (
         ),
     },
     {
+        "keys": ("구정아", "우스모스"),
+        "images": (
+            "https://www.leeumhoam.org/upload/exhibition/1786342577184_20260804_Koo-Jeong-A_LEEUM_Exhibition page-banner.jpg",
+        ),
+    },
+    {
         "keys": ("건축투어",),
         "images": (
             "https://www.ddp.or.kr/usr/upload/board_thumb/zboardphotogallery105/20260402034626796.jpg",
+        ),
+    },
+    {
+        "keys": ("DDP 2026 가을", "서울라이트"),
+        "images": (
+            "https://festival.seoul.go.kr/resources/culture/img/editor/funSeoul/editor_20260820102209_83232.jpg",
         ),
     },
 )
@@ -87,6 +100,15 @@ def curated_artworks_for(title: str) -> list[str]:
         if any(key in text for key in item["keys"]):
             return list(item["images"])
     return []
+
+
+def curated_crop_for(title: str) -> tuple[float, float, float, float] | None:
+    text = title or ""
+    for item in CURATED_ARTWORKS:
+        if any(key in text for key in item["keys"]):
+            crop = item.get("crop")
+            return tuple(crop) if crop else None
+    return None
 
 
 def art_hash(data: bytes) -> str:

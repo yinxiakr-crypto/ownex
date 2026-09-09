@@ -153,7 +153,7 @@ ARTIST_QUERIES = (
     (("서도호", "Do Ho Suh"),
      ("Seoul Home", "Do Ho Suh installation")),
     (("구정아", "Koo Jeong", "우스모스", "OUSSSMOS"),
-     ("Koo Jeong A installation", "Koo Jeong-A")),
+     ("OUSSSMOS", "Mobiousss")),
     (("박서보", "Park Seo-Bo", "Park Seo Bo"),
      ("Ecriture", "Dansaekhwa")),
     (("유영국", "Yoo Youngkuk", "Yoo Young-kuk"),
@@ -208,6 +208,28 @@ def _url_score(url: str) -> int:
     if "/exhibition/detail" in low:
         score += 8
     return score
+
+
+def _crop_art(data: bytes, box: tuple[float, float, float, float] | None) -> bytes:
+    if not data or not box:
+        return data
+    try:
+        picture = Image.open(io.BytesIO(data)).convert("RGB")
+        width, height = picture.size
+        left, top, right, bottom = box
+        cropped = picture.crop((
+            max(0, int(width * left)),
+            max(0, int(height * top)),
+            min(width, int(width * right)),
+            min(height, int(height * bottom)),
+        ))
+        if min(cropped.size) < 200:
+            return data
+        buffer = io.BytesIO()
+        cropped.save(buffer, format="JPEG", quality=92)
+        return buffer.getvalue()
+    except Exception:
+        return data
 
 
 def _download_picture(url: str) -> tuple[bytes, int] | None:
@@ -521,13 +543,13 @@ def find_representative_art(row: dict) -> tuple[str, bytes | None]:
     # 2순위: 그 전시 공식 포스터·색 있는 홍보 사진.
     # 3순위: 둘 다 없을 때만 오넥스 그림.
     try:
-        from util.show_images import curated_artworks_for
+        from util.show_images import curated_artworks_for, curated_crop_for
 
         for curated in curated_artworks_for(title):
             loaded = _download_picture(curated)
             if loaded:
                 LOGGER.info(f"[시각] 지정 대표작: {title[:30]}")
-                return curated, loaded[0]
+                return curated, _crop_art(loaded[0], curated_crop_for(title))
     except Exception:
         pass
     if mapped and (not _side_program(title) or _inherit_artist_art(title)):
