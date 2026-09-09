@@ -202,7 +202,7 @@
     const month = new Date().getMonth() + 1;
     const season = month === 12 || month <= 2 ? "winter" : month <= 5 ? "spring" : month <= 8 ? "summer" : "fall";
     document.body.dataset.season = season;
-    const colors = { winter: "#44525c", spring: "#44524a", summer: "#4f5044", fall: "#53414a" };
+    const colors = { winter: "#1b2a33", spring: "#24382e", summer: "#2a2e12", fall: "#351e28" };
     const theme = document.querySelector('meta[name="theme-color"]');
     if (theme) theme.setAttribute("content", colors[season]);
   }
@@ -830,7 +830,7 @@
 
   const PRAISE_STAMPS = ["잘했어요", "참 잘했어요", "우수해요", "멋져요", "훌륭해요", "최고예요", "잘 보았어요", "열심히 보았어요", "대단해요", "참 훌륭해요"];
   const PRAISE_COUNT = 25;
-  const PRAISE_FILLS = ["#e8b8b2", "#d8c48a", "#cbb0c0", "#a8c4b6", "#e2c4a8", "#d4b4c4", "#a8b8c8", "#c8b89a"];
+  const PRAISE_FILLS = ["#e39a86", "#d4a05c", "#c9849a", "#6faf8e", "#d9b15a", "#c87868", "#7ea4b8", "#c4a06a"];
 
   function yearChoices() {
     const now = new Date().getFullYear();
@@ -1844,7 +1844,7 @@
     });
   }
 
-  const ASSET_VER = "20260909h";
+  const ASSET_VER = "20260909j";
 
   function assetUrl(src) {
     const value = String(src || "");

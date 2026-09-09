@@ -3,12 +3,14 @@ from __future__ import annotations
 from datetime import date
 
 # 해마다 유행색만 이 표에서 바꿉니다. 2026은 Pinterest Palette.
+# 겨울 Cool Blue #d7efff, 봄 Jade #aeb8a0, 여름 Wasabi #e9f056,
+# 가을 Plum Noir #351e28 + Persimmon #ff5c34.
 YEAR_PALETTES = {
     2026: {
-        "winter": {"bg": "#44525c", "paper": "#dce8f0", "ink": "#3d4a54", "accent": "#8fadc0", "btn": "#dce8f0"},
-        "spring": {"bg": "#44524a", "paper": "#dde8dc", "ink": "#3d4a42", "accent": "#8fafa0", "btn": "#dde8dc"},
-        "summer": {"bg": "#4f5044", "paper": "#ece8d0", "ink": "#44453a", "accent": "#c4b47a", "btn": "#ece8d0"},
-        "fall": {"bg": "#53414a", "paper": "#f3ddd8", "ink": "#4c3d44", "accent": "#c48686", "btn": "#f3ddd8"},
+        "winter": {"bg": "#1b2a33", "paper": "#d7efff", "ink": "#1b2a33", "accent": "#7aa7c7", "btn": "#d7efff"},
+        "spring": {"bg": "#24382e", "paper": "#e7f3ea", "ink": "#24382e", "accent": "#3f7a68", "btn": "#e7f3ea"},
+        "summer": {"bg": "#2a2e12", "paper": "#f3f7d4", "ink": "#2a2e12", "accent": "#e9f056", "btn": "#e9f056"},
+        "fall": {"bg": "#351e28", "paper": "#f6e4dc", "ink": "#351e28", "accent": "#ff5c34", "btn": "#f6e4dc"},
     }
 }
 
