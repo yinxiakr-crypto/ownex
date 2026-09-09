@@ -1799,7 +1799,9 @@
             ? shown
                 .map((row) => {
                   const srcs = artSources(row);
-                  const art = artTag(srcs, "name-art", "", row);
+                  const art = row.has_art
+                    ? artTag(srcs, "name-art", "", row)
+                    : designedCover(row, "name-art");
                   return `<button type="button" class="name ${srcs.length ? "has-art" : ""}" data-id="${encodeURIComponent(itemId(row))}">
               ${art}
               <span><strong>${escapeHtml(row.title)}</strong><small>${escapeHtml(row.venue || "")} · ${escapeHtml([row.start_date, row.end_date].filter(Boolean).join(" ~ "))}${endedTag(row)}</small></span>
@@ -1842,7 +1844,7 @@
     });
   }
 
-  const ASSET_VER = "20260909e";
+  const ASSET_VER = "20260909f";
 
   function assetUrl(src) {
     const value = String(src || "");
@@ -1855,19 +1857,33 @@
     return /wikipedia|wikimedia/i.test(String(url || ""));
   }
 
+  function isPortraitUrl(url) {
+    return /portrait|headshot|mandelmann|sol_lewitt\.jpg|baselitz_by|photograph_published|wild_men_of_paris/i.test(
+      String(url || "")
+    );
+  }
+
   function isOfficialPoster(row) {
     const url = String((row && row.image_url) || "");
     return Boolean(row && row.letterbox) || /filedown|craftmuseum\.seoul/i.test(url);
   }
 
+  function designedCover(row, className) {
+    const title = String((row && row.title) || "").replace(/[〈〉《》]/g, "");
+    return (
+      `<span class="${className} designed"><i>OWNEX</i><b>${escapeHtml(title)}</b></span>`
+    );
+  }
+
   function artSources(row) {
     const out = [];
-    if (row && isWikiArt(row.image_url)) out.push(row.image_url);
+    if (row && !row.has_art) return out;
+    if (row && isWikiArt(row.image_url) && !isPortraitUrl(row.image_url)) out.push(row.image_url);
     if (row && row.poster) {
       const poster = assetUrl(row.poster);
       if (out.indexOf(poster) < 0) out.push(poster);
     }
-    if (row && row.image_url && !isWikiArt(row.image_url) && out.indexOf(row.image_url) < 0) {
+    if (row && row.image_url && !isWikiArt(row.image_url) && !isPortraitUrl(row.image_url) && out.indexOf(row.image_url) < 0) {
       out.push(row.image_url);
     }
     return out;
@@ -1963,9 +1979,9 @@
     const visited = isVisited(row);
     const imgs = imagesOf(row);
     const rotated = imgs.slice(state.artIndex).concat(imgs.slice(0, state.artIndex));
-    const poster = rotated.length
+    const poster = row.has_art && rotated.length
       ? artTag(rotated, "poster", row.title || "")
-      : `<div class="poster typed"><p>${escapeHtml(row.title || "")}</p></div>`;
+      : designedCover(row, "poster");
     const draft = (artwork.querySelector("#art-review-body") || {}).value || "";
     const mine = reviewsForShow(id, row.title || "");
     const shown = mine.slice(-FRONT_REVIEWS);

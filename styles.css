@@ -840,6 +840,46 @@ body.open .gcal-icon {
   background: #f3ebe3;
 }
 
+.name-art.designed,
+.poster.designed {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 0.7rem;
+  box-sizing: border-box;
+  padding: 1.4rem 1.2rem 1.3rem;
+  background:
+    linear-gradient(165deg, #f6e4dc 0%, #efe6d2 55%, #e7ddd0 100%);
+  color: #3a2430;
+  border: 0;
+}
+
+.name-art.designed i,
+.poster.designed i {
+  font-style: normal;
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  color: #8a3b12;
+}
+
+.name-art.designed b,
+.poster.designed b {
+  font-family: "Noto Serif KR", "Cormorant Garamond", serif;
+  font-size: 1.35rem;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.03em;
+}
+
+.poster.designed {
+  min-height: 22rem;
+  border-radius: 1.25rem;
+}
+
+.poster.designed b {
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+}
+
 .name:hover { color: #b85a48; }
 
 .name strong {

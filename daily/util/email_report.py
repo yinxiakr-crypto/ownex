@@ -129,35 +129,43 @@ SKIP_HINTS = (
     "sns", "share", "facebook", "instagram", "youtube", "arrow", "footer",
     "ci-", "symbol", "wa.png", "contact", "menu", "search", "parking",
 )
+PORTRAIT_HINTS = (
+    "portrait", "headshot", "mandelmann", "photograph_published",
+    "wild_men_of_paris", "sol_lewitt.jpg", "georg_baselitz_by",
+    "photograph_of", "self-portrait",
+)
 POSTER_HINTS = ("poster", "포스터", "og-image", "key-visual", "main-kv", "/kv-", "sns-")
 ART_HINTS = ("/upload/exhibition/", "/upload/notice/", "/imageShow/", "photogallery", "artwork", "work", "작품", "/common/exhibition/filedown")
+# 작가 이름 페이지는 인물 사진이 나오므로, 작품 제목만 적습니다.
 ARTIST_QUERIES = (
     (("큐비스트", "큐비드", "피카소", "브라크", "세잔", "Picasso", "Braque", "Cezanne"),
-     ("Cubism", "Pablo Picasso", "Georges Braque")),
+     ("Girl with a Mandolin", "Cubism", "Houses at l'Estaque")),
     (("나전장의 도안실", "나전칠기", "나전장"),
      ("나전칠기", "Najeonchilgi")),
     (("옻나무에서 칠기로", "漆-"),
-     ("나전칠기", "Korean lacquer")),
+     ("나전칠기", "Ottchil")),
     (("뱅크시", "BANKSY", "Banksy"),
-     ("Girl with Balloon", "Banksy")),
+     ("Girl with Balloon",)),
     (("가우디", "Gaudi", "Gaudí"),
      ("Sagrada Familia", "Casa Batllo")),
     (("서도호", "Do Ho Suh"),
-     ("Do Ho Suh",)),
-    (("구정아", "Koo Jeong"),
-     ("Koo Jeong A",)),
+     ("Seoul Home", "Do Ho Suh installation")),
+    (("구정아", "Koo Jeong", "우스모스", "OUSSSMOS"),
+     ("Koo Jeong A installation", "Koo Jeong-A")),
     (("박서보", "Park Seo-Bo", "Park Seo Bo"),
-     ("Park Seo-Bo", "Dansaekhwa")),
+     ("Ecriture", "Dansaekhwa")),
     (("유영국", "Yoo Youngkuk", "Yoo Young-kuk"),
-     ("Yoo Youngkuk", "유영국")),
+     ("유영국", "Yoo Youngkuk")),
     (("솔 르윗", "솔르윗", "LeWitt", "Lewitt"),
-     ("Sol LeWitt",)),
+     ("Incomplete open cubes", "Four-Sided Pyramid", "Sol LeWitt wall drawing")),
     (("바젤리츠", "Baselitz"),
-     ("Georg Baselitz",)),
+     ("The Heroes Baselitz", "Georg Baselitz painting")),
     (("윤형근", "Yun Hyong"),
-     ("Yun Hyong-keun", "윤형근")),
+     ("윤형근", "Yun Hyong-keun")),
     (("김보희", "Kim Bohie", "Kim Bo-hie"),
-     ("Kim Bohie",)),
+     ("Kim Bohie painting", "김보희")),
+    (("함양아",),
+     ("함양아", "Ham Yangah")),
 )
 ARTWORK_FIRST = ("큐비스트", "큐비드", "피카소", "브라크", "세잔", "Picasso", "뱅크시", "BANKSY", "Banksy", "가우디", "Gaudi", "Gaudí")
 
@@ -181,6 +189,8 @@ def _url_score(url: str) -> int:
     if "frieze-seoul" in low or "6_0a09c8844ba8f0936c20bd791130d6b6" in low:
         return -100
     if "thumbyn=y" in low:
+        return -100
+    if any(hint in low for hint in PORTRAIT_HINTS):
         return -100
     score = 0
     if any(hint in low for hint in POSTER_HINTS):
@@ -457,7 +467,10 @@ def _commons_image(query: str) -> tuple[str, bytes] | None:
         if "svg" in mime:
             continue
         url = info.get("thumburl") or info.get("url") or ""
-        if any(hint in url.lower() for hint in ("logo", "icon", "map", "flag")):
+        if any(hint in url.lower() for hint in ("logo", "icon", "map", "flag") + PORTRAIT_HINTS):
+            continue
+        title = str(page.get("title") or "").lower()
+        if any(hint in title for hint in PORTRAIT_HINTS):
             continue
         loaded = _download_picture(url)
         if loaded:
@@ -502,12 +515,23 @@ def find_representative_art(row: dict) -> tuple[str, bytes | None]:
                 return found
         return None
 
-    # 1순위: 그 전시 대표 작가의 작품. 도슨트·교육은 가져가지 않습니다.
-    # 큐비스트 도슨트만 본전시와 같은 작가 작품을 씁니다.
+    # 1순위: 작가·전시 대표 작품. 인물 사진은 쓰지 않습니다.
+    # 2순위: 그 전시 공식 포스터·색 있는 홍보 사진.
+    # 3순위: 둘 다 없을 때만 오넥스 그림.
+    try:
+        from util.show_images import curated_artworks_for
+
+        for curated in curated_artworks_for(title):
+            loaded = _download_picture(curated)
+            if loaded:
+                LOGGER.info(f"[시각] 지정 대표작: {title[:30]}")
+                return curated, loaded[0]
+    except Exception:
+        pass
     if mapped and (not _side_program(title) or _inherit_artist_art(title)):
         pages = list(mapped)
         if _inherit_artist_art(title):
-            pages = ["House at L'Estaque", "Violin and Candlestick", "The Portuguese (Braque)"]
+            pages = ["Houses at l'Estaque", "Cubism"] + pages
         found = wiki_pages(pages)
         if found:
             return found
