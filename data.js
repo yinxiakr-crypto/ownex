@@ -14,7 +14,7 @@ window.OWNEX = {
       "image_url": "",
       "source_urls": "https://sema.seoul.go.kr/",
       "score_reason": "국내선호:유영국, 유영국, 아시아작가:유영국, 주요미술관, 지정미술관",
-      "has_art": true,
+      "has_art": false,
       "poster": "posters/ac0145a9bbfb.jpg"
     },
     {
@@ -45,10 +45,10 @@ window.OWNEX = {
       "end_date": "2026-09-12",
       "reservation_open_date": "2026-09-05",
       "summary": "[교육] Museum Encounters : 컬러 플…",
-      "image_url": "https://www.centrepompidou-hanwha.kr/upload/exhibition/2026/09/04/1788497418695_57.jpg",
+      "image_url": "",
       "source_urls": "https://www.centrepompidou-hanwha.kr/",
       "score_reason": "주요미술관, 가볼만함, 지정미술관",
-      "has_art": true,
+      "has_art": false,
       "poster": "posters/60dd274a2fa9.jpg"
     },
     {
@@ -79,10 +79,10 @@ window.OWNEX = {
       "end_date": "2026-12-27",
       "reservation_open_date": "2026-08-29",
       "summary": "리움미술관",
-      "image_url": "https://k-artnow.com/data/content/2026/08/6_0a09c8844ba8f0936c20bd791130d6b6.jpg",
+      "image_url": "",
       "source_urls": "https://www.leeum.org/",
       "score_reason": "3곳포털홍보, 국내선호:구정아, 구정아, 아시아작가:구정아, 개인전, 작가작품전, 주요미술관, 화제전시, 가볼만함, 주요뉴스, 지정미술관",
-      "has_art": true,
+      "has_art": false,
       "poster": "posters/099dd604d708.jpg"
     },
     {
@@ -96,10 +96,10 @@ window.OWNEX = {
       "end_date": "2026-09-13",
       "reservation_open_date": "2026-08-27",
       "summary": "DDP 2026 가을",
-      "image_url": "https://www.ddp.or.kr/usr/upload/board_thumb/zboardphotogallery8/20260708045900300.jpg",
+      "image_url": "",
       "source_urls": "https://www.ddp.or.kr/",
       "score_reason": "주요미술관, 지정미술관",
-      "has_art": true,
+      "has_art": false,
       "poster": "posters/233c5426945d.jpg"
     },
     {
@@ -130,7 +130,7 @@ window.OWNEX = {
       "end_date": "2027-02-28",
       "reservation_open_date": "2026-08-25",
       "summary": "아모레퍼시픽미술관",
-      "image_url": "https://design-plus.storage.googleapis.com/wp-content/uploads/2026/08/31011722/20260830161718-Frieze-Seoul-2025-10.jpg",
+      "image_url": "https://upload.wikimedia.org/wikipedia/en/3/36/Sol_LeWitt.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
       "source_urls": "https://www.apma.amorepacific.com/",
       "score_reason": "3곳포털홍보, 세계인기:솔 르윗, 솔 르윗, 근현대, 주요미술관, 화제전시, 가볼만함, 주요뉴스, 지정미술관",
       "has_art": true,
@@ -147,10 +147,10 @@ window.OWNEX = {
       "end_date": "2026-10-04",
       "reservation_open_date": "2026-08-25",
       "summary": "《큐비스트: 시각의 혁신가들》 도슨트 투어",
-      "image_url": "https://upload.wikimedia.org/wikipedia/en/1/1c/Pablo_Picasso%2C_1910%2C_Girl_with_a_Mandolin_%28Fanny_Tellier%29%2C_oil_on_canvas%2C_100.3_x_73.6_cm%2C_Museum_of_Modern_Art_New_York..jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+      "image_url": "",
       "source_urls": "https://www.centrepompidou-hanwha.kr/",
       "score_reason": "큐비스트, 미술사가치, 주요미술관, 가볼만함, 지정미술관",
-      "has_art": true,
+      "has_art": false,
       "poster": "posters/6f1e170bfe81.jpg"
     },
     {
@@ -249,7 +249,7 @@ window.OWNEX = {
       "end_date": "2026-12-27",
       "reservation_open_date": "2026-08-06",
       "summary": "세화미술관",
-      "image_url": "https://sehwamuseum.org/wp-content/uploads/2026/07/20260706_014502.jpg",
+      "image_url": "https://upload.wikimedia.org/wikipedia/commons/6/65/Georg_Baselitz_by_Erling_Mandelmann.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
       "source_urls": "https://sehwamuseum.org/exhibition/%ea%b2%8c%ec%98%a4%eb%a5%b4%ea%b7%b8-%eb%b0%94%ec%a0%a4%eb%a6%ac%ec%b8%a0/",
       "score_reason": "3곳포털홍보, 세계인기:바젤리츠, 바젤리츠, 근현대, 작가작품전, 주요미술관, 화제전시, 가볼만함, 주요뉴스, 지정미술관",
       "has_art": true,
@@ -317,10 +317,10 @@ window.OWNEX = {
       "end_date": "2026-10-04",
       "reservation_open_date": "2026-05-28",
       "summary": "큐비스트: 시각의 혁신가들",
-      "image_url": "",
+      "image_url": "https://upload.wikimedia.org/wikipedia/en/1/1c/Pablo_Picasso%2C_1910%2C_Girl_with_a_Mandolin_%28Fanny_Tellier%29%2C_oil_on_canvas%2C_100.3_x_73.6_cm%2C_Museum_of_Modern_Art_New_York..jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
       "source_urls": "https://www.centrepompidou-hanwha.kr/",
       "score_reason": "큐비스트, 주요미술관, 지정미술관",
-      "has_art": false,
+      "has_art": true,
       "poster": "posters/865151bf8c7f.jpg"
     },
     {
@@ -385,10 +385,10 @@ window.OWNEX = {
       "end_date": "2026-12-31",
       "reservation_open_date": "2026-03-14",
       "summary": "건축투어 2026",
-      "image_url": "",
+      "image_url": "https://www.ddp.or.kr/usr/upload/board_thumb/zboardphotogallery8/20260708045900300.jpg",
       "source_urls": "https://www.ddp.or.kr/",
       "score_reason": "주요미술관, 지정미술관",
-      "has_art": false,
+      "has_art": true,
       "poster": "posters/714f9b024d24.jpg"
     },
     {
