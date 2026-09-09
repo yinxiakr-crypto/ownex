@@ -867,7 +867,7 @@ body.open .gcal-icon {
 .poster.designed {
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
+  justify-content: center;
   align-items: center;
   gap: 0.7rem;
   box-sizing: border-box;
@@ -922,10 +922,8 @@ body.open .gcal-icon {
   text-align: center;
 }
 
-.name:not(.has-art) strong,
 .name:not(.has-art) small {
-  padding-left: 0.9rem;
-  padding-right: 0.9rem;
+  padding: 0.35rem 0.9rem 0;
 }
 
 .icon {

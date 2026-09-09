@@ -1799,12 +1799,17 @@
             ? shown
                 .map((row) => {
                   const srcs = artSources(row);
-                  const art = row.has_art
-                    ? artTag(srcs, "name-art", "", row)
-                    : designedCover(row, "name-art");
+                  const designed = !row.has_art;
+                  const art = designed
+                    ? designedCover(row, "name-art")
+                    : artTag(srcs, "name-art", "", row);
+                  const where = `${escapeHtml(row.venue || "")} · ${escapeHtml([row.start_date, row.end_date].filter(Boolean).join(" ~ "))}${endedTag(row)}`;
+                  const foot = designed
+                    ? `<span><small>${where}</small></span>`
+                    : `<span><strong>${escapeHtml(row.title)}</strong><small>${where}</small></span>`;
                   return `<button type="button" class="name ${srcs.length ? "has-art" : ""}" data-id="${encodeURIComponent(itemId(row))}">
               ${art}
-              <span><strong>${escapeHtml(row.title)}</strong><small>${escapeHtml(row.venue || "")} · ${escapeHtml([row.start_date, row.end_date].filter(Boolean).join(" ~ "))}${endedTag(row)}</small></span>
+              ${foot}
             </button>`;
                 })
                 .join("")
@@ -1844,7 +1849,7 @@
     });
   }
 
-  const ASSET_VER = "20260909j";
+  const ASSET_VER = "20260909k";
 
   function assetUrl(src) {
     const value = String(src || "");
