@@ -1849,7 +1849,7 @@
     });
   }
 
-  const ASSET_VER = "20260909n";
+  const ASSET_VER = "20260909o";
 
   function assetUrl(src) {
     const value = String(src || "");

@@ -83,12 +83,12 @@ window.OWNEX = {
       "end_date": "2026-12-27",
       "reservation_open_date": "2026-08-29",
       "summary": "리움미술관",
-      "image_url": "https://www.leeumhoam.org/upload/exhibition/1786342577184_20260804_Koo-Jeong-A_LEEUM_Exhibition page-banner.jpg",
+      "image_url": "https://img2.yna.co.kr/photo/yna/YH/2026/08/31/PYH2026083109660001300_P4.jpg",
       "source_urls": "https://www.leeumhoam.org/leeum/exhibition/94",
       "score_reason": "3곳포털홍보, 국내선호:구정아, 구정아, 아시아작가:구정아, 개인전, 작가작품전, 주요미술관, 화제전시, 가볼만함, 주요뉴스, 지정미술관",
       "has_art": true,
       "poster": "posters/099dd604d708.jpg",
-      "letterbox": true
+      "letterbox": false
     },
     {
       "collected_date": "2026-09-08",
@@ -142,7 +142,7 @@ window.OWNEX = {
       "score_reason": "3곳포털홍보, 세계인기:솔 르윗, 솔 르윗, 근현대, 주요미술관, 화제전시, 가볼만함, 주요뉴스, 지정미술관",
       "has_art": true,
       "poster": "posters/d3d5464b1ce4.jpg",
-      "letterbox": true
+      "letterbox": false
     },
     {
       "collected_date": "2026-09-08",

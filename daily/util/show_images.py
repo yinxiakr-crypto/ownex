@@ -16,7 +16,7 @@ CURATED_ARTWORKS = (
         "images": (
             "https://img7.yna.co.kr/etc/inner/KR/2026/09/07/AKR20260907158500005_04_i_P4.jpg",
         ),
-        "crop": (0.01, 0.20, 0.99, 0.825),
+        "crop": (0.22, 0.20, 0.78, 0.825),
     },
     {
         "keys": ("유영국", "산은 내 안에"),
@@ -33,8 +33,9 @@ CURATED_ARTWORKS = (
     {
         "keys": ("구정아", "우스모스"),
         "images": (
-            "https://www.leeumhoam.org/upload/exhibition/1786342577184_20260804_Koo-Jeong-A_LEEUM_Exhibition page-banner.jpg",
+            "https://img2.yna.co.kr/photo/yna/YH/2026/08/31/PYH2026083109660001300_P4.jpg",
         ),
+        "crop": (0.28, 0.06, 0.98, 0.90),
     },
     {
         "keys": ("건축투어",),
