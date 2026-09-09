@@ -302,8 +302,7 @@
   const SHARE_LOCAL = "shared-state.json";
   const SHARE_HINT = "https://keyvalue.immanuel.co/api/KeyVal";
   const SHARE_APP = "ownex26a";
-  const SHARE_HINT_KEY = "boarduri";
-  let shareRemote = "";
+  const SHARE_CHUNK = 240;
   let shareAt = "";
   let shareQuiet = false;
 
@@ -315,53 +314,64 @@
     }
   }
 
-  function parseShareUri(raw) {
-    const uri = String(raw || "").replace(/^"|"$/g, "").trim();
-    return /jsonstorage\.net\/v1\/json\//i.test(uri) ? uri : "";
+  function parseHintText(text) {
+    const raw = String(text || "");
+    if (!raw || /<string[^>]*\/>/i.test(raw)) return "";
+    const xml = raw.match(/<string[^>]*>([\s\S]*?)<\/string>/i);
+    let inner = xml ? xml[1] : raw;
+    inner = inner.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"');
+    return inner.replace(/^"|"$/g, "").trim();
   }
 
-  function readShareHint() {
-    if (shareRemote) return Promise.resolve(shareRemote);
-    return fetch(SHARE_HINT + "/GetValue/" + SHARE_APP + "/" + SHARE_HINT_KEY + "?" + Date.now(), {
-      cache: "no-store",
-    })
-      .then(function (res) { return res.text(); })
-      .then(function (text) {
-        shareRemote = parseShareUri(text);
-        return shareRemote;
-      })
-      .catch(function () { return shareRemote; });
-  }
-
-  function writeShareHint(uri) {
-    if (!parseShareUri(uri)) return Promise.resolve();
-    shareRemote = uri;
+  function hintRead(key) {
     return fetch(
-      SHARE_HINT + "/UpdateValue/" + SHARE_APP + "/" + SHARE_HINT_KEY + "/" + encodeURIComponent(uri),
-      { method: "POST", cache: "no-store" }
+      SHARE_HINT + "/GetValue/" + SHARE_APP + "/" + encodeURIComponent(key) + "?" + Date.now(),
+      { cache: "no-store", mode: "cors" }
+    )
+      .then(function (res) { return res.text(); })
+      .then(parseHintText)
+      .catch(function () { return ""; });
+  }
+
+  function hintWrite(key, value) {
+    return fetch(
+      SHARE_HINT + "/UpdateValue/" + SHARE_APP + "/" + encodeURIComponent(key) + "/" + encodeURIComponent(value) + "?" + Date.now(),
+      { cache: "no-store", mode: "cors" }
     ).catch(function () {});
   }
 
-  function createShareRemote() {
-    return fetch("https://api.jsonstorage.net/v1/json", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify(sharePack()),
-    }).then(function (res) {
-      const loc = res.headers.get("Location") || "";
-      return res.json().catch(function () { return {}; }).then(function (body) {
-        const uri = parseShareUri(loc) || parseShareUri(body && body.uri);
-        if (!uri) throw new Error("no share");
-        return writeShareHint(uri).then(function () { return uri; });
+  function readRemoteBoard() {
+    return hintRead("pc").then(function (countText) {
+      const count = Number(countText) || 0;
+      if (count < 1 || count > 40) return null;
+      const reads = [];
+      for (let i = 0; i < count; i += 1) reads.push(hintRead("p" + i));
+      return Promise.all(reads).then(function (parts) {
+        try {
+          return JSON.parse(parts.join(""));
+        } catch (err) {
+          return null;
+        }
       });
     });
+  }
+
+  function writeRemoteBoard(body) {
+    const text = JSON.stringify(body || sharePack());
+    const chunks = [];
+    for (let i = 0; i < text.length; i += SHARE_CHUNK) chunks.push(text.slice(i, i + SHARE_CHUNK));
+    const jobs = [hintWrite("pc", String(chunks.length))];
+    chunks.forEach(function (chunk, idx) {
+      jobs.push(hintWrite("p" + idx, chunk));
+    });
+    return Promise.all(jobs);
   }
 
   function putShareBody(url, body) {
     return fetch(url, {
       method: "PUT",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
       body: JSON.stringify(body),
+      cache: "no-store",
     });
   }
 
@@ -628,10 +638,10 @@
 
   function pullShared() {
     const local = isStaticHost() ? Promise.resolve(0) : pullOneShare(SHARE_LOCAL);
-    return readShareHint()
-      .then(function (remote) {
-        return Promise.all([local, pullOneShare(remote)]);
-      })
+    return Promise.all([
+      local,
+      readRemoteBoard().then(function (remote) { return absorbRemote(remote); }),
+    ])
       .then(function (counts) {
         return counts[0] + counts[1] > 0;
       })
@@ -644,12 +654,8 @@
       .then(function () {
         const body = sharePack();
         shareAt = body.at;
-        const jobs = [];
+        const jobs = [writeRemoteBoard(body).catch(function () {})];
         if (!isStaticHost()) jobs.push(putShareBody(SHARE_LOCAL, body).catch(function () {}));
-        const sendRemote = shareRemote
-          ? putShareBody(shareRemote, body)
-          : createShareRemote();
-        jobs.push(sendRemote.catch(function () {}));
         return Promise.all(jobs);
       })
       .catch(function () {});
@@ -1445,7 +1451,7 @@
     state.space = "reviews";
     state.selected = null;
     state.reviewWrite = false;
-    refreshSharedBoard();
+    pushShared().then(function () { return refreshSharedBoard(); });
     try {
       draw();
     } catch (err) {}
@@ -1935,7 +1941,7 @@
     });
   }
 
-  const ASSET_VER = "20260909p";
+  const ASSET_VER = "20260909q";
 
   function assetUrl(src) {
     const value = String(src || "");
@@ -2261,7 +2267,7 @@
     });
   document.addEventListener("visibilitychange", function () {
     if (document.hidden) return;
-    refreshSharedBoard();
+    pushShared().then(function () { return refreshSharedBoard(); });
   });
   if (!isStaticHost()) {
     setInterval(function () {
