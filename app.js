@@ -1799,7 +1799,7 @@
             ? shown
                 .map((row) => {
                   const srcs = artSources(row);
-                  const art = artTag(srcs, "name-art", "");
+                  const art = artTag(srcs, "name-art", "", row);
                   return `<button type="button" class="name ${srcs.length ? "has-art" : ""}" data-id="${encodeURIComponent(itemId(row))}">
               ${art}
               <span><strong>${escapeHtml(row.title)}</strong><small>${escapeHtml(row.venue || "")} · ${escapeHtml([row.start_date, row.end_date].filter(Boolean).join(" ~ "))}${endedTag(row)}</small></span>
@@ -1842,10 +1842,34 @@
     });
   }
 
+  const ASSET_VER = "20260909e";
+
+  function assetUrl(src) {
+    const value = String(src || "");
+    if (!value) return "";
+    if (/^https?:/i.test(value)) return value;
+    return value + (value.indexOf("?") >= 0 ? "&" : "?") + "v=" + ASSET_VER;
+  }
+
+  function isWikiArt(url) {
+    return /wikipedia|wikimedia/i.test(String(url || ""));
+  }
+
+  function isOfficialPoster(row) {
+    const url = String((row && row.image_url) || "");
+    return Boolean(row && row.letterbox) || /filedown|craftmuseum\.seoul/i.test(url);
+  }
+
   function artSources(row) {
     const out = [];
-    if (row && row.poster) out.push(row.poster);
-    if (row && row.image_url && out.indexOf(row.image_url) < 0) out.push(row.image_url);
+    if (row && isWikiArt(row.image_url)) out.push(row.image_url);
+    if (row && row.poster) {
+      const poster = assetUrl(row.poster);
+      if (out.indexOf(poster) < 0) out.push(poster);
+    }
+    if (row && row.image_url && !isWikiArt(row.image_url) && out.indexOf(row.image_url) < 0) {
+      out.push(row.image_url);
+    }
     return out;
   }
 
@@ -1857,10 +1881,11 @@
     return artSources(row);
   }
 
-  function artTag(srcs, className, alt) {
+  function artTag(srcs, className, alt, row) {
     if (!srcs.length) return `<span class="${className}"></span>`;
+    const box = className.indexOf("name-art") >= 0 && isOfficialPoster(row) ? " letterbox" : "";
     return (
-      `<img class="${className}" src="${escapeHtml(srcs[0])}" alt="${escapeHtml(alt || "")}" ` +
+      `<img class="${className}${box}" src="${escapeHtml(srcs[0])}" alt="${escapeHtml(alt || "")}" ` +
       `data-alts="${escapeHtml(srcs.slice(1).join("||"))}" onerror="ownexArtFallback(this)">`
     );
   }

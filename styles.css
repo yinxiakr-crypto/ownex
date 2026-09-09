@@ -834,6 +834,12 @@ body.open .gcal-icon {
   background: #351e28;
 }
 
+.name-art.letterbox {
+  object-fit: contain;
+  object-position: center;
+  background: #f3ebe3;
+}
+
 .name:hover { color: #b85a48; }
 
 .name strong {

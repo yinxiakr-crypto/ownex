@@ -130,10 +130,14 @@ SKIP_HINTS = (
     "ci-", "symbol", "wa.png", "contact", "menu", "search", "parking",
 )
 POSTER_HINTS = ("poster", "포스터", "og-image", "key-visual", "main-kv", "/kv-", "sns-")
-ART_HINTS = ("/upload/exhibition/", "/upload/notice/", "/imageShow/", "photogallery", "artwork", "work", "작품")
+ART_HINTS = ("/upload/exhibition/", "/upload/notice/", "/imageShow/", "photogallery", "artwork", "work", "작품", "/common/exhibition/filedown")
 ARTIST_QUERIES = (
     (("큐비스트", "큐비드", "피카소", "브라크", "세잔", "Picasso", "Braque", "Cezanne"),
-     ("Cubism", "Pablo Picasso")),
+     ("Cubism", "Pablo Picasso", "Georges Braque")),
+    (("나전장의 도안실", "나전칠기", "나전장"),
+     ("나전칠기", "Najeonchilgi")),
+    (("옻나무에서 칠기로", "漆-"),
+     ("나전칠기", "Korean lacquer")),
     (("뱅크시", "BANKSY", "Banksy"),
      ("Girl with Balloon", "Banksy")),
     (("가우디", "Gaudi", "Gaudí"),
@@ -174,6 +178,10 @@ def _url_score(url: str) -> int:
     low = url.lower()
     if any(hint in low for hint in SKIP_HINTS) or low.endswith(".svg"):
         return -100
+    if "frieze-seoul" in low or "6_0a09c8844ba8f0936c20bd791130d6b6" in low:
+        return -100
+    if "thumbyn=y" in low:
+        return -100
     score = 0
     if any(hint in low for hint in POSTER_HINTS):
         score += 12
@@ -209,8 +217,8 @@ def _download_picture(url: str) -> tuple[bytes, int] | None:
         if 0.65 <= ratio <= 1.55:
             score += 18
         buffer = io.BytesIO()
-        picture.thumbnail((1100, 1100))
-        picture.save(buffer, format="JPEG", quality=82)
+        picture.thumbnail((2000, 2000))
+        picture.save(buffer, format="JPEG", quality=92)
         return buffer.getvalue(), score
     except Exception:
         return None
@@ -283,6 +291,12 @@ def _related_pages(page_url: str, html: str, tokens: list[str]) -> list[str]:
 
 def _seed_pages(row: dict) -> list[str]:
     pages = []
+    try:
+        from util.show_images import official_pages_for
+
+        pages.extend(official_pages_for(row.get("title") or ""))
+    except Exception:
+        pass
     for key in ("reservation_url", "source_urls"):
         value = row.get(key) or ""
         for part in value.split("|"):
@@ -426,7 +440,7 @@ def _commons_image(query: str) -> tuple[str, bytes] | None:
                 "gsrlimit": 8,
                 "prop": "imageinfo",
                 "iiprop": "url|mime|size",
-                "iiurlwidth": 1200,
+                "iiurlwidth": 1600,
             },
         ).json()
     except Exception:
@@ -451,17 +465,27 @@ def _commons_image(query: str) -> tuple[str, bytes] | None:
     return None
 
 
+def _side_program(title: str) -> bool:
+    text = title or ""
+    return any(part in text for part in ("도슨트", "[교육]", "교육프로그램", "다양한 교육과 프로그램", "Museum Encounters"))
+
+
+def _inherit_artist_art(title: str) -> bool:
+    text = title or ""
+    return "큐비스트" in text and "도슨트" in text
+
+
 def find_representative_art(row: dict) -> tuple[str, bytes | None]:
     if row.get("image_bytes"):
         return (row.get("image_url") or ""), row.get("image_bytes")
+    title = row.get("title") or ""
     blob = " ".join(
         part
-        for part in (row.get("title") or "", row.get("summary") or "", row.get("score_reason") or "")
+        for part in (title, row.get("summary") or "", row.get("score_reason") or "")
         if part
     )
     lowered = blob.lower()
     mapped: list[str] = []
-    artwork_first = any(key.lower() in lowered or key in blob for key in ARTWORK_FIRST)
     for keys, extras in ARTIST_QUERIES:
         if any(key.lower() in lowered or key in blob for key in keys):
             mapped.extend(extras)
@@ -474,29 +498,35 @@ def find_representative_art(row: dict) -> tuple[str, bytes | None]:
             seen.add(query)
             found = _wiki_thumb(query)
             if found:
-                LOGGER.info(f"[시각] 대표작: {(row.get('title') or '')[:30]} / {query}")
+                LOGGER.info(f"[시각] 대표작: {title[:30]} / {query}")
                 return found
         return None
 
-    if artwork_first:
-        found = wiki_pages(mapped)
+    # 1순위: 그 전시 대표 작가의 작품. 도슨트·교육은 가져가지 않습니다.
+    # 큐비스트 도슨트만 본전시와 같은 작가 작품을 씁니다.
+    if mapped and (not _side_program(title) or _inherit_artist_art(title)):
+        pages = list(mapped)
+        if _inherit_artist_art(title):
+            pages = ["House at L'Estaque", "Violin and Candlestick", "The Portuguese (Braque)"]
+        found = wiki_pages(pages)
         if found:
             return found
-    url, data = find_visual(row)
-    if data:
-        return url, data
-    found = wiki_pages(mapped)
-    if found:
-        return found
-    for query in _artist_queries(row):
-        if query in seen:
-            continue
-        seen.add(query)
-        found = _wiki_thumb(query)
-        if found:
-            LOGGER.info(f"[시각] 대표작 보강: {(row.get('title') or '')[:30]} / {query}")
-            return found
-    if (row.get("image_url") or "").startswith("http"):
+    # 2순위: 그 전시 공식 포스터·홍보 그림
+    try:
+        from util.show_images import official_image_for
+
+        official = official_image_for(title)
+        if official:
+            loaded = _download_picture(official)
+            if loaded:
+                return official, loaded[0]
+    except Exception:
+        pass
+    if not _side_program(title):
+        url, data = find_visual(row)
+        if data:
+            return url, data
+    if not _side_program(title) and (row.get("image_url") or "").startswith("http"):
         loaded = _download_picture(row["image_url"])
         if loaded:
             return row["image_url"], loaded[0]
@@ -708,7 +738,7 @@ def _send_built_message(message: MIMEMultipart, to_address: str, extra: list[str
     gmail_service().users().messages().send(userId="me", body={"raw": raw}).execute()
 
 
-def send_exhibition_email(rows: list[dict], cfg, calendar_from: date | None = None) -> bool:
+def send_exhibition_email(rows: list[dict], cfg, calendar_from: date | None = None, force_freq: str | None = None) -> bool:
     mail_cfg = cfg["email"] if cfg.has_section("email") else None
     if mail_cfg and mail_cfg.get("enabled", "true").lower() != "true":
         return False
@@ -721,7 +751,10 @@ def send_exhibition_email(rows: list[dict], cfg, calendar_from: date | None = No
     try:
         owner = (mail_cfg.get("to", "") if mail_cfg else "").strip() or smtp_user or logged_in_email()
         today = today_seoul()
-        groups = wanted_email_groups(owner, today)
+        if force_freq:
+            groups = {force_freq: [owner]}
+        else:
+            groups = wanted_email_groups(owner, today)
         if not groups:
             LOGGER.info("[메일] 오늘 받을 사람이 없어 건너뜁니다.")
             return False
