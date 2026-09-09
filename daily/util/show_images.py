@@ -1,0 +1,60 @@
+from __future__ import annotations
+
+import hashlib
+
+# 그 전시의 공식 페이지와 대표 그림만 적습니다. 다른 전시 사진은 넣지 않습니다.
+OFFICIAL_SHOWS = (
+    {
+        "keys": ("옻나무에서 칠기로", "漆-"),
+        "page": "https://craftmuseum.seoul.go.kr/exhibit/plan/view/161",
+        "image": "https://craftmuseum.seoul.go.kr/common/exhibition/filedown?idx=1722",
+    },
+    {
+        "keys": ("안동별궁", "시간의 겹"),
+        "page": "https://craftmuseum.seoul.go.kr/exhibit/plan/view/184",
+        "image": "https://craftmuseum.seoul.go.kr/common/exhibition/filedown?idx=1900",
+    },
+    {
+        "keys": ("나전장의 도안실",),
+        "page": "https://craftmuseum.seoul.go.kr/exhibit/plan/view/190",
+        "image": "https://craftmuseum.seoul.go.kr/common/exhibition/filedown?idx=1967",
+    },
+)
+
+_used_hashes: set[str] = set()
+
+
+def reset_used_images() -> None:
+    _used_hashes.clear()
+
+
+def _match(title: str) -> dict | None:
+    text = title or ""
+    for item in OFFICIAL_SHOWS:
+        if any(key in text for key in item["keys"]):
+            return item
+    return None
+
+
+def official_pages_for(title: str) -> list[str]:
+    item = _match(title)
+    return [item["page"]] if item else []
+
+
+def official_image_for(title: str) -> str:
+    item = _match(title)
+    return item["image"] if item else ""
+
+
+def art_hash(data: bytes) -> str:
+    return hashlib.sha1(data).hexdigest()
+
+
+def take_unique_art(data: bytes | None) -> bytes | None:
+    if not data:
+        return None
+    digest = art_hash(data)
+    if digest in _used_hashes:
+        return None
+    _used_hashes.add(digest)
+    return data
