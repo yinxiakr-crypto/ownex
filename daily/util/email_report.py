@@ -706,17 +706,17 @@ def _html_body(rows: list[dict], calendar_from: date | None, has_card: bool, hea
     glance = f"""
       <table role="presentation" cellpadding="0" cellspacing="0" style="margin:16px 0 20px 0;">
         <tr>
-          <td style="padding:10px 16px;background:#351e28;color:#f6efe6;border-radius:12px;text-align:center;">
+          <td style="padding:10px 16px;background:#53414a;color:#f8f1ee;border-radius:12px;text-align:center;">
             <div style="font-size:22px;font-weight:700;">{visits}</div>
             <div style="font-size:12px;">방문</div>
           </td>
           <td style="width:10px;"></td>
-          <td style="padding:10px 16px;background:#351e28;color:#f6efe6;border-radius:12px;text-align:center;">
+          <td style="padding:10px 16px;background:#53414a;color:#f8f1ee;border-radius:12px;text-align:center;">
             <div style="font-size:22px;font-weight:700;">{reviews}</div>
             <div style="font-size:12px;">Review</div>
           </td>
           <td style="width:10px;"></td>
-          <td style="background:#e24a1b;border-radius:12px;text-align:center;">
+          <td style="background:#c48686;border-radius:12px;text-align:center;">
             <a href="{home}" target="_blank" style="display:block;padding:14px 18px;color:#ffffff;text-decoration:none;font-weight:700;font-size:15px;">오넥스 홈 · 앱 열기</a>
           </td>
         </tr>
