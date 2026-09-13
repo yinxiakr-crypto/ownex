@@ -126,7 +126,7 @@ WIKI_HEADERS = {
 }
 SKIP_HINTS = (
     "logo", "icon", "sprite", "favicon", "button",
-    "sns", "share", "facebook", "instagram", "youtube", "arrow", "footer",
+    "sns", "share", "facebook", "instagram", "youtube", "ytimg", "youtu.be", "arrow", "footer",
     "ci-", "symbol", "wa.png", "contact", "menu", "search", "parking",
 )
 PORTRAIT_HINTS = (
@@ -610,9 +610,41 @@ def enrich_visuals(items: list[dict], budget_sec: int = 180) -> None:
             LOGGER.info(f"[시각] 작품 사진 없음: {(item.get('title') or '')[:40]}")
 
 
+def _poster_file(row: dict) -> Path | None:
+    rel = (row.get("poster") or "").strip()
+    if not rel:
+        try:
+            from util.web_posters import poster_rel
+
+            rel = poster_rel(row)
+        except Exception:
+            return None
+    for base in (
+        ROOT / "web",
+        ROOT / "data" / "ownex-pages",
+        ROOT,
+        ROOT.parent,
+        ROOT.parent / "web",
+        ROOT.parent.parent / "web",
+        ROOT.parent.parent / "data" / "ownex-pages",
+    ):
+        path = base / rel
+        try:
+            if path.exists() and path.stat().st_size > 2000:
+                return path
+        except OSError:
+            continue
+    return None
+
+
 def collect_posters(rows: list[dict]) -> list[bytes | None]:
     posters: list[bytes | None] = []
     for row in rows:
+        path = _poster_file(row)
+        if path:
+            posters.append(path.read_bytes())
+            LOGGER.info(f"[메일] 홈과 같은 전시 사진을 넣었습니다: {(row.get('title') or '')[:40]}")
+            continue
         if row.get("image_bytes"):
             posters.append(row["image_bytes"])
             LOGGER.info(f"[메일] 전시 느낌의 작품 사진을 넣었습니다: {(row.get('title') or '')[:40]}")
@@ -620,9 +652,16 @@ def collect_posters(rows: list[dict]) -> list[bytes | None]:
         url, image_bytes = find_representative_art(row)
         if url:
             row["image_url"] = url
+        if not image_bytes:
+            try:
+                from util.web_posters import make_poster
+
+                image_bytes = make_poster(row, None)
+            except Exception:
+                image_bytes = None
         posters.append(image_bytes)
         if image_bytes:
-            LOGGER.info(f"[메일] 전시 느낌의 작품 사진을 넣었습니다: {(row.get('title') or '')[:40]}")
+            LOGGER.info(f"[메일] 홈과 같은 전시 사진을 넣었습니다: {(row.get('title') or '')[:40]}")
         else:
             LOGGER.info(f"[메일] 작품 사진이 없어 일정 그림을 씁니다: {(row.get('title') or '')[:40]}")
     return posters

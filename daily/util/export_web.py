@@ -9,6 +9,8 @@ from util.google_calendar import calendar_for_web
 from util.logger import get_logger
 from util.storage_csv import FIELDS, load_all_rows
 from util.mail_list import load_mail_list, save_mail_list
+from util.email_report import _side_program
+from util.show_images import reset_used_images
 from util.web_posters import ensure_poster
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -54,6 +56,25 @@ def _slim(row: dict) -> dict:
     return {field: (row.get(field) or "") for field in FIELDS}
 
 
+def _existing_art_flags() -> dict[str, bool]:
+    flags: dict[str, bool] = {}
+    for path in (WEB_DATA, ROOT / "data" / "ownex-pages" / "data.js"):
+        if not path.exists():
+            continue
+        raw = path.read_text(encoding="utf-8").replace("window.OWNEX = ", "", 1).strip()
+        if raw.endswith(";"):
+            raw = raw[:-1]
+        try:
+            shows = json.loads(raw).get("exhibitions") or []
+        except Exception:
+            continue
+        for row in shows:
+            title = (row.get("title") or "").strip()
+            if title and "has_art" in row:
+                flags[title] = bool(row.get("has_art"))
+    return flags
+
+
 def _existing_google() -> dict:
     if not WEB_DATA.exists():
         return {}
@@ -83,10 +104,25 @@ def write_web_data(
     except Exception:
         calendar_name = "Ownex"
     exhibitions = []
-    for row in load_all_rows():
+    reset_used_images()
+    rows = list(load_all_rows())
+
+    def _art_order(row: dict) -> tuple[int, str]:
+        title = row.get("title") or ""
+        if _side_program(title):
+            return (2, title)
+        if title.startswith("큐비스트:") or title.startswith("건축투어"):
+            return (0, title)
+        return (1, title)
+
+    art_flags = _existing_art_flags()
+    for row in sorted(rows, key=_art_order):
         item = dict(row)
         item["poster"] = ensure_poster(item, fetch_missing=fetch_missing, force=force_posters)
+        if "has_art" not in item:
+            item["has_art"] = art_flags.get(item.get("title") or "", bool(item.get("image_url")))
         exhibitions.append(item)
+    exhibitions.sort(key=lambda item: (item.get("start_date") or "", item.get("title") or ""), reverse=True)
     payload = {
         "exhibitions": exhibitions,
         "email": [_slim(row) for row in (email_rows or [])],

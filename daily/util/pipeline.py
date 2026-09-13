@@ -14,6 +14,7 @@ from util.normalize import from_iso, is_main_region, overlaps, pick_calendar_row
 from util.ranker import merge_items, rank_items
 from util.sources_artbava import collect_artbava
 from util.sources_artmap import collect_artmap
+from util.sources_docents import collect_docents
 from util.sources_featured import collect_featured
 from util.sources_google import collect_google
 from util.sources_naver import collect_naver
@@ -76,6 +77,8 @@ def run_pipeline(today: date | None = None) -> list[dict]:
 
     LOGGER.info("[단계] 화제 전시 보강")
     collected.extend(collect_featured(cfg))
+    LOGGER.info("[단계] 도슨트 유튜브")
+    collected.extend(collect_docents(cfg))
     LOGGER.info("[단계] 구글 검색")
     collected.extend(collect_google(cfg))
 

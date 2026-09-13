@@ -905,6 +905,12 @@ body.open .gcal-icon {
   font-size: clamp(1.8rem, 4vw, 2.8rem);
 }
 
+.name-art.designed-img,
+.poster.designed-img {
+  object-fit: cover;
+  object-position: center;
+}
+
 .name:hover { color: var(--paper-hover); }
 
 .name strong {

@@ -14,9 +14,8 @@ window.OWNEX = {
       "image_url": "",
       "source_urls": "https://sema.seoul.go.kr/",
       "score_reason": "국내선호:유영국, 유영국, 아시아작가:유영국, 주요미술관, 지정미술관",
-      "has_art": false,
       "poster": "posters/ac0145a9bbfb.jpg",
-      "letterbox": false
+      "has_art": false
     },
     {
       "collected_date": "2026-09-01",
@@ -32,9 +31,25 @@ window.OWNEX = {
       "image_url": "",
       "source_urls": "https://sema.seoul.go.kr/",
       "score_reason": "주요미술관, 지정미술관",
-      "has_art": false,
       "poster": "posters/9b3494bb846c.jpg",
-      "letterbox": false
+      "has_art": false
+    },
+    {
+      "collected_date": "2026-09-14",
+      "title": "하정우 개인전 Either act or forget",
+      "venue": "더샵갤러리",
+      "venue_address": "서울 강남구 자곡로 210",
+      "region_tag": "[서울]",
+      "reservation_url": "https://www.youtube.com/@도슨트정우철",
+      "start_date": "2026-09-14",
+      "end_date": "2026-10-04",
+      "reservation_open_date": "2026-09-07",
+      "summary": "하정우 개인전 Either act or forget",
+      "image_url": "",
+      "source_urls": "https://www.youtube.com/watch?v=K8sLgJIlRaU",
+      "score_reason": "도슨트추천",
+      "poster": "posters/8f14615f9cea.jpg",
+      "has_art": false
     },
     {
       "collected_date": "2026-09-09",
@@ -47,12 +62,11 @@ window.OWNEX = {
       "end_date": "2026-09-12",
       "reservation_open_date": "2026-09-05",
       "summary": "[교육] Museum Encounters : 컬러 플…",
-      "image_url": "",
+      "image_url": "https://www.centrepompidou-hanwha.kr/upload/exhibition/2026/09/04/1788497418695_57.jpg",
       "source_urls": "https://www.centrepompidou-hanwha.kr/",
       "score_reason": "주요미술관, 가볼만함, 지정미술관",
-      "has_art": false,
       "poster": "posters/60dd274a2fa9.jpg",
-      "letterbox": false
+      "has_art": false
     },
     {
       "collected_date": "2026-09-08",
@@ -65,12 +79,11 @@ window.OWNEX = {
       "end_date": "2026-10-11",
       "reservation_open_date": "2026-09-02",
       "summary": "서울공예박물관",
-      "image_url": "https://craftmuseum.seoul.go.kr/common/exhibition/filedown?idx=1723",
+      "image_url": "",
       "source_urls": "https://craftmuseum.seoul.go.kr/",
       "score_reason": "주요미술관, 지정미술관",
-      "has_art": true,
       "poster": "posters/0a10da3720cb.jpg",
-      "letterbox": false
+      "has_art": true
     },
     {
       "collected_date": "2026-09-01",
@@ -78,17 +91,16 @@ window.OWNEX = {
       "venue": "리움미술관",
       "venue_address": "서울 용산구 이태원로55길 60-16",
       "region_tag": "[서울]",
-      "reservation_url": "https://www.leeumhoam.org/leeum/exhibition/94",
+      "reservation_url": "https://www.leeum.org/",
       "start_date": "2026-09-05",
       "end_date": "2026-12-27",
       "reservation_open_date": "2026-08-29",
       "summary": "리움미술관",
-      "image_url": "https://img2.yna.co.kr/photo/yna/YH/2026/08/31/PYH2026083109660001300_P4.jpg",
-      "source_urls": "https://www.leeumhoam.org/leeum/exhibition/94",
+      "image_url": "",
+      "source_urls": "https://www.leeum.org/",
       "score_reason": "3곳포털홍보, 국내선호:구정아, 구정아, 아시아작가:구정아, 개인전, 작가작품전, 주요미술관, 화제전시, 가볼만함, 주요뉴스, 지정미술관",
-      "has_art": true,
       "poster": "posters/099dd604d708.jpg",
-      "letterbox": false
+      "has_art": true
     },
     {
       "collected_date": "2026-09-08",
@@ -96,17 +108,16 @@ window.OWNEX = {
       "venue": "DDP 동대문디자인플라자",
       "venue_address": "서울 중구 을지로 281",
       "region_tag": "[서울]",
-      "reservation_url": "https://festival.seoul.go.kr/festival/main/festivalView.do?festacode=451",
+      "reservation_url": "https://www.ddp.or.kr/",
       "start_date": "2026-09-03",
       "end_date": "2026-09-13",
       "reservation_open_date": "2026-08-27",
       "summary": "DDP 2026 가을",
-      "image_url": "https://festival.seoul.go.kr/resources/culture/img/editor/funSeoul/editor_20260820102209_83232.jpg",
-      "source_urls": "https://festival.seoul.go.kr/festival/main/festivalView.do?festacode=451",
+      "image_url": "",
+      "source_urls": "https://www.ddp.or.kr/",
       "score_reason": "주요미술관, 지정미술관",
-      "has_art": true,
       "poster": "posters/233c5426945d.jpg",
-      "letterbox": false
+      "has_art": true
     },
     {
       "collected_date": "2026-09-01",
@@ -119,12 +130,11 @@ window.OWNEX = {
       "end_date": "2026-09-06",
       "reservation_open_date": "2026-08-26",
       "summary": "키아프·프리즈 서울 2026",
-      "image_url": "https://design-plus.storage.googleapis.com/wp-content/uploads/2026/08/31004942/20260830154941-20260830_154941.jpg",
+      "image_url": "",
       "source_urls": "https://mediahub.seoul.go.kr/archives/2019208",
       "score_reason": "3곳포털홍보, 주요미술관, 화제전시, 주요뉴스, 지정미술관",
-      "has_art": true,
       "poster": "posters/256846bd32a6.jpg",
-      "letterbox": false
+      "has_art": true
     },
     {
       "collected_date": "2026-09-01",
@@ -137,12 +147,11 @@ window.OWNEX = {
       "end_date": "2027-02-28",
       "reservation_open_date": "2026-08-25",
       "summary": "아모레퍼시픽미술관",
-      "image_url": "https://img7.yna.co.kr/etc/inner/KR/2026/09/07/AKR20260907158500005_04_i_P4.jpg",
+      "image_url": "",
       "source_urls": "https://www.apma.amorepacific.com/",
       "score_reason": "3곳포털홍보, 세계인기:솔 르윗, 솔 르윗, 근현대, 주요미술관, 화제전시, 가볼만함, 주요뉴스, 지정미술관",
-      "has_art": true,
       "poster": "posters/d3d5464b1ce4.jpg",
-      "letterbox": false
+      "has_art": true
     },
     {
       "collected_date": "2026-09-08",
@@ -155,12 +164,11 @@ window.OWNEX = {
       "end_date": "2026-10-04",
       "reservation_open_date": "2026-08-25",
       "summary": "《큐비스트: 시각의 혁신가들》 도슨트 투어",
-      "image_url": "https://upload.wikimedia.org/wikipedia/en/a/ad/Georges_Braque%2C_1908%2C_Maisons_et_arbre%2C_oil_on_canvas%2C_40.5_x_32.5_cm%2C_Lille_M%C3%A9tropole_Museum_of_Modern%2C_Contemporary_and_Outsider_Art.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+      "image_url": "",
       "source_urls": "https://www.centrepompidou-hanwha.kr/",
       "score_reason": "큐비스트, 미술사가치, 주요미술관, 가볼만함, 지정미술관",
-      "has_art": true,
       "poster": "posters/6f1e170bfe81.jpg",
-      "letterbox": false
+      "has_art": true
     },
     {
       "collected_date": "2026-09-01",
@@ -176,9 +184,8 @@ window.OWNEX = {
       "image_url": "",
       "source_urls": "https://www.mmca.go.kr/exhibits/exhibitsList.do",
       "score_reason": "3곳포털홍보, 국내선호:서도호, 서도호, 아시아작가:서도호, 현대미술, 작가작품전, 미술사가치, 주요미술관, 화제전시, 가볼만함, 주요뉴스, 지정미술관",
-      "has_art": false,
       "poster": "posters/450cdd8ee85f.jpg",
-      "letterbox": false
+      "has_art": false
     },
     {
       "collected_date": "2026-09-02",
@@ -194,9 +201,8 @@ window.OWNEX = {
       "image_url": "",
       "source_urls": "https://www.pkmgallery.com/",
       "score_reason": "대표작품, 2곳홍보, 국내선호:윤형근, 단색화, 작가작품전, 화제전시, 주요뉴스, 서울",
-      "has_art": false,
       "poster": "posters/ab93482f4eef.jpg",
-      "letterbox": false
+      "has_art": false
     },
     {
       "collected_date": "2026-09-02",
@@ -209,12 +215,11 @@ window.OWNEX = {
       "end_date": "2026-10-18",
       "reservation_open_date": "2026-08-19",
       "summary": "김보희: TOWARDS There Was Light",
-      "image_url": "",
+      "image_url": "https://www.galleryhyundai.com/public/2026/08/26/18/24/58/6829f100-8b10-4015-8828-134e5dfcbd87.crop_large.jpg",
       "source_urls": "https://www.galleryhyundai.com/",
       "score_reason": "시각자료, 대표작품, 2곳홍보, 회화전, 작가작품전, 화제전시, 주요뉴스, 서울",
-      "has_art": false,
       "poster": "posters/32087c00bfc3.jpg",
-      "letterbox": false
+      "has_art": false
     },
     {
       "collected_date": "2026-09-01",
@@ -227,12 +232,11 @@ window.OWNEX = {
       "end_date": "2026-10-18",
       "reservation_open_date": "2026-08-17",
       "summary": "박서보: 변하는 변하지 않는",
-      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7b/Fountain_pen_writing_%28literacy%29.jpg/1920px-Fountain_pen_writing_%28literacy%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "image_url": "",
       "source_urls": "https://www.kukjegallery.com/",
       "score_reason": "3곳포털홍보, 국내선호:박서보, 박서보, 아시아작가:박서보, 단색화, 작가작품전, 주요미술관, 화제전시, 가볼만함, 지정미술관",
-      "has_art": true,
       "poster": "posters/1a7d9f8a8b46.jpg",
-      "letterbox": false
+      "has_art": true
     },
     {
       "collected_date": "2026-09-02",
@@ -245,12 +249,11 @@ window.OWNEX = {
       "end_date": "2026-11-08",
       "reservation_open_date": "2026-08-13",
       "summary": "서서울미술관",
-      "image_url": "",
+      "image_url": "https://sema.seoul.go.kr/common/imgFileView?thumbYn=N&FILE_ID=1016022",
       "source_urls": "https://sema.seoul.go.kr/",
       "score_reason": "시각자료, 대표작품, 2곳홍보, 동시대, 작가작품전, 주요미술관, 화제전시, 지정미술관",
-      "has_art": false,
       "poster": "posters/1673f8139b1f.jpg",
-      "letterbox": false
+      "has_art": false
     },
     {
       "collected_date": "2026-09-01",
@@ -263,12 +266,11 @@ window.OWNEX = {
       "end_date": "2026-12-27",
       "reservation_open_date": "2026-08-06",
       "summary": "세화미술관",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Baselitz_Yellow_Song_001.jpg",
+      "image_url": "",
       "source_urls": "https://sehwamuseum.org/exhibition/%ea%b2%8c%ec%98%a4%eb%a5%b4%ea%b7%b8-%eb%b0%94%ec%a0%a4%eb%a6%ac%ec%b8%a0/",
       "score_reason": "3곳포털홍보, 세계인기:바젤리츠, 바젤리츠, 근현대, 작가작품전, 주요미술관, 화제전시, 가볼만함, 주요뉴스, 지정미술관",
-      "has_art": true,
       "poster": "posters/543ddb01f576.jpg",
-      "letterbox": false
+      "has_art": true
     },
     {
       "collected_date": "2026-09-01",
@@ -281,12 +283,11 @@ window.OWNEX = {
       "end_date": "2026-10-31",
       "reservation_open_date": "2026-07-25",
       "summary": "르네상스",
-      "image_url": "https://upload.wikimedia.org/wikipedia/commons/e/ef/SF_maig_2_cropped.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+      "image_url": "",
       "source_urls": "https://gaudiseoul.com/",
       "score_reason": "3곳포털홍보, 세계인기:가우디, 가우디, 르네상스, 미술사가치, 주요미술관, 화제전시, 가볼만함, 주요뉴스, 지정미술관",
-      "has_art": true,
       "poster": "posters/49ce0c8acc7b.jpg",
-      "letterbox": false
+      "has_art": true
     },
     {
       "collected_date": "2026-09-02",
@@ -299,12 +300,11 @@ window.OWNEX = {
       "end_date": "2026-10-04",
       "reservation_open_date": "2026-07-24",
       "summary": "함양아: 정의되지 않은 파노라마",
-      "image_url": "https://image.fnnews.com/resource/media/image/2026/08/10/202608101833210058_l.jpg",
+      "image_url": "https://artsonje.org/wp-content/uploads/2026/08/20260828_033228.jpg",
       "source_urls": "https://www.artsonje.org/",
       "score_reason": "시각자료, 2곳홍보, 근현대, 작가작품전, 주요미술관, 화제전시, 주요뉴스, 서울",
-      "has_art": true,
       "poster": "posters/99efce9ff693.jpg",
-      "letterbox": false
+      "has_art": true
     },
     {
       "collected_date": "2026-09-01",
@@ -317,12 +317,11 @@ window.OWNEX = {
       "end_date": "2026-11-03",
       "reservation_open_date": "2026-07-15",
       "summary": "현대미술",
-      "image_url": "https://upload.wikimedia.org/wikipedia/en/7/77/Girl_with_balloon.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+      "image_url": "",
       "source_urls": "https://korean.visitseoul.net/exhibition/BANKSY-still-here/KOPx0x7wx",
       "score_reason": "3곳포털홍보, 세계인기:뱅크시, 국내선호:뱅크시, 뱅크시, 현대미술, 미술사가치, 주요미술관, 화제전시, 가볼만함, 지정미술관",
-      "has_art": true,
       "poster": "posters/be8cb790b126.jpg",
-      "letterbox": false
+      "has_art": true
     },
     {
       "collected_date": "2026-09-01",
@@ -335,12 +334,11 @@ window.OWNEX = {
       "end_date": "2026-10-04",
       "reservation_open_date": "2026-05-28",
       "summary": "큐비스트: 시각의 혁신가들",
-      "image_url": "https://upload.wikimedia.org/wikipedia/en/1/1c/Pablo_Picasso%2C_1910%2C_Girl_with_a_Mandolin_%28Fanny_Tellier%29%2C_oil_on_canvas%2C_100.3_x_73.6_cm%2C_Museum_of_Modern_Art_New_York..jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+      "image_url": "",
       "source_urls": "https://www.centrepompidou-hanwha.kr/",
       "score_reason": "큐비스트, 주요미술관, 지정미술관",
-      "has_art": true,
       "poster": "posters/865151bf8c7f.jpg",
-      "letterbox": false
+      "has_art": true
     },
     {
       "collected_date": "2026-09-01",
@@ -353,12 +351,12 @@ window.OWNEX = {
       "end_date": "2026-10-24",
       "reservation_open_date": "2026-05-28",
       "summary": "서울공예박물관",
-      "image_url": "https://craftmuseum.seoul.go.kr/common/exhibition/filedown?idx=1967",
+      "image_url": "https://upload.wikimedia.org/wikipedia/commons/0/03/%ED%8C%94%EA%B0%81%EB%82%98%EC%A0%84%ED%95%A8.jpg?utm_source=ko.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
       "source_urls": "https://craftmuseum.seoul.go.kr/",
       "score_reason": "주요미술관, 지정미술관",
       "has_art": true,
-      "poster": "posters/351107469824.jpg",
-      "letterbox": true
+      "letterbox": false,
+      "poster": "posters/351107469824.jpg"
     },
     {
       "collected_date": "2026-09-01",
@@ -371,12 +369,11 @@ window.OWNEX = {
       "end_date": "2026-10-25",
       "reservation_open_date": "2026-05-12",
       "summary": "추상 서울시립미술관",
-      "image_url": "https://img.etoday.co.kr/pto_db/2026/08/20260826104110_2378468_1200_927.jpg",
+      "image_url": "",
       "source_urls": "https://sema.seoul.go.kr/",
       "score_reason": "3곳포털홍보, 국내선호:유영국, 유영국, 아시아작가:유영국, 추상, 작가작품전, 주요미술관, 화제전시, 주요뉴스, 지정미술관",
-      "has_art": true,
       "poster": "posters/27eee08a553e.jpg",
-      "letterbox": false
+      "has_art": true
     },
     {
       "collected_date": "2026-09-08",
@@ -393,8 +390,8 @@ window.OWNEX = {
       "source_urls": "https://craftmuseum.seoul.go.kr/",
       "score_reason": "주요미술관, 지정미술관",
       "has_art": true,
-      "poster": "posters/6e1618594e17.jpg",
-      "letterbox": true
+      "letterbox": true,
+      "poster": "posters/6e1618594e17.jpg"
     },
     {
       "collected_date": "2026-09-01",
@@ -407,12 +404,11 @@ window.OWNEX = {
       "end_date": "2026-12-31",
       "reservation_open_date": "2026-03-14",
       "summary": "건축투어 2026",
-      "image_url": "https://www.ddp.or.kr/usr/upload/board_thumb/zboardphotogallery105/20260402034626796.jpg",
+      "image_url": "",
       "source_urls": "https://www.ddp.or.kr/",
       "score_reason": "주요미술관, 지정미술관",
-      "has_art": true,
       "poster": "posters/714f9b024d24.jpg",
-      "letterbox": false
+      "has_art": true
     },
     {
       "collected_date": "2026-09-01",
@@ -425,12 +421,11 @@ window.OWNEX = {
       "end_date": "2026-12-31",
       "reservation_open_date": "2025-06-20",
       "summary": "서울공예박물관",
-      "image_url": "https://upload.wikimedia.org/wikipedia/commons/0/03/%ED%8C%94%EA%B0%81%EB%82%98%EC%A0%84%ED%95%A8.jpg?utm_source=ko.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+      "image_url": "",
       "source_urls": "https://craftmuseum.seoul.go.kr/",
       "score_reason": "주요미술관, 지정미술관",
-      "has_art": true,
-      "poster": "posters/3c13cdb23009.jpg",
-      "letterbox": false
+      "has_art": false,
+      "poster": "posters/3c13cdb23009.jpg"
     }
   ],
   "email": [],
@@ -501,6 +496,15 @@ window.OWNEX = {
         "by": "은하",
         "byId": "owner",
         "ownerSeed": true
+      },
+      {
+        "id": "chpehc-banksy-20260908",
+        "title": "뱅크시 : Still Here",
+        "body": "굿",
+        "at": "2026-09-08",
+        "showId": "뱅크시 : Still Here|더현대 서울 ALT.1|2026-07-22|2026-11-03",
+        "by": "chpehc",
+        "byId": "chpehc"
       }
     ]
   }

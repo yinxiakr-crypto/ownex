@@ -336,8 +336,31 @@
   function hintWrite(key, value) {
     return fetch(
       SHARE_HINT + "/UpdateValue/" + SHARE_APP + "/" + encodeURIComponent(key) + "/" + encodeURIComponent(value) + "?" + Date.now(),
-      { cache: "no-store", mode: "cors" }
+      { method: "POST", cache: "no-store", mode: "cors" }
     ).catch(function () {});
+  }
+
+  function encodeBoard(text) {
+    try {
+      return btoa(unescape(encodeURIComponent(text)))
+        .replace(/\+/g, "-")
+        .replace(/\//g, "_")
+        .replace(/=+$/g, "");
+    } catch (err) {
+      return "";
+    }
+  }
+
+  function decodeBoard(text) {
+    const raw = String(text || "");
+    if (!raw) return "";
+    try {
+      let pad = raw.replace(/-/g, "+").replace(/_/g, "/");
+      while (pad.length % 4) pad += "=";
+      return decodeURIComponent(escape(atob(pad)));
+    } catch (err) {
+      return raw;
+    }
   }
 
   function readRemoteBoard() {
@@ -348,7 +371,7 @@
       for (let i = 0; i < count; i += 1) reads.push(hintRead("p" + i));
       return Promise.all(reads).then(function (parts) {
         try {
-          return JSON.parse(parts.join(""));
+          return JSON.parse(decodeBoard(parts.join("")));
         } catch (err) {
           return null;
         }
@@ -357,7 +380,8 @@
   }
 
   function writeRemoteBoard(body) {
-    const text = JSON.stringify(body || sharePack());
+    const text = encodeBoard(JSON.stringify(body || sharePack()));
+    if (!text) return Promise.resolve();
     const chunks = [];
     for (let i = 0; i < text.length; i += SHARE_CHUNK) chunks.push(text.slice(i, i + SHARE_CHUNK));
     const jobs = [hintWrite("pc", String(chunks.length))];
@@ -1941,7 +1965,7 @@
     });
   }
 
-  const ASSET_VER = "20260909q";
+  const ASSET_VER = "20260914c";
 
   function assetUrl(src) {
     const value = String(src || "");
@@ -1966,6 +1990,9 @@
   }
 
   function designedCover(row, className) {
+    if (row && row.poster) {
+      return `<img class="${className} designed-img" src="${assetUrl(row.poster)}" alt="">`;
+    }
     const title = String((row && row.title) || "").replace(/[〈〉《》]/g, "");
     return (
       `<span class="${className} designed"><i>OWNEX</i><b>${escapeHtml(title)}</b></span>`

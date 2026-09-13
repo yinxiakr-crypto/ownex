@@ -62,47 +62,70 @@ def _open_art(data: bytes) -> Image.Image | None:
         return None
 
 
+def _hex(color: str) -> tuple[int, int, int]:
+    value = (color or "").lstrip("#")
+    return int(value[0:2], 16), int(value[2:4], 16), int(value[4:6], 16)
+
+
+def _blend(start: tuple[int, int, int], end: tuple[int, int, int], amount: float) -> tuple[int, int, int]:
+    amount = min(1.0, max(0.0, amount))
+    return tuple(int(a + (b - a) * amount) for a, b in zip(start, end))
+
+
+def _designed_canvas(title: str) -> Image.Image:
+    width, height = 900, 1120
+    colors = palette()
+    season = season_name()
+    papers = {
+        "winter": ("#d7efff", "#d7efff", "#eaf6ff"),
+        "spring": ("#e7f3ea", "#e7f3ea", "#eef6e8"),
+        "summer": ("#f3f7d4", "#eef3c4", "#f7f8e4"),
+        "fall": ("#f6e4dc", "#fde8df", "#f7ece4"),
+    }
+    marks = {
+        "winter": "#7aa7c7",
+        "spring": "#3f7a68",
+        "summer": "#8a9220",
+        "fall": "#b85a48",
+    }
+    blush, mist, cream = papers.get(season, papers["fall"])
+    ink = "#3a2430" if season == "fall" else colors["ink"]
+    mark = marks.get(season, "#b85a48")
+    canvas = Image.new("RGB", (width, height), blush)
+    draw = ImageDraw.Draw(canvas)
+    top, mid, bottom = _hex(blush), _hex(mist), _hex(cream)
+    for y in range(height):
+        t = y / max(height - 1, 1)
+        color = _blend(top, mid, t / 0.55) if t < 0.55 else _blend(mid, bottom, (t - 0.55) / 0.45)
+        draw.line((0, y, width, y), fill=color)
+    brand = _font(22, bold=True)
+    title_font = _font(46, bold=True)
+    label = "OWNEX"
+    gap = 8
+    brand_w = sum(draw.textlength(ch, font=brand) for ch in label) + gap * (len(label) - 1)
+    x = (width - brand_w) / 2
+    for ch in label:
+        draw.text((x, 210), ch, font=brand, fill=mark)
+        x += draw.textlength(ch, font=brand) + gap
+    clean = (title or "OWNEX").replace("〈", "").replace("〉", "").replace("《", "").replace("》", "")
+    lines = _wrap(draw, clean, title_font, width - 160, 5)
+    y = 430
+    for line in lines:
+        draw.text(((width - draw.textlength(line, font=title_font)) / 2, y), line, font=title_font, fill=ink)
+        y += 62
+    return canvas
+
+
 def make_poster(row: dict, art_bytes: bytes | None = None) -> bytes:
-    title = row.get("title") or "OWNEX"
-    venue = row.get("venue") or ""
-    period = " ~ ".join(part for part in [row.get("start_date") or "", row.get("end_date") or ""] if part)
     art = _open_art(art_bytes) if art_bytes else None
     if art:
         max_w, max_h = 1600, 1800
         ratio = min(1.0, max_w / art.width, max_h / art.height)
         art_w = max(1, int(art.width * ratio))
         art_h = max(1, int(art.height * ratio))
-        if ratio < 0.999:
-            canvas = art.resize((art_w, art_h), Image.Resampling.LANCZOS)
-        else:
-            canvas = art
+        canvas = art.resize((art_w, art_h), Image.Resampling.LANCZOS) if ratio < 0.999 else art
     else:
-        width, height = 900, 1120
-        colors = palette()
-        digest = int(poster_id(row)[:6], 16)
-        papers = ("#f6e4dc", "#d7efff", "#e7f3ea", "#f3f7d4")
-        accents = (colors["accent"], "#351e28", "#3f7a68", "#e9f056")
-        paper = papers[digest % len(papers)]
-        accent = accents[digest % len(accents)]
-        canvas = Image.new("RGB", (width, height), colors["bg"])
-        draw = ImageDraw.Draw(canvas)
-        draw.rectangle((36, 36, width - 36, height - 36), fill=paper)
-        draw.rectangle((36, 36, 52, height - 36), fill=accent)
-        brand = _font(22, bold=True)
-        title_font = _font(46, bold=True)
-        meta_font = _font(24)
-        season_ko = {"winter": "겨울", "spring": "봄", "summer": "여름", "fall": "가을"}.get(season_name(), "")
-        draw.ellipse((width - 360, 90, width - 90, 360), outline=accent, width=6)
-        draw.text((88, 92), "OWNEX", font=brand, fill=accent)
-        lines = _wrap(draw, title, title_font, width - 200, 5)
-        y = 430
-        for line in lines:
-            draw.text((88, y), line, font=title_font, fill=colors["ink"])
-            y += 62
-        draw.rectangle((88, min(y + 18, 860), 200, min(y + 24, 866)), fill=accent)
-        draw.text((88, min(y + 48, 900)), venue, font=meta_font, fill=accent)
-        draw.text((88, min(y + 90, 950)), period, font=meta_font, fill=colors["ink"])
-        draw.text((88, 1020), season_ko, font=_font(20), fill=accent)
+        canvas = _designed_canvas(row.get("title") or "OWNEX")
     buffer = io.BytesIO()
     canvas.save(buffer, format="JPEG", quality=92)
     return buffer.getvalue()

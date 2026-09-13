@@ -5,6 +5,24 @@ import hashlib
 # 1순위: 그 작가·전시의 대표 작품만 적습니다. 인물 사진은 넣지 않습니다.
 CURATED_ARTWORKS = (
     {
+        "keys": ("이중섭", "이건희컬렉션"),
+        "images": (
+            "https://commons.wikimedia.org/wiki/Special:FilePath/White_Ox.jpg",
+        ),
+    },
+    {
+        "keys": ("이응노", "김창열"),
+        "images": (
+            "https://commons.wikimedia.org/wiki/Special:FilePath/Water_Drops.jpg",
+        ),
+    },
+    {
+        "keys": ("겸재", "정선", "조선의 눈으로"),
+        "images": (
+            "https://commons.wikimedia.org/wiki/Special:FilePath/Inwangjesaekdo.jpg",
+        ),
+    },
+    {
         "keys": ("바젤리츠", "Baselitz"),
         "images": (
             "https://commons.wikimedia.org/wiki/Special:FilePath/Baselitz_Yellow_Song_001.jpg",
