@@ -25,8 +25,8 @@ CURATED_ARTWORKS = (
     {
         "keys": ("바젤리츠", "Baselitz"),
         "images": (
-            "https://commons.wikimedia.org/wiki/Special:FilePath/Baselitz_Yellow_Song_001.jpg",
-            "https://commons.wikimedia.org/wiki/Special:FilePath/Untitled_sculpture_by_Georg_Baselitz.jpg",
+            "https://cphoto.asiae.co.kr/listimglink/1/2026081303005078931_1786557650.jpg",
+            "https://cdn.d-art.co.kr/news/photo/202608/6158_20585_835.jpg",
         ),
     },
     {
@@ -71,6 +71,11 @@ CURATED_ARTWORKS = (
 
 # 그 전시의 공식 페이지와 대표 그림만 적습니다. 다른 전시 사진은 넣지 않습니다.
 OFFICIAL_SHOWS = (
+    {
+        "keys": ("바젤리츠", "Baselitz"),
+        "page": "https://sehwamuseum.org/exhibition/%ea%b2%8c%ec%98%a4%eb%a5%b4%ea%b7%b8-%eb%b0%94%ec%a0%a4%eb%a6%ac%ec%b8%a0/",
+        "image": "https://cphoto.asiae.co.kr/listimglink/1/2026081303005078931_1786557650.jpg",
+    },
     {
         "keys": ("옻나무에서 칠기로", "漆-"),
         "page": "https://craftmuseum.seoul.go.kr/exhibit/plan/view/161",

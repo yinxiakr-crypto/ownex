@@ -8,6 +8,7 @@ import re
 import smtplib
 import time
 from datetime import date
+from email.header import Header
 from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -85,6 +86,31 @@ def _period(row: dict, calendar_from: date | None) -> str:
     return start.isoformat()
 
 
+def _show_period(row: dict) -> str:
+    start = from_iso(row.get("start_date") or "")
+    end = from_iso(row.get("end_date") or "")
+    if not start:
+        return "기간 미확인"
+    if end and end != start:
+        return f"{start.isoformat()} ~ {end.isoformat()}"
+    return start.isoformat()
+
+
+def rows_like_web(rows: list[dict], when: date | None = None) -> list[dict]:
+    day = when or today_seoul()
+    key = f"{day.year:04d}-{day.month:02d}"
+    picked: list[dict] = []
+    for row in rows:
+        start = row.get("start_date") or row.get("collected_date") or ""
+        end = row.get("end_date") or start
+        if not start:
+            continue
+        if start[:7] <= key and (end or start)[:7] >= key:
+            picked.append(row)
+    use = picked or list(rows)
+    return sorted(use, key=lambda row: (row.get("start_date") or "", row.get("title") or ""))
+
+
 def make_schedule_card(rows: list[dict], calendar_from: date | None, heading: str = "오늘의 전시") -> bytes:
     width = 900
     height = max(1280, 220 + len(rows) * 118)
@@ -109,7 +135,7 @@ def make_schedule_card(rows: list[dict], calendar_from: date | None, heading: st
         for line in _wrap(draw, venue, meta_font, width - 160)[:3]:
             draw.text((70, y), line, font=meta_font, fill="#5a4333")
             y += 30
-        draw.text((70, y), _period(row, calendar_from), font=meta_font, fill="#8a3b12")
+        draw.text((70, y), _show_period(row), font=meta_font, fill="#8a3b12")
         y += 48
         if y > height - 120:
             break
@@ -127,6 +153,7 @@ WIKI_HEADERS = {
 SKIP_HINTS = (
     "logo", "icon", "sprite", "favicon", "button",
     "sns", "share", "facebook", "instagram", "youtube", "ytimg", "youtu.be", "arrow", "footer",
+    "untitled_sculpture_by_georg_baselitz",
     "ci-", "symbol", "wa.png", "contact", "menu", "search", "parking",
 )
 PORTRAIT_HINTS = (
@@ -161,7 +188,7 @@ ARTIST_QUERIES = (
     (("솔 르윗", "솔르윗", "LeWitt", "Lewitt"),
      ("Incomplete open cubes", "Four-Sided Pyramid", "Sol LeWitt wall drawing")),
     (("바젤리츠", "Baselitz"),
-     ("The Heroes Baselitz", "Georg Baselitz painting")),
+     ("나뉜 소 두 마리", "프랑스에서의 엘케")),
     (("윤형근", "Yun Hyong"),
      ("윤형근", "Yun Hyong-keun")),
     (("김보희", "Kim Bohie", "Kim Bo-hie"),
@@ -749,8 +776,7 @@ def _html_body(rows: list[dict], calendar_from: date | None, has_card: bool, hea
             <div style="margin:0 0 28px 0;padding:0 0 16px 0;border-bottom:1px solid #e6d5b8;">
               <h2 style="margin:0 0 8px 0;font-size:20px;line-height:1.4;">{index}. {row.get('title') or ''}</h2>
               <p style="margin:0 0 6px 0;color:#555;font-size:16px;">{row.get('venue') or ''} {row.get('venue_address') or ''}</p>
-              <p style="margin:0 0 10px 0;color:#8a3b12;font-size:16px;"><b>{_period(row, calendar_from)}</b></p>
-              <p style="margin:0 0 6px 0;color:#666;font-size:15px;">고른 이유: {row.get('score_reason') or ''}</p>
+              <p style="margin:0 0 10px 0;color:#8a3b12;font-size:16px;"><b>{_show_period(row)}</b></p>
               <p style="margin:0 0 10px 0;font-size:16px;line-height:1.5;">{row.get('summary') or ''}</p>
               {poster}
               {link}
@@ -783,7 +809,13 @@ def _html_body(rows: list[dict], calendar_from: date | None, has_card: bool, hea
         </tr>
       </table>
     """
-    return f"""
+    return f"""<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+<body>
     <div style="font-family:'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif;max-width:640px;margin:0 auto;color:#222;">
       <h1 style="font-size:24px;line-height:1.4;">{heading}</h1>
       <p>나만의 전시를 통해 다른 세상과 만나보세요.</p>
@@ -792,6 +824,8 @@ def _html_body(rows: list[dict], calendar_from: date | None, has_card: bool, hea
       {''.join(blocks)}
       <p style="margin:24px 0 0 0;font-size:12px;color:#888;">오넥스에 들어가 ‘메일수신을 거부합니다’에 표시하면 더 이상 보내지 않습니다.</p>
     </div>
+</body>
+</html>
     """
 
 
@@ -845,6 +879,7 @@ def send_exhibition_email(rows: list[dict], cfg, calendar_from: date | None = No
         if not groups:
             LOGGER.info("[메일] 오늘 받을 사람이 없어 건너뜁니다.")
             return False
+        rows = rows_like_web(rows, today)
         posters = collect_posters(rows)
         home = _home_url()
         LOGGER.info(f"[메일] 홈 주소는 {home} 입니다.")
@@ -858,7 +893,7 @@ def send_exhibition_email(rows: list[dict], cfg, calendar_from: date | None = No
             message["To"] = to_address
             if extra:
                 message["Bcc"] = ", ".join(extra)
-            message["Subject"] = f"{heading} {today.isoformat()}"
+            message["Subject"] = Header(f"{heading} {today.isoformat()}", "utf-8")
             alt = MIMEMultipart("alternative")
             alt.attach(MIMEText(f"{heading} {today.isoformat()}\n나만의 전시를 통해 다른 세상과 만나보세요.\n", "plain", "utf-8"))
             alt.attach(MIMEText(_html_body(rows, calendar_from, True, heading), "html", "utf-8"))
