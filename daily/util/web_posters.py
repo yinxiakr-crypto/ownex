@@ -111,33 +111,37 @@ def _designed_canvas(title: str) -> Image.Image:
         t = y / max(height - 1, 1)
         color = _blend(top, mid, t / 0.55) if t < 0.55 else _blend(mid, bottom, (t - 0.55) / 0.45)
         draw.line((0, y, width, y), fill=color)
-    brand = _font(95, bold=True)
-    label = "OWNEX"
-    gap = 31
-    brand_w = sum(draw.textlength(ch, font=brand) for ch in label) + gap * (len(label) - 1)
-    x = (width - brand_w) / 2
-    for ch in label:
-        draw.text((x, 108), ch, font=brand, fill=mark)
-        x += draw.textlength(ch, font=brand) + gap
     clean = _designed_title(title)
-    max_w, max_h = width - 120, 520
-    title_font = _font(39, bold=True)
+    max_w, max_h = width - 140, 460
+    title_size = 48
+    title_font = _font(title_size, bold=True)
     lines = _wrap(draw, clean, title_font, max_w, 6)
-    line_h = 48
-    for size in range(66, 32, -3):
+    line_h = 58
+    for size in range(82, 39, -2):
         trial_font = _font(size, bold=True)
         trial_lines = _wrap(draw, clean, trial_font, max_w, 20)
-        trial_h = int(size * 1.2)
+        trial_h = int(size * 1.18)
         widest = max((draw.textlength(line, font=trial_font) for line in trial_lines), default=0)
-        if len(trial_lines) > 5:
+        if len(trial_lines) > 3:
             continue
         if widest <= max_w and len(trial_lines) * trial_h <= max_h:
+            title_size = size
             title_font = trial_font
             lines = trial_lines
             line_h = trial_h
             break
+    brand_size = max(40, int(round(title_size * 0.8)))
+    brand = _font(brand_size, bold=True)
+    label = "OWNEX"
+    gap = max(8, int(brand_size * 0.16))
+    brand_w = sum(draw.textlength(ch, font=brand) for ch in label) + gap * (len(label) - 1)
+    x = (width - brand_w) / 2
+    brand_y = 120
+    for ch in label:
+        draw.text((x, brand_y), ch, font=brand, fill=mark)
+        x += draw.textlength(ch, font=brand) + gap
     block_h = len(lines) * line_h
-    y = 268 + ((height - 310) - block_h) / 2
+    y = brand_y + brand_size + 90 + max(0, (height - (brand_y + brand_size + 90) - 80 - block_h) / 2)
     for line in lines:
         draw.text(((width - draw.textlength(line, font=title_font)) / 2, y), line, font=title_font, fill=ink)
         y += line_h
