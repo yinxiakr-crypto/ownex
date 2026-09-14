@@ -45,11 +45,12 @@ window.OWNEX = {
       "end_date": "2026-10-04",
       "reservation_open_date": "2026-09-07",
       "summary": "하정우 개인전 Either act or forget",
-      "image_url": "",
+      "image_url": "https://cdn.d-art.co.kr/news/photo/202608/6078_20110_5951.jpg",
       "source_urls": "https://www.youtube.com/watch?v=K8sLgJIlRaU",
       "score_reason": "도슨트추천",
-      "poster": "posters/8f14615f9cea.jpg",
-      "has_art": false
+      "has_art": true,
+      "letterbox": false,
+      "poster": "posters/8f14615f9cea.jpg"
     },
     {
       "collected_date": "2026-09-09",
@@ -65,8 +66,9 @@ window.OWNEX = {
       "image_url": "https://www.centrepompidou-hanwha.kr/upload/exhibition/2026/09/04/1788497418695_57.jpg",
       "source_urls": "https://www.centrepompidou-hanwha.kr/",
       "score_reason": "주요미술관, 가볼만함, 지정미술관",
-      "poster": "posters/60dd274a2fa9.jpg",
-      "has_art": false
+      "has_art": true,
+      "letterbox": true,
+      "poster": "posters/60dd274a2fa9.jpg"
     },
     {
       "collected_date": "2026-09-08",
@@ -181,11 +183,12 @@ window.OWNEX = {
       "end_date": "2027-02-09",
       "reservation_open_date": "2026-08-20",
       "summary": "현대미술 국립현대미술관",
-      "image_url": "",
+      "image_url": "https://img9.yna.co.kr/etc/inner/KR/2026/08/26/AKR20260826025600005_06_i_P4.jpg",
       "source_urls": "https://www.mmca.go.kr/exhibits/exhibitsList.do",
       "score_reason": "3곳포털홍보, 국내선호:서도호, 서도호, 아시아작가:서도호, 현대미술, 작가작품전, 미술사가치, 주요미술관, 화제전시, 가볼만함, 주요뉴스, 지정미술관",
-      "poster": "posters/450cdd8ee85f.jpg",
-      "has_art": false
+      "has_art": true,
+      "letterbox": true,
+      "poster": "posters/450cdd8ee85f.jpg"
     },
     {
       "collected_date": "2026-09-02",
@@ -198,11 +201,12 @@ window.OWNEX = {
       "end_date": "2026-10-03",
       "reservation_open_date": "2026-08-19",
       "summary": "윤형근을 다시 상상하다",
-      "image_url": "",
+      "image_url": "https://static-assets.artlogic.net/w_2020,h_1160,c_limit/exhibit-e/5d5eccf1a5aa2ced538b4567/d29ac3e5a751a8d182fec6cbab9d0e5a.jpeg",
       "source_urls": "https://www.pkmgallery.com/",
       "score_reason": "대표작품, 2곳홍보, 국내선호:윤형근, 단색화, 작가작품전, 화제전시, 주요뉴스, 서울",
-      "poster": "posters/ab93482f4eef.jpg",
-      "has_art": false
+      "has_art": true,
+      "letterbox": true,
+      "poster": "posters/ab93482f4eef.jpg"
     },
     {
       "collected_date": "2026-09-02",
@@ -215,11 +219,12 @@ window.OWNEX = {
       "end_date": "2026-10-18",
       "reservation_open_date": "2026-08-19",
       "summary": "김보희: TOWARDS There Was Light",
-      "image_url": "https://www.galleryhyundai.com/public/2026/08/26/18/24/58/6829f100-8b10-4015-8828-134e5dfcbd87.crop_large.jpg",
+      "image_url": "https://cdn.d-art.co.kr/news/photo/202608/6205_20723_4955.jpeg",
       "source_urls": "https://www.galleryhyundai.com/",
       "score_reason": "시각자료, 대표작품, 2곳홍보, 회화전, 작가작품전, 화제전시, 주요뉴스, 서울",
-      "poster": "posters/32087c00bfc3.jpg",
-      "has_art": false
+      "has_art": true,
+      "letterbox": false,
+      "poster": "posters/32087c00bfc3.jpg"
     },
     {
       "collected_date": "2026-09-01",
@@ -249,11 +254,12 @@ window.OWNEX = {
       "end_date": "2026-11-08",
       "reservation_open_date": "2026-08-13",
       "summary": "서서울미술관",
-      "image_url": "https://sema.seoul.go.kr/common/imgFileView?thumbYn=N&FILE_ID=1016022",
+      "image_url": "https://sema.seoul.go.kr/common/imgFileView?thumbYn=N&FILE_ID=1018843",
       "source_urls": "https://sema.seoul.go.kr/",
       "score_reason": "시각자료, 대표작품, 2곳홍보, 동시대, 작가작품전, 주요미술관, 화제전시, 지정미술관",
-      "poster": "posters/1673f8139b1f.jpg",
-      "has_art": false
+      "has_art": true,
+      "letterbox": true,
+      "poster": "posters/1673f8139b1f.jpg"
     },
     {
       "collected_date": "2026-09-01",
@@ -266,11 +272,12 @@ window.OWNEX = {
       "end_date": "2026-12-27",
       "reservation_open_date": "2026-08-06",
       "summary": "세화미술관",
-      "image_url": "",
+      "image_url": "https://cphoto.asiae.co.kr/listimglink/1/2026081303005078931_1786557650.jpg",
       "source_urls": "https://sehwamuseum.org/exhibition/%ea%b2%8c%ec%98%a4%eb%a5%b4%ea%b7%b8-%eb%b0%94%ec%a0%a4%eb%a6%ac%ec%b8%a0/",
       "score_reason": "3곳포털홍보, 세계인기:바젤리츠, 바젤리츠, 근현대, 작가작품전, 주요미술관, 화제전시, 가볼만함, 주요뉴스, 지정미술관",
-      "poster": "posters/543ddb01f576.jpg",
-      "has_art": true
+      "has_art": true,
+      "letterbox": false,
+      "poster": "posters/543ddb01f576.jpg"
     },
     {
       "collected_date": "2026-09-01",

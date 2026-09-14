@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import io
+import re
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
@@ -31,6 +32,18 @@ def poster_id(row: dict) -> str:
 
 def poster_rel(row: dict) -> str:
     return f"posters/{poster_id(row)}.jpg"
+
+
+def _designed_title(title: str) -> str:
+    raw = title or "OWNEX"
+    marked = re.search(r"[〈《](.+?)[〉》]", raw)
+    if marked:
+        return marked.group(1).strip()
+    clean = raw.replace("〈", "").replace("〉", "").replace("《", "").replace("》", "")
+    clean = re.sub(r"\s+", " ", clean).strip()
+    if len(clean) > 34:
+        return clean[:32].rstrip() + "…"
+    return clean or "OWNEX"
 
 
 def _wrap(draw, text: str, font, max_width: int, limit: int = 5) -> list[str]:
@@ -98,21 +111,36 @@ def _designed_canvas(title: str) -> Image.Image:
         t = y / max(height - 1, 1)
         color = _blend(top, mid, t / 0.55) if t < 0.55 else _blend(mid, bottom, (t - 0.55) / 0.45)
         draw.line((0, y, width, y), fill=color)
-    brand = _font(22, bold=True)
-    title_font = _font(46, bold=True)
+    brand = _font(34, bold=True)
     label = "OWNEX"
-    gap = 8
+    gap = 14
     brand_w = sum(draw.textlength(ch, font=brand) for ch in label) + gap * (len(label) - 1)
     x = (width - brand_w) / 2
     for ch in label:
-        draw.text((x, 210), ch, font=brand, fill=mark)
+        draw.text((x, 150), ch, font=brand, fill=mark)
         x += draw.textlength(ch, font=brand) + gap
-    clean = (title or "OWNEX").replace("〈", "").replace("〉", "").replace("《", "").replace("》", "")
-    lines = _wrap(draw, clean, title_font, width - 160, 5)
-    y = 430
+    clean = _designed_title(title)
+    max_w, max_h = width - 100, 680
+    title_font = _font(52, bold=True)
+    lines = _wrap(draw, clean, title_font, max_w, 6)
+    line_h = 64
+    for size in range(110, 43, -4):
+        trial_font = _font(size, bold=True)
+        trial_lines = _wrap(draw, clean, trial_font, max_w, 20)
+        trial_h = int(size * 1.18)
+        widest = max((draw.textlength(line, font=trial_font) for line in trial_lines), default=0)
+        if len(trial_lines) > 5:
+            continue
+        if widest <= max_w and len(trial_lines) * trial_h <= max_h:
+            title_font = trial_font
+            lines = trial_lines
+            line_h = trial_h
+            break
+    block_h = len(lines) * line_h
+    y = 150 + ((height - 150) - block_h) / 2
     for line in lines:
         draw.text(((width - draw.textlength(line, font=title_font)) / 2, y), line, font=title_font, fill=ink)
-        y += 62
+        y += line_h
     return canvas
 
 

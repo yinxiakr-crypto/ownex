@@ -162,6 +162,11 @@ PORTRAIT_HINTS = (
     "photograph_of", "self-portrait",
     "working_in_front", "_working_", "taken_by_",
     "20260630_071238",
+    "서도호_작가", "김보희_작가", "윤형근_작가",
+    "akr20260826025600005_04",
+    "akr20260825000900005_03",
+    "akr20260826181400005_05",
+    "6205_20741",
 )
 POSTER_HINTS = ("poster", "포스터", "og-image", "key-visual", "main-kv", "/kv-", "sns-")
 ART_HINTS = ("/upload/exhibition/", "/upload/notice/", "/imageShow/", "photogallery", "artwork", "work", "작품", "/common/exhibition/filedown")
@@ -178,7 +183,9 @@ ARTIST_QUERIES = (
     (("가우디", "Gaudi", "Gaudí"),
      ("Sagrada Familia", "Casa Batllo")),
     (("서도호", "Do Ho Suh"),
-     ("Seoul Home", "Do Ho Suh installation")),
+     ("둥지/들", "완벽한 집", "Seoul Home")),
+    (("하정우", "Either act or forget"),
+     ("하정우 무제 가면", "Either act or forget painting")),
     (("구정아", "Koo Jeong", "우스모스", "OUSSSMOS"),
      ("OUSSSMOS", "Mobiousss")),
     (("박서보", "Park Seo-Bo", "Park Seo Bo"),
@@ -190,9 +197,9 @@ ARTIST_QUERIES = (
     (("바젤리츠", "Baselitz"),
      ("나뉜 소 두 마리", "프랑스에서의 엘케")),
     (("윤형근", "Yun Hyong"),
-     ("윤형근", "Yun Hyong-keun")),
+     ("Umber-Blue", "Burnt Umber and Ultramarine")),
     (("김보희", "Kim Bohie", "Kim Bo-hie"),
-     ("Kim Bohie painting", "김보희")),
+     ("Towards Kim Bohie", "The Days Kim Bohie")),
     (("함양아",),
      ("Undefined Panorama", "정의되지 않은 파노라마 4.0")),
 )

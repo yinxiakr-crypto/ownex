@@ -62,6 +62,44 @@ CURATED_ARTWORKS = (
         ),
     },
     {
+        "keys": ("서도호", "Do Ho Suh"),
+        "images": (
+            "https://img9.yna.co.kr/etc/inner/KR/2026/08/26/AKR20260826025600005_06_i_P4.jpg",
+            "https://img7.yna.co.kr/etc/inner/KR/2026/08/26/AKR20260826025600005_08_i_P4.jpg",
+            "https://wimg.mk.co.kr/news/cms/202608/26/news-p.v1.20260826.577efb01720041388539c41e01feefe1_P1.jpg",
+        ),
+    },
+    {
+        "keys": ("하정우", "Either act or forget"),
+        "images": (
+            "https://cdn.d-art.co.kr/news/photo/202608/6078_20110_5951.jpg",
+            "https://cphoto.asiae.co.kr/listimglink/1/2026081213003078121_1786507230.jpg",
+            "https://cdn.d-art.co.kr/news/photo/202608/6078_20108_597.jpg",
+        ),
+    },
+    {
+        "keys": ("윤형근", "Yun Hyong"),
+        "images": (
+            "https://static-assets.artlogic.net/w_2020,h_1160,c_limit/exhibit-e/5d5eccf1a5aa2ced538b4567/d29ac3e5a751a8d182fec6cbab9d0e5a.jpeg",
+            "https://img2.yna.co.kr/etc/inner/KR/2026/08/25/AKR20260825000900005_01_i_P4.jpg",
+            "https://cphoto.asiae.co.kr/listimglink/1/2026082520403292481_1787658032.jpg",
+        ),
+    },
+    {
+        "keys": ("김보희", "TOWARDS", "There Was Light"),
+        "images": (
+            "https://cdn.d-art.co.kr/news/photo/202608/6205_20723_4955.jpeg",
+            "https://img2.yna.co.kr/etc/inner/KR/2026/08/26/AKR20260826181400005_06_i_P4.jpg",
+            "https://www.galleryhyundai.com/public/2026/08/26/18/24/58/6829f100-8b10-4015-8828-134e5dfcbd87.crop_large.jpg",
+        ),
+    },
+    {
+        "keys": ("김희천", "두더지들"),
+        "images": (
+            "https://sema.seoul.go.kr/common/imgFileView?thumbYn=N&FILE_ID=1018843",
+        ),
+    },
+    {
         "keys": ("DDP 2026 가을", "서울라이트"),
         "images": (
             "https://festival.seoul.go.kr/resources/culture/img/editor/funSeoul/editor_20260820102209_83232.jpg",
@@ -71,6 +109,36 @@ CURATED_ARTWORKS = (
 
 # 그 전시의 공식 페이지와 대표 그림만 적습니다. 다른 전시 사진은 넣지 않습니다.
 OFFICIAL_SHOWS = (
+    {
+        "keys": ("서도호", "Do Ho Suh"),
+        "page": "https://www.mmca.go.kr/exhibitions/exhibitionsDetail.do?exhId=202601200002041",
+        "image": "https://img9.yna.co.kr/etc/inner/KR/2026/08/26/AKR20260826025600005_06_i_P4.jpg",
+    },
+    {
+        "keys": ("하정우", "Either act or forget"),
+        "page": "https://www.d-art.co.kr/news/articleView.html?idxno=6078",
+        "image": "https://cdn.d-art.co.kr/news/photo/202608/6078_20110_5951.jpg",
+    },
+    {
+        "keys": ("윤형근", "Yun Hyong"),
+        "page": "https://www.pkmgallery.com/exhibitions/yun-hyong-keun5",
+        "image": "https://static-assets.artlogic.net/w_2020,h_1160,c_limit/exhibit-e/5d5eccf1a5aa2ced538b4567/d29ac3e5a751a8d182fec6cbab9d0e5a.jpeg",
+    },
+    {
+        "keys": ("김보희", "TOWARDS"),
+        "page": "https://www.galleryhyundai.com/exhibition/view/12",
+        "image": "https://cdn.d-art.co.kr/news/photo/202608/6205_20723_4955.jpeg",
+    },
+    {
+        "keys": ("김희천", "두더지들"),
+        "page": "https://sema.seoul.go.kr/",
+        "image": "https://sema.seoul.go.kr/common/imgFileView?thumbYn=N&FILE_ID=1018843",
+    },
+    {
+        "keys": ("Museum Encounters", "컬러 플랜트"),
+        "page": "https://www.centrepompidou-hanwha.kr/",
+        "image": "https://www.centrepompidou-hanwha.kr/upload/exhibition/2026/09/04/1788497418695_57.jpg",
+    },
     {
         "keys": ("바젤리츠", "Baselitz"),
         "page": "https://sehwamuseum.org/exhibition/%ea%b2%8c%ec%98%a4%eb%a5%b4%ea%b7%b8-%eb%b0%94%ec%a0%a4%eb%a6%ac%ec%b8%a0/",
