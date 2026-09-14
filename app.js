@@ -1860,16 +1860,28 @@
     return Number(state.namePage) || 0;
   }
 
+  let nameLock = false;
   function showMoreNames() {
+    if (nameLock) return;
+    nameLock = true;
+    setTimeout(function () {
+      nameLock = false;
+    }, 400);
     const rows = nameRows();
     const page = clampNamePage(rows.length);
-    if (page >= namePages(rows.length) - 1) return;
+    if ((page + 1) * NAME_PAGE >= rows.length) return;
     state.namePage = page + 1;
     renderNames();
-    if (monthList) monthList.scrollIntoView({ behavior: "smooth", block: "start" });
+    const more = monthList && monthList.querySelector("[data-names='more'], .names-foot");
+    if (more) more.scrollIntoView({ behavior: "smooth", block: "end" });
   }
 
   function showPrevNames() {
+    if (nameLock) return;
+    nameLock = true;
+    setTimeout(function () {
+      nameLock = false;
+    }, 400);
     const page = Number(state.namePage) || 0;
     if (page <= 0) return;
     state.namePage = page - 1;
@@ -1884,20 +1896,23 @@
     const initials = ["", "ㄱ", "ㄴ", "ㄷ", "ㄹ", "ㅁ", "ㅂ", "ㅅ", "ㅇ", "ㅈ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ"];
     const rows = nameRows();
     const page = clampNamePage(rows.length);
-    const pages = namePages(rows.length);
-    const shown = rows.slice(page * NAME_PAGE, page * NAME_PAGE + NAME_PAGE);
+    const shown = rows.slice(0, (page + 1) * NAME_PAGE);
     const monthLabel = state.month === "all" ? " 전체" : state.month ? " " + (MONTHS[Number(state.month) - 1] || "") : "";
     const emptyText = state.month === "all" ? "이 해에는 아직 기록이 없습니다." : "이 달에는 아직 기록이 없습니다.";
     const nav =
       rows.length > NAME_PAGE
         ? '<div class="names-foot">' +
           (page > 0
-            ? '<button type="button" class="review-more-btn" data-names="prev" onclick="ownexPrevNames()">이전</button>'
+            ? '<button type="button" class="review-more-btn" data-names="prev">이전</button>'
             : "") +
-          (page < pages - 1
-            ? '<button type="button" class="review-more-btn" data-names="more" onclick="ownexMoreNames()">계속</button>'
+          (shown.length < rows.length
+            ? '<button type="button" class="review-more-btn" data-names="more">계속</button>'
             : "") +
-          "</div>"
+          '<span class="quiet">' +
+          shown.length +
+          "/" +
+          rows.length +
+          "</span></div>"
         : "";
     monthList.innerHTML = `
       <div class="month-head">
@@ -1939,6 +1954,10 @@
       monthEl.value = "";
       draw();
     });
+    const moreBtn = monthList.querySelector("[data-names='more']");
+    if (moreBtn) moreBtn.addEventListener("click", showMoreNames);
+    const prevBtn = monthList.querySelector("[data-names='prev']");
+    if (prevBtn) prevBtn.addEventListener("click", showPrevNames);
     monthList.querySelectorAll("[data-initial]").forEach((btn) => {
       btn.addEventListener("click", () => {
         state.initial = btn.getAttribute("data-initial");
@@ -1965,7 +1984,7 @@
     });
   }
 
-  const ASSET_VER = "20260914d";
+  const ASSET_VER = "20260914e";
 
   function assetUrl(src) {
     const value = String(src || "");
