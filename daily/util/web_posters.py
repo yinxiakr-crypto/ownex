@@ -111,23 +111,23 @@ def _designed_canvas(title: str) -> Image.Image:
         t = y / max(height - 1, 1)
         color = _blend(top, mid, t / 0.55) if t < 0.55 else _blend(mid, bottom, (t - 0.55) / 0.45)
         draw.line((0, y, width, y), fill=color)
-    brand = _font(34, bold=True)
+    brand = _font(56, bold=True)
     label = "OWNEX"
-    gap = 14
+    gap = 18
     brand_w = sum(draw.textlength(ch, font=brand) for ch in label) + gap * (len(label) - 1)
     x = (width - brand_w) / 2
     for ch in label:
-        draw.text((x, 150), ch, font=brand, fill=mark)
+        draw.text((x, 128), ch, font=brand, fill=mark)
         x += draw.textlength(ch, font=brand) + gap
     clean = _designed_title(title)
-    max_w, max_h = width - 100, 680
-    title_font = _font(52, bold=True)
+    max_w, max_h = width - 120, 560
+    title_font = _font(46, bold=True)
     lines = _wrap(draw, clean, title_font, max_w, 6)
-    line_h = 64
-    for size in range(110, 43, -4):
+    line_h = 56
+    for size in range(78, 39, -3):
         trial_font = _font(size, bold=True)
         trial_lines = _wrap(draw, clean, trial_font, max_w, 20)
-        trial_h = int(size * 1.18)
+        trial_h = int(size * 1.2)
         widest = max((draw.textlength(line, font=trial_font) for line in trial_lines), default=0)
         if len(trial_lines) > 5:
             continue
@@ -137,7 +137,7 @@ def _designed_canvas(title: str) -> Image.Image:
             line_h = trial_h
             break
     block_h = len(lines) * line_h
-    y = 150 + ((height - 150) - block_h) / 2
+    y = 220 + ((height - 260) - block_h) / 2
     for line in lines:
         draw.text(((width - draw.textlength(line, font=title_font)) / 2, y), line, font=title_font, fill=ink)
         y += line_h

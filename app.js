@@ -1984,7 +1984,7 @@
     });
   }
 
-  const ASSET_VER = "20260915a";
+  const ASSET_VER = "20260915b";
 
   function assetUrl(src) {
     const value = String(src || "");

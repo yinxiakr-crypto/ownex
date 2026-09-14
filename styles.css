@@ -882,17 +882,17 @@ body.open .gcal-icon {
 .name-art.designed i,
 .poster.designed i {
   font-style: normal;
-  font-size: 0.95rem;
-  letter-spacing: 0.22em;
+  font-size: 1.35rem;
+  letter-spacing: 0.28em;
   color: var(--paper-hover);
 }
 
 .name-art.designed b,
 .poster.designed b {
   font-family: "Noto Serif KR", "Cormorant Garamond", serif;
-  font-size: clamp(1.7rem, 6.2vw, 2.35rem);
+  font-size: clamp(1.35rem, 4.6vw, 1.85rem);
   font-weight: 600;
-  line-height: 1.28;
+  line-height: 1.3;
   letter-spacing: -0.03em;
 }
 
@@ -902,7 +902,7 @@ body.open .gcal-icon {
 }
 
 .poster.designed b {
-  font-size: clamp(2.4rem, 6vw, 3.6rem);
+  font-size: clamp(1.85rem, 4.6vw, 2.7rem);
 }
 
 .name-art.designed-img,
