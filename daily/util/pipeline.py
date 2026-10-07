@@ -21,7 +21,7 @@ from util.sources_naver import collect_naver
 from util.sources_sac import collect_sac
 from util.sources_sejong import collect_sejong
 from util.sources_seoul_venues import collect_seoul_venues
-from util.clock import today_seoul
+from util.clock import now_seoul, seconds_until_seoul, today_seoul, wait_until_seoul
 from util.state import resolve_range, should_send_email, write_last_email, write_last_run
 from util.mail_list import ingest_mail_requests
 from util.export_web import write_web_data
@@ -185,8 +185,20 @@ def run_pipeline(today: date | None = None) -> list[dict]:
     except Exception as exc:
         LOGGER.info(f"[메일] 신청 반영을 건너뜁니다: {exc}")
     if cloud_primary and not in_cloud:
-        LOGGER.info("[단계] 메일은 클라우드에서 보냅니다. 컴퓨터가 꺼져 있어도 아침 8시에 나갑니다.")
+        LOGGER.info("[단계] 메일은 클라우드에서 보냅니다. 컴퓨터가 꺼져 있어도 한국 시간 오전 8:00에 나갑니다.")
     elif send_now:
+        if in_cloud:
+            if seconds_until_seoul() > 0:
+                LOGGER.info(
+                    f"[단계] 한국 시간 오전 8:00까지 기다립니다. "
+                    f"지금 {now_seoul().strftime('%H:%M:%S')}"
+                )
+                wait_until_seoul()
+            else:
+                LOGGER.info(
+                    f"[단계] 한국 시간 오전 8:00이 지나 바로 보냅니다. "
+                    f"지금 {now_seoul().strftime('%H:%M:%S')}"
+                )
         LOGGER.info(f"[단계] 지메일 한 통 보내기 ({send_reason})")
         if send_exhibition_email(rows, cfg, clip_from):
             write_last_email(today)
