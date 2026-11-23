@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from datetime import date
 
+from util.clock import today_seoul
+
 # 해마다 유행색만 이 표에서 바꿉니다. 2026은 Pinterest Palette.
 # 겨울 Cool Blue #d7efff, 봄 Jade #aeb8a0, 여름 Wasabi #e9f056,
 # 가을 Plum Noir #351e28 + Persimmon #ff5c34.
@@ -16,7 +18,7 @@ YEAR_PALETTES = {
 
 
 def season_name(when: date | None = None) -> str:
-    month = (when or date.today()).month
+    month = (when or today_seoul()).month
     if month in (12, 1, 2):
         return "winter"
     if month in (3, 4, 5):
@@ -27,6 +29,6 @@ def season_name(when: date | None = None) -> str:
 
 
 def palette(when: date | None = None) -> dict:
-    when = when or date.today()
+    when = when or today_seoul()
     year = YEAR_PALETTES.get(when.year) or YEAR_PALETTES[max(YEAR_PALETTES)]
     return year[season_name(when)]

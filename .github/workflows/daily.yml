@@ -2,8 +2,9 @@ name: Ownex morning
 
 on:
   schedule:
-    # 한국 시간 7:30에 준비를 시작하고, 메일은 오전 8:00에 보냅니다.
-    - cron: "30 7 * * *"
+    # GitHub은 몇 시간 늦게 켜질 수 있어, 한국 시간 02:30에 대기열에 넣고
+    # 프로그램이 오전 8:00까지 기다렸다가 메일을 보냅니다.
+    - cron: "30 2 * * *"
       timezone: "Asia/Seoul"
   workflow_dispatch:
 
@@ -14,7 +15,7 @@ defaults:
 jobs:
   send:
     runs-on: ubuntu-latest
-    timeout-minutes: 50
+    timeout-minutes: 360
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

@@ -35,7 +35,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Great+Vibes&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=fix74" />
+  <link rel="stylesheet" href="styles.css?v=fix75" />
   <style>
     body { margin: 0; min-height: 100vh; background: var(--bg, #351e28); color: var(--ink, #f6efe6); font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
     #front-row:not([hidden]) {
@@ -165,6 +165,16 @@
   </style>
 </head>
 <body data-season="fall">
+  <script>
+    (function () {
+      var month = Number(new Intl.DateTimeFormat("en", { timeZone: "Asia/Seoul", month: "numeric" }).format(new Date()));
+      var season = month === 12 || month <= 2 ? "winter" : month <= 5 ? "spring" : month <= 8 ? "summer" : "fall";
+      document.body.setAttribute("data-season", season);
+      var theme = document.querySelector('meta[name="theme-color"]');
+      var colors = { winter: "#1b2a33", spring: "#24382e", summer: "#2a2e12", fall: "#351e28" };
+      if (theme) theme.setAttribute("content", colors[season]);
+    })();
+  </script>
   <div class="page-bg" aria-hidden="true">
     <div class="page-bg-sketch"></div>
     <div class="page-bg-wash"></div>
@@ -1124,7 +1134,7 @@
       }
     })();
   </script>
-  <script src="data.js?v=fix74"></script>
-  <script src="app.js?v=fix74"></script>
+  <script src="data.js?v=fix75"></script>
+  <script src="app.js?v=fix75"></script>
 </body>
 </html>

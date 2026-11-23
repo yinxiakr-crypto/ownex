@@ -198,8 +198,12 @@
   setTimeout(function () { usePicks(false); }, 0);
   setTimeout(function () { usePicks(false); }, 250);
 
+  function seoulMonth() {
+    return Number(new Intl.DateTimeFormat("en", { timeZone: "Asia/Seoul", month: "numeric" }).format(new Date()));
+  }
+
   function applySeason() {
-    const month = new Date().getMonth() + 1;
+    const month = seoulMonth();
     const season = month === 12 || month <= 2 ? "winter" : month <= 5 ? "spring" : month <= 8 ? "summer" : "fall";
     document.body.dataset.season = season;
     const colors = { winter: "#1b2a33", spring: "#24382e", summer: "#2a2e12", fall: "#351e28" };
@@ -1984,7 +1988,7 @@
     });
   }
 
-  const ASSET_VER = "20260915d";
+  const ASSET_VER = "20261124a";
 
   function assetUrl(src) {
     const value = String(src || "");
@@ -2009,9 +2013,6 @@
   }
 
   function designedCover(row, className) {
-    if (row && row.poster) {
-      return `<img class="${className} designed-img" src="${assetUrl(row.poster)}" alt="">`;
-    }
     const title = String((row && row.title) || "").replace(/[〈〉《》]/g, "");
     return (
       `<span class="${className} designed"><i>OWNEX</i><b>${escapeHtml(title)}</b></span>`

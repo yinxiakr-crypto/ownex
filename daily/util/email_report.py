@@ -26,6 +26,7 @@ from util.logger import get_logger
 from util.clock import today_seoul
 from util.mail_list import mail_heading, wanted_email_groups
 from util.normalize import clip_calendar_span, from_iso
+from util.season import palette, season_name
 
 LOGGER = get_logger()
 FONT_REGULAR = [
@@ -112,34 +113,35 @@ def rows_like_web(rows: list[dict], when: date | None = None) -> list[dict]:
 
 
 def make_schedule_card(rows: list[dict], calendar_from: date | None, heading: str = "오늘의 전시") -> bytes:
+    colors = palette()
     width = 900
     height = max(1280, 220 + len(rows) * 118)
-    image = Image.new("RGB", (width, height), "#1f1a16")
+    image = Image.new("RGB", (width, height), colors["bg"])
     draw = ImageDraw.Draw(image)
     title_font = _font(42, bold=True)
     item_font = _font(28, bold=True)
     meta_font = _font(22)
     small_font = _font(18)
-    draw.rectangle((40, 40, width - 40, height - 40), fill="#f4ead8")
-    draw.text((70, 70), heading, font=title_font, fill="#5c2e0a")
-    draw.text((70, 130), today_seoul().isoformat(), font=small_font, fill="#7a5a3a")
+    draw.rectangle((40, 40, width - 40, height - 40), fill=colors["paper"])
+    draw.text((70, 70), heading, font=title_font, fill=colors["ink"])
+    draw.text((70, 130), today_seoul().isoformat(), font=small_font, fill=colors["accent"])
     y = 180
     for index, row in enumerate(rows, start=1):
-        draw.rectangle((70, y, width - 70, y + 4), fill="#c9a36a")
+        draw.rectangle((70, y, width - 70, y + 4), fill=colors["accent"])
         y += 20
         title_lines = _wrap(draw, f"{index}. {row.get('title') or ''}", item_font, width - 160)
         for line in title_lines:
-            draw.text((70, y), line, font=item_font, fill="#2b1b12")
+            draw.text((70, y), line, font=item_font, fill=colors["ink"])
             y += 36
         venue = " ".join(part for part in [row.get("venue") or "", row.get("venue_address") or ""] if part)
         for line in _wrap(draw, venue, meta_font, width - 160)[:3]:
-            draw.text((70, y), line, font=meta_font, fill="#5a4333")
+            draw.text((70, y), line, font=meta_font, fill=colors["ink"])
             y += 30
-        draw.text((70, y), _show_period(row), font=meta_font, fill="#8a3b12")
+        draw.text((70, y), _show_period(row), font=meta_font, fill=colors["accent"])
         y += 48
         if y > height - 120:
             break
-    draw.text((70, height - 90), "매일 아침 자동으로 보낸 일정입니다.", font=small_font, fill="#7a5a3a")
+    draw.text((70, height - 90), "매일 아침 자동으로 보낸 일정입니다.", font=small_font, fill=colors["accent"])
     buffer = io.BytesIO()
     image.save(buffer, format="JPEG", quality=85)
     return buffer.getvalue()
@@ -797,21 +799,23 @@ def _html_body(rows: list[dict], calendar_from: date | None, has_card: bool, hea
     )
     visits, reviews = _activity_counts()
     home = _home_url()
+    colors = palette()
+    btn_ink = colors["ink"] if season_name() == "summer" else "#ffffff"
     glance = f"""
       <table role="presentation" cellpadding="0" cellspacing="0" style="margin:16px 0 20px 0;">
         <tr>
-          <td style="padding:10px 16px;background:#351e28;color:#f6efe6;border-radius:12px;text-align:center;">
+          <td style="padding:10px 16px;background:{colors['bg']};color:{colors['paper']};border-radius:12px;text-align:center;">
             <div style="font-size:22px;font-weight:700;">{visits}</div>
             <div style="font-size:12px;">방문</div>
           </td>
           <td style="width:10px;"></td>
-          <td style="padding:10px 16px;background:#351e28;color:#f6efe6;border-radius:12px;text-align:center;">
+          <td style="padding:10px 16px;background:{colors['bg']};color:{colors['paper']};border-radius:12px;text-align:center;">
             <div style="font-size:22px;font-weight:700;">{reviews}</div>
             <div style="font-size:12px;">Review</div>
           </td>
           <td style="width:10px;"></td>
-          <td style="background:#ff5c34;border-radius:12px;text-align:center;">
-            <a href="{home}" target="_blank" style="display:block;padding:14px 18px;color:#ffffff;text-decoration:none;font-weight:700;font-size:15px;">오넥스 홈 · 앱 열기</a>
+          <td style="background:{colors['accent']};border-radius:12px;text-align:center;">
+            <a href="{home}" target="_blank" style="display:block;padding:14px 18px;color:{btn_ink};text-decoration:none;font-weight:700;font-size:15px;">오넥스 홈 · 앱 열기</a>
           </td>
         </tr>
       </table>

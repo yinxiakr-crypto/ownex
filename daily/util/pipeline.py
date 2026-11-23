@@ -47,6 +47,13 @@ def _in_window(item: dict, start, end, today: date) -> bool:
 
 
 def run_pipeline(today: date | None = None) -> list[dict]:
+    in_cloud = os.getenv("CI", "").strip() == "true" or os.getenv("OWNEX_CLOUD", "").strip() in {"1", "true", "yes"}
+    if in_cloud and seconds_until_seoul() > 0:
+        LOGGER.info(
+            f"[단계] 한국 시간 오전 8:00까지 기다립니다. "
+            f"지금 {now_seoul().strftime('%H:%M:%S')}"
+        )
+        wait_until_seoul()
     today = today or today_seoul()
     LOGGER.info("===== 전시 수집 시작 =====")
     cfg = load_config()
@@ -179,7 +186,6 @@ def run_pipeline(today: date | None = None) -> list[dict]:
     send_now, send_reason = should_send_email(cfg, today)
     mail_cfg = cfg["email"] if cfg.has_section("email") else None
     cloud_primary = bool(mail_cfg and mail_cfg.get("cloud_primary", "false").lower() == "true")
-    in_cloud = os.getenv("CI", "").strip() == "true" or os.getenv("OWNEX_CLOUD", "").strip() in {"1", "true", "yes"}
     try:
         ingest_mail_requests()
     except Exception as exc:
